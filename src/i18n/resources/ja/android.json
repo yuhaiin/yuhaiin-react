@@ -85,8 +85,8 @@
   },
   "perApp": {
     "title": "アプリ別 VPN",
-    "enabled": "選択したアプリのみルーティング",
-    "hint": "Android VPN に適用されます。プロキシや他のインバウンドには影響しません。",
+    "enabled": "アプリごとのルール",
+    "hint": "Android VPN を使うアプリ、または迂回するアプリを選びます。プロキシや他のインバウンドには影響しません。",
     "mode": "選択したアプリ",
     "allow": "VPN を使用",
     "bypass": "VPN を迂回",
@@ -95,7 +95,11 @@
     "search": "アプリを検索",
     "system": "システムアプリ",
     "count_one": "{{count}} 件のアプリを選択",
-    "count_other": "{{count}} 件のアプリを選択"
+    "count_other": "{{count}} 件のアプリを選択",
+    "missing_other": "選択中の {{count}} 件のアプリはインストールされていません",
+    "removeMissing": "削除",
+    "empty": "一致するアプリはありません",
+    "missing_one": "選択中の {{count}} 件のアプリはインストールされていません"
   },
   "vpnSettings": "VPN と設定",
   "routes": {

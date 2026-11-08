@@ -85,8 +85,8 @@
   },
   "perApp": {
     "title": "Per-app VPN",
-    "enabled": "Route only selected apps",
-    "hint": "Applies to the Android VPN. Proxies and other inbounds are not affected.",
+    "enabled": "Per-app rules",
+    "hint": "Choose which apps use or bypass the Android VPN. Proxies and other inbounds are not affected.",
     "mode": "Selected apps",
     "allow": "Use the VPN",
     "bypass": "Bypass the VPN",
@@ -95,7 +95,11 @@
     "search": "Search apps",
     "system": "System apps",
     "count_one": "{{count}} app selected",
-    "count_other": "{{count}} apps selected"
+    "count_other": "{{count}} apps selected",
+    "missing_one": "{{count}} selected app is not installed",
+    "missing_other": "{{count}} selected apps are not installed",
+    "removeMissing": "Remove",
+    "empty": "No matching apps"
   },
   "vpnSettings": "VPN & settings",
   "routes": {

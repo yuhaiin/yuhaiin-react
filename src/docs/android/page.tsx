@@ -1,4 +1,4 @@
-import { AndroidAPIError, getAndroidApps, getAndroidSettings, nativeActionURL, reconfigureAndroidVpn, restartCore, saveAndroidSettings, type AndroidApp, type AndroidSettingValues } from '@/api/android';
+import { AndroidAPIError, androidAppIconURL, getAndroidApps, getAndroidSettings, nativeActionURL, reconfigureAndroidVpn, restartCore, saveAndroidSettings, type AndroidApp, type AndroidSettingValues } from '@/api/android';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, MainContainer } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
@@ -7,7 +7,8 @@ import { PageHeader } from '@/component/v2/page-header';
 import { Select } from '@/component/v2/select';
 import SwitchComponent from '@/component/v2/switch';
 import { useAndroidPlatform } from '@/hooks/use-android-platform';
-import { useMemo, useState, type FC } from 'react';
+import { Search } from 'lucide-react';
+import { useEffect, useMemo, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { AndroidVpnCard } from './AndroidVpnCard';
@@ -100,16 +101,40 @@ export function filterApps(apps: AndroidApp[], query: string, showSystem: boolea
         .sort((a, b) => Number(selected.has(b.packageName)) - Number(selected.has(a.packageName)) || a.name.localeCompare(b.name));
 }
 
+/** Selected packages that are not installed (e.g. restored from another device). */
+export function missingApps(apps: AndroidApp[], selected: Set<string>): string[] {
+    const installed = new Set(apps.map(app => app.packageName));
+    return [...selected].filter(pkg => !installed.has(pkg)).sort();
+}
+
+const AppIcon: FC<{ app: AndroidApp }> = ({ app }) => {
+    const [failed, setFailed] = useState(false);
+    if (failed) return <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-md bg-ui-surface-muted text-sm font-semibold text-ui-muted">
+        {(app.name.trim()[0] ?? '?').toUpperCase()}
+    </span>;
+    return <img src={androidAppIconURL(app.packageName)} alt="" loading="lazy" decoding="async" width={40} height={40}
+        className="h-10 w-10 shrink-0 rounded-ui-md object-contain" onError={() => setFailed(true)} />;
+};
+
 const PerAppCard: FC = () => {
     const { t } = useTranslation('android');
     const { data: settings, save, saveError } = useSettings();
     const [waitingConsent, setWaitingConsent] = useState(false);
     // After the in-app disclosure, poll until the list becomes available.
-    const apps = useSWR(settings?.values.perApp ? 'android/apps' : null, getAndroidApps, { revalidateOnFocus: false, refreshInterval: waitingConsent ? 2000 : 0, onSuccess: () => setWaitingConsent(false) });
+    const apps = useSWR(settings?.values.perApp ? 'android/apps' : null, getAndroidApps, { revalidateOnFocus: false, onSuccess: () => setWaitingConsent(false) });
+    // SWR skips interval refreshes while the key is in error (consent_required), so poll explicitly
+    // until the native disclosure is accepted.
+    const { mutate: reloadApps } = apps;
+    useEffect(() => {
+        if (!waitingConsent) return;
+        const timer = setInterval(() => void reloadApps(), 1500);
+        return () => clearInterval(timer);
+    }, [waitingConsent, reloadApps]);
     const [query, setQuery] = useState('');
     const [showSystem, setShowSystem] = useState(false);
     const selected = useMemo(() => new Set(settings?.values.appList ?? []), [settings?.values.appList]);
     const visible = useMemo(() => filterApps(apps.data ?? [], query, showSystem, selected), [apps.data, query, showSystem, selected]);
+    const missing = useMemo(() => apps.data ? missingApps(apps.data, selected) : [], [apps.data, selected]);
     if (!settings) return null;
     const v = settings.values;
     const toggleApp = (pkg: string) => {
@@ -120,7 +145,7 @@ const PerAppCard: FC = () => {
     const consent = apps.error instanceof AndroidAPIError && apps.error.code === 'consent_required';
     return <Card>
         <CardHeader><span className="font-medium text-ui-heading">{t('perApp.title')}</span></CardHeader>
-        <CardBody className="flex flex-col gap-3">
+        <CardBody className="flex flex-col gap-4">
             <SwitchComponent label={t('perApp.enabled')} description={t('perApp.hint')} checked={v.perApp} onCheckedChange={perApp => save({ perApp })} />
             {v.perApp && <>
                 <label className="flex flex-col gap-1 text-sm">
@@ -133,24 +158,39 @@ const PerAppCard: FC = () => {
                     <a className="font-medium text-ui-primary underline" href={nativeActionURL('consent/apps')} onClick={() => setWaitingConsent(true)}>{t('perApp.openNative')}</a>
                 </div>}
                 {apps.error && !consent && <p className="m-0 text-sm text-ui-danger">{(apps.error as Error).message}</p>}
-                {apps.data && <>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Input className="min-w-0 flex-1" placeholder={t('perApp.search')} aria-label={t('perApp.search')} value={query} onChange={e => setQuery(e.target.value)} />
-                        <SwitchComponent label={t('perApp.system')} checked={showSystem} onCheckedChange={setShowSystem} />
+                {apps.data && <div className="flex flex-col gap-2">
+                    <div className="relative">
+                        <Search aria-hidden="true" size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ui-muted" />
+                        <Input className="w-full pl-9" type="search" placeholder={t('perApp.search')} aria-label={t('perApp.search')} value={query} onChange={e => setQuery(e.target.value)} />
                     </div>
-                    <p className="m-0 text-xs text-ui-muted">{t('perApp.count', { count: selected.size })}</p>
-                    <ul className="m-0 flex max-h-96 list-none flex-col gap-1 overflow-y-auto p-0">
-                        {visible.map(app => <li key={app.packageName}>
-                            <label className="flex cursor-pointer items-center gap-3 rounded-ui-md px-2 py-2 hover:bg-ui-surface-muted">
-                                <input type="checkbox" className="h-4 w-4 shrink-0" checked={selected.has(app.packageName)} onChange={() => toggleApp(app.packageName)} />
-                                <span className="min-w-0">
-                                    <span className="block truncate text-sm text-ui-heading">{app.name}</span>
-                                    <span className="block truncate text-xs text-ui-muted">{app.packageName}</span>
-                                </span>
-                            </label>
-                        </li>)}
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs text-ui-muted">{t('perApp.count', { count: selected.size - missing.length })}</span>
+                        <label className="flex cursor-pointer items-center gap-2 text-xs text-ui-muted">
+                            <input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={showSystem} onChange={e => setShowSystem(e.target.checked)} />
+                            {t('perApp.system')}
+                        </label>
+                    </div>
+                    {missing.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 rounded-ui-md bg-ui-surface-muted px-3 py-2 text-xs text-ui-muted">
+                        <span title={missing.join('\n')}>{t('perApp.missing', { count: missing.length })}</span>
+                        <Button size="sm" variant="outline-primary" onClick={() => save({ appList: [...selected].filter(pkg => !missing.includes(pkg)) })}>{t('perApp.removeMissing')}</Button>
+                    </div>}
+                    <ul className="m-0 flex max-h-[28rem] list-none flex-col divide-y divide-ui-border overflow-y-auto rounded-ui-md border border-ui-border p-0">
+                        {visible.map(app => {
+                            const on = selected.has(app.packageName);
+                            return <li key={app.packageName}>
+                                <label className={`flex cursor-pointer items-center gap-3 px-3 py-2 ${on ? 'bg-ui-surface-muted' : 'hover:bg-ui-surface-muted'}`}>
+                                    <AppIcon app={app} />
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate text-sm font-medium text-ui-heading">{app.name}</span>
+                                        <span className="block truncate text-xs text-ui-muted">{app.packageName}</span>
+                                    </span>
+                                    <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--accent)]" checked={on} onChange={() => toggleApp(app.packageName)} />
+                                </label>
+                            </li>;
+                        })}
+                        {visible.length === 0 && <li className="px-3 py-6 text-center text-sm text-ui-muted">{t('perApp.empty')}</li>}
                     </ul>
-                </>}
+                </div>}
                 {!apps.data && !apps.error && <Loading />}
             </>}
             {saveError && <p className="m-0 text-sm text-ui-danger">{saveError}</p>}
