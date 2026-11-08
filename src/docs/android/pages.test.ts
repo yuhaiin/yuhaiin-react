@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { previewAndroidBackup, startDownload } from '@/api/android';
 import { filterLogLines } from './logs/page';
 import { routeLines } from './routes/page';
@@ -47,4 +47,17 @@ it('starts downloads with a same-origin one-time link', () => {
     expect(click).toHaveBeenCalledOnce();
     expect(document.querySelector('a[download]')).toBeNull();
     click.mockRestore();
+});
+
+describe('per-app helpers', () => {
+    it('lists selected packages that are not installed', async () => {
+        const { missingApps } = await import('./page');
+        const apps = [{ name: 'A', packageName: 'a.app', system: false }];
+        expect(missingApps(apps, new Set(['a.app', 'z.gone', 'b.gone']))).toEqual(['b.gone', 'z.gone']);
+    });
+    it('builds same-origin icon URLs with the package encoded', async () => {
+        const { androidAppIconURL } = await import('@/api/android');
+        expect(androidAppIconURL('a.b')).toBe('/android/v1/apps/icon?package=a.b');
+        expect(androidAppIconURL('a&b')).toBe('/android/v1/apps/icon?package=a%26b');
+    });
 });

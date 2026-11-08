@@ -85,8 +85,8 @@
   },
   "perApp": {
     "title": "앱별 VPN",
-    "enabled": "선택한 앱만 라우팅",
-    "hint": "Android VPN에 적용됩니다. 프록시와 다른 인바운드에는 영향을 주지 않습니다.",
+    "enabled": "앱별 규칙",
+    "hint": "Android VPN을 사용하거나 우회할 앱을 선택합니다. 프록시와 다른 인바운드에는 영향을 주지 않습니다.",
     "mode": "선택한 앱",
     "allow": "VPN 사용",
     "bypass": "VPN 우회",
@@ -95,7 +95,11 @@
     "search": "앱 검색",
     "system": "시스템 앱",
     "count_one": "앱 {{count}}개 선택됨",
-    "count_other": "앱 {{count}}개 선택됨"
+    "count_other": "앱 {{count}}개 선택됨",
+    "missing_other": "선택한 앱 {{count}}개가 설치되어 있지 않습니다",
+    "removeMissing": "삭제",
+    "empty": "일치하는 앱이 없습니다",
+    "missing_one": "선택한 앱 {{count}}개가 설치되어 있지 않습니다"
   },
   "vpnSettings": "VPN 및 설정",
   "routes": {

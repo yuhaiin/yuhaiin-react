@@ -2,6 +2,7 @@ import { useSession } from '@/auth/context';
 import { canReadRoute } from '@/auth/policy';
 import { navigationSections } from './navigation';
 import { useAndroidPlatform } from '@/hooks/use-android-platform';
+import { RotateCw } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -72,6 +73,14 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
                 })}
             </SidebarSection>)}
         </SidebarNav>
+        {/* Wide screens have no mobile header; it holds the reload control otherwise. */}
+        {android && <div className="mt-4 hidden px-3.5 lg:block">
+            <button type="button" onClick={() => window.location.reload()}
+                className="flex w-full items-center rounded-ui-md px-3 py-2 text-left text-sm text-sidebar-color hover:bg-sidebar-active-bg focus-visible:ring-2 focus-visible:ring-ui-focus">
+                <span aria-hidden="true" className="mr-2.5 flex w-6 shrink-0 justify-center"><RotateCw size={18} /></span>
+                {t('reload')}
+            </button>
+        </div>}
     </SidebarRoot>;
 }
 

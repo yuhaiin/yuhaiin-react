@@ -131,6 +131,8 @@ export const setAndroidVpn = (enabled: boolean) => request<AndroidStatus>('POST'
 export const reconfigureAndroidVpn = () => request<AndroidStatus>('POST', 'vpn/reconfigure', {});
 export const getAndroidSettings = () => request<AndroidSettings>('GET', 'settings');
 export const saveAndroidSettings = (values: Partial<AndroidSettingValues>) => request<AndroidSettings>('PUT', 'settings', values);
+/** Same-origin PNG; the platform cookie authorizes it like the app list. */
+export const androidAppIconURL = (packageName: string) => `${androidAPIPrefix}apps/icon?package=${encodeURIComponent(packageName)}`;
 export const getAndroidApps = () => request<{ apps: AndroidApp[] }>('GET', 'apps').then(r => r.apps);
 
 /** OS dialogs the app opens for a user gesture; consent is never granted by the page. */
