@@ -71,9 +71,14 @@ export interface AndroidSettingValues {
     notificationSpeed: boolean;
     coreBackgroundPolicy: string;
     trackUnderlyingNetwork: boolean;
+    allowLan: boolean;
+    processLookupMode: string;
+    httpProxyPort: number;
 }
 
 export interface AndroidSettings {
+    /** Settings the core reads only when it starts. */
+    restartRequired?: (keyof AndroidSettingValues)[];
     values: AndroidSettingValues;
     routeProfiles: string[];
     options: Partial<Record<keyof AndroidSettingValues, string[]>>;
@@ -91,12 +96,16 @@ export class AndroidAPIError extends Error {
 /** Codes that need a user decision in the app rather than a retry. */
 export const userActionCodes = new Set(['permission_required', 'consent_required']);
 
-async function request<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+async function send(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown, signal?: AbortSignal, raw?: string): Promise<{ response: Response; text: string }> {
     const init: RequestInit = method === 'GET'
         ? { method, headers: { Accept: 'application/json' } }
-        : { method, headers: { Accept: 'application/json', 'Content-Type': 'application/json', [requestHeader]: '1' }, body: JSON.stringify(body ?? {}) };
+        : { method, headers: { Accept: 'application/json', 'Content-Type': 'application/json', [requestHeader]: '1' }, body: raw ?? JSON.stringify(body ?? {}) };
     const response = await fetch(androidAPIPrefix + path, { ...init, signal, credentials: 'same-origin', cache: 'no-store' });
-    const text = await response.text();
+    return { response, text: await response.text() };
+}
+
+async function request<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown, signal?: AbortSignal, raw?: string): Promise<T> {
+    const { response, text } = await send(method, path, body, signal, raw);
     let data: unknown = undefined;
     try { data = text ? JSON.parse(text) : undefined; } catch { /* plain-text errors */ }
     if (!response.ok) {
@@ -124,9 +133,96 @@ export const getAndroidSettings = () => request<AndroidSettings>('GET', 'setting
 export const saveAndroidSettings = (values: Partial<AndroidSettingValues>) => request<AndroidSettings>('PUT', 'settings', values);
 export const getAndroidApps = () => request<{ apps: AndroidApp[] }>('GET', 'apps').then(r => r.apps);
 
-/** Native Android screens and dialogs the app opens for a user gesture. */
-export type NativeAction = 'vpn/authorize' | 'settings' | 'apps' | 'routes' | 'logs' | 'backup' | 'update' | 'privacy';
+/** OS dialogs the app opens for a user gesture; consent is never granted by the page. */
+export type NativeAction = 'vpn/authorize' | 'consent/apps';
 export const nativeActionURL = (action: NativeAction) => `yuhaiin-android://action/${action}`;
 
 /** True while the VPN interface exists, including during make-before-break rebuilds. */
 export const vpnActive = (state?: PlatformVpnState) => state === 'running' || state === 'reconfiguring';
+
+// ---- app and core ----
+
+export interface AndroidAppInfo {
+    core: { version: string; commit: string };
+    app?: { applicationId: string; versionName: string; versionCode: number; commit: string; updateTrack: string };
+}
+export const getAndroidApp = () => request<AndroidAppInfo>('GET', 'app');
+export const restartCore = () => request<{ restarting: boolean }>('POST', 'core/restart', {});
+
+// ---- route profiles ----
+
+export interface RouteProfile { name: string; preset: boolean; active: boolean; content: string }
+export const getRouteProfiles = () => request<{ active: string; profiles: RouteProfile[] }>('GET', 'routes');
+export const createRouteProfile = (name: string) => request<RouteProfile>('POST', 'routes', { name });
+export const saveRouteProfile = (name: string, content: string) => request<RouteProfile>('PUT', 'routes', { name, content });
+export const deleteRouteProfile = (name: string) => request<{ deleted: boolean }>('POST', 'routes/delete', { name });
+
+// ---- logs ----
+
+export async function getAndroidLogs(lines: number, signal?: AbortSignal): Promise<string> {
+    const { response, text } = await send('GET', `logs?lines=${lines}`, undefined, signal);
+    if (!response.ok) {
+        let error: { code?: string; message?: string } | undefined;
+        try { error = (JSON.parse(text) as { error?: typeof error }).error; } catch { /* plain text */ }
+        throw new AndroidAPIError(response.status, error?.code ?? 'logs_failed', error?.message ?? (text || `HTTP ${response.status}`));
+    }
+    return text;
+}
+
+export interface DownloadLink { url: string; name: string }
+export const exportAndroidLogs = () => request<DownloadLink>('POST', 'logs/export', {});
+
+/**
+ * Starts a download of a one-time link. The app's WebView hands it to Android's download
+ * manager (script-made blobs cannot be saved there).
+ */
+export function startDownload(link: DownloadLink) {
+    const anchor = document.createElement('a');
+    anchor.href = link.url;
+    anchor.download = link.name;
+    anchor.rel = 'noopener';
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+}
+
+// ---- backup ----
+
+export interface BackupPreview { createdAt: string; nodes: number; routes: number; preferences: number }
+export const exportAndroidBackup = () => request<DownloadLink>('POST', 'backup/export', {});
+export const previewAndroidBackup = (backup: string) => request<BackupPreview>('POST', 'backup/preview', undefined, undefined, backup);
+/** Accepted asynchronously: the core restarts and the page reconnects. */
+export const restoreAndroidBackup = (backup: string) => request<{ restoring: boolean }>('POST', 'backup/restore', undefined, undefined, backup);
+
+// ---- privacy ----
+
+export interface AndroidPrivacy {
+    title: string;
+    effectiveDate: string;
+    sections: { title: string; body: string }[];
+    contactUrl: string;
+    withdrawBody: string;
+    consents: { vpn: boolean; installedApps: boolean };
+}
+export const getAndroidPrivacy = () => request<AndroidPrivacy>('GET', 'privacy');
+export const withdrawAndroidConsent = () => request<AndroidPrivacy>('POST', 'privacy/withdraw', {});
+
+// ---- software update ----
+
+export type UpdateStage = 'IDLE' | 'CHECKING' | 'DOWNLOADING' | 'VERIFYING' | 'INSTALLING' | 'WAITING_PERMISSION' | 'COMPLETED' | 'ERROR';
+export interface AndroidUpdate {
+    channel: string;
+    channels: string[];
+    checking: boolean;
+    stage: UpdateStage;
+    progress: number;
+    downloadedBytes: number;
+    totalBytes: number;
+    error?: string | null;
+    reason?: string | null;
+    release?: { version: string; tag: string; notes: string; publishedAt: string; assetSize: number } | null;
+    currentVersion: string;
+}
+export const getAndroidUpdate = () => request<AndroidUpdate>('GET', 'update');
+export const androidUpdateAction = (action: 'check' | 'apply' | 'permission' | 'channel', channel?: string) =>
+    request<AndroidUpdate>('POST', 'update', { action, channel });

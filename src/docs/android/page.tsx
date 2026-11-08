@@ -1,4 +1,4 @@
-import { AndroidAPIError, getAndroidApps, getAndroidSettings, nativeActionURL, reconfigureAndroidVpn, saveAndroidSettings, type AndroidApp, type AndroidSettingValues, type NativeAction } from '@/api/android';
+import { AndroidAPIError, getAndroidApps, getAndroidSettings, nativeActionURL, reconfigureAndroidVpn, restartCore, saveAndroidSettings, type AndroidApp, type AndroidSettingValues } from '@/api/android';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, MainContainer } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
@@ -26,7 +26,6 @@ export default function AndroidPage() {
             <AndroidVpnCard />
             <SettingsCard />
             <PerAppCard />
-            <NativeLinksCard />
         </div>
     </MainContainer>;
 }
@@ -46,9 +45,10 @@ const SettingsCard: FC = () => {
     const { t } = useTranslation('android');
     const { data, save, saveError } = useSettings();
     const [reconfiguring, setReconfiguring] = useState(false);
+    const [restartNeeded, setRestartNeeded] = useState(false);
     if (!data) return <Loading />;
     const v = data.values;
-    const select = (field: 'mtuProfile' | 'meteredMode' | 'bootConnectPolicy' | 'coreBackgroundPolicy' | 'routeProfile', items: string[]) =>
+    const select = (field: 'mtuProfile' | 'meteredMode' | 'bootConnectPolicy' | 'coreBackgroundPolicy' | 'routeProfile' | 'processLookupMode', items: string[]) =>
         <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-ui-heading">{t(`settings.${field}`)}</span>
             <Select ariaLabel={t(`settings.${field}`)} value={v[field]} onValueChange={value => save({ [field]: value })}
@@ -70,11 +70,22 @@ const SettingsCard: FC = () => {
                 {select('meteredMode', data.options.meteredMode ?? [])}
                 {select('coreBackgroundPolicy', data.options.coreBackgroundPolicy ?? [])}
                 {select('bootConnectPolicy', data.options.bootConnectPolicy ?? [])}
+                {select('processLookupMode', data.options.processLookupMode ?? [])}
+                <label className="flex flex-col gap-1 text-sm">
+                    <span className="font-medium text-ui-heading">{t('settings.httpProxyPort')}</span>
+                    <Input type="number" min={0} max={65535} aria-label={t('settings.httpProxyPort')} defaultValue={v.httpProxyPort || ''}
+                        onBlur={e => { const port = Number(e.target.value || 0); if (port !== v.httpProxyPort) void save({ httpProxyPort: port }); }} />
+                </label>
             </div>
             <SwitchComponent label={t('settings.appendHTTPProxy')} checked={v.appendHTTPProxy} onCheckedChange={appendHTTPProxy => save({ appendHTTPProxy })} />
             <SwitchComponent label={t('settings.autoConnect')} description={t('settings.autoConnectHint')} checked={v.autoConnect} onCheckedChange={autoConnect => save({ autoConnect })} />
             <SwitchComponent label={t('settings.notificationSpeed')} checked={v.notificationSpeed} onCheckedChange={notificationSpeed => save({ notificationSpeed })} />
             <SwitchComponent label={t('settings.trackUnderlyingNetwork')} checked={v.trackUnderlyingNetwork} onCheckedChange={trackUnderlyingNetwork => save({ trackUnderlyingNetwork })} />
+            <SwitchComponent label={t('settings.allowLan')} description={t('settings.allowLanHint')} checked={v.allowLan} onCheckedChange={async allowLan => { await save({ allowLan }); setRestartNeeded(true); }} />
+            {restartNeeded && <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="text-ui-warning">{t('settings.restartNeeded')}</span>
+                <Button size="sm" variant="outline-primary" onClick={async () => { setRestartNeeded(false); await restartCore(); }}>{t('settings.restartCore')}</Button>
+            </div>}
             {saveError && <p className="m-0 text-sm text-ui-danger">{saveError}</p>}
         </CardBody>
     </Card>;
@@ -92,7 +103,9 @@ export function filterApps(apps: AndroidApp[], query: string, showSystem: boolea
 const PerAppCard: FC = () => {
     const { t } = useTranslation('android');
     const { data: settings, save, saveError } = useSettings();
-    const apps = useSWR(settings?.values.perApp ? 'android/apps' : null, getAndroidApps, { revalidateOnFocus: false });
+    const [waitingConsent, setWaitingConsent] = useState(false);
+    // After the in-app disclosure, poll until the list becomes available.
+    const apps = useSWR(settings?.values.perApp ? 'android/apps' : null, getAndroidApps, { revalidateOnFocus: false, refreshInterval: waitingConsent ? 2000 : 0, onSuccess: () => setWaitingConsent(false) });
     const [query, setQuery] = useState('');
     const [showSystem, setShowSystem] = useState(false);
     const selected = useMemo(() => new Set(settings?.values.appList ?? []), [settings?.values.appList]);
@@ -117,7 +130,7 @@ const PerAppCard: FC = () => {
                 </label>
                 {consent && <div className="text-sm">
                     <p className="m-0 text-ui-heading">{t('perApp.consent')}</p>
-                    <a className="font-medium text-ui-primary underline" href={nativeActionURL('apps')}>{t('perApp.openNative')}</a>
+                    <a className="font-medium text-ui-primary underline" href={nativeActionURL('consent/apps')} onClick={() => setWaitingConsent(true)}>{t('perApp.openNative')}</a>
                 </div>}
                 {apps.error && !consent && <p className="m-0 text-sm text-ui-danger">{(apps.error as Error).message}</p>}
                 {apps.data && <>
@@ -141,22 +154,6 @@ const PerAppCard: FC = () => {
                 {!apps.data && !apps.error && <Loading />}
             </>}
             {saveError && <p className="m-0 text-sm text-ui-danger">{saveError}</p>}
-        </CardBody>
-    </Card>;
-};
-
-const NativeLinksCard: FC = () => {
-    const { t } = useTranslation('android');
-    const links: NativeAction[] = ['logs', 'backup', 'update', 'privacy', 'routes', 'settings'];
-    return <Card>
-        <CardHeader><span className="font-medium text-ui-heading">{t('native.title')}</span></CardHeader>
-        <CardBody className="flex flex-col gap-2">
-            <p className="m-0 text-xs text-ui-muted">{t('native.hint')}</p>
-            <div className="flex flex-wrap gap-2">
-                {links.map(action => <Button key={action} asChild size="sm" variant="outline-secondary">
-                    <a href={nativeActionURL(action)}>{t(`native.${action}`)}</a>
-                </Button>)}
-            </div>
         </CardBody>
     </Card>;
 };

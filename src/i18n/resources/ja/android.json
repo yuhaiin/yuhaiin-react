@@ -50,7 +50,13 @@
     "autoConnect": "起動・更新後に VPN を接続",
     "autoConnectHint": "VPN 権限が必要です。権限がなければ接続しません。",
     "notificationSpeed": "通知に通信速度を表示",
-    "trackUnderlyingNetwork": "Wi-Fi とモバイル回線の切り替えに追従"
+    "trackUnderlyingNetwork": "Wi-Fi とモバイル回線の切り替えに追従",
+    "allowLan": "LAN からの接続を許可",
+    "allowLanHint": "同じネットワークの他の端末がダッシュボード、設定、認証情報、接続情報にアクセスできます。信頼できるネットワークでのみ有効にしてください。",
+    "httpProxyPort": "アプリに通知する HTTP プロキシのポート",
+    "restartNeeded": "反映するにはコアを再起動してください。",
+    "restartCore": "コアを再起動",
+    "processLookupMode": "プロセス検索"
   },
   "options": {
     "mtuProfile": {
@@ -70,6 +76,11 @@
       "always": "常に",
       "charging_only": "充電中のみ",
       "skip_in_power_save": "省電力モードではしない"
+    },
+    "processLookupMode": {
+      "off": "オフ",
+      "rules_only": "ルールでのみ",
+      "always": "常に"
     }
   },
   "perApp": {
@@ -80,20 +91,113 @@
     "allow": "VPN を使用",
     "bypass": "VPN を迂回",
     "consent": "インストール済みアプリの一覧にはアプリでの同意が必要です。",
-    "openNative": "アプリ一覧を開く",
+    "openNative": "アプリ一覧へのアクセスを許可",
     "search": "アプリを検索",
     "system": "システムアプリ",
     "count_one": "{{count}} 件のアプリを選択",
     "count_other": "{{count}} 件のアプリを選択"
   },
-  "native": {
-    "title": "Android",
-    "hint": "Android のネイティブ画面を開きます。",
-    "logs": "ログ",
-    "backup": "バックアップと復元",
-    "update": "アップデート",
-    "privacy": "プライバシー",
-    "routes": "ルートプロファイル",
-    "settings": "その他の Android 設定"
+  "vpnSettings": "VPN と設定",
+  "routes": {
+    "title": "ルートプロファイル",
+    "description": "TUN インバウンドにルートが指定されていない場合に Android VPN が取り込む IP 範囲です。",
+    "newName": "新しいプロファイル名",
+    "create": "作成",
+    "active": "使用中",
+    "builtIn": "組み込み",
+    "count_one": "{{count}} 件の範囲",
+    "count_other": "{{count}} 件の範囲",
+    "placeholder": "1 行に 1 つの CIDR または IP アドレス",
+    "save": "保存",
+    "revert": "元に戻す",
+    "delete": "削除",
+    "deleteConfirm": "ルートプロファイル {{name}} を削除しますか？",
+    "saved": "保存しました",
+    "preset": {
+      "All (Default)": "すべて（既定）",
+      "Non-Local IPs": "ローカル以外の IP",
+      "Non-Chinese IPs": "中国以外の IP"
+    },
+    "edit": "編集",
+    "close": "閉じる"
+  },
+  "logs": {
+    "title": "ログ",
+    "description": "コアを含む、このアプリの Android ログです。",
+    "filter": "フィルター",
+    "level": "レベル",
+    "levels": {
+      "V": "詳細",
+      "D": "デバッグ",
+      "I": "情報",
+      "W": "警告",
+      "E": "エラー"
+    },
+    "lines": "行数",
+    "lastLines_one": "直近 {{count}} 行",
+    "lastLines_other": "直近 {{count}} 行",
+    "follow": "追従",
+    "pause": "一時停止",
+    "refresh": "更新",
+    "export": "ダウンロード",
+    "exportWarning": "ログには接続先ドメイン、IP アドレス、アプリ識別子、認証情報が含まれる場合があります。共有前に確認・伏せ字にしてください。ダウンロードしますか？",
+    "empty": "ログはありません。"
+  },
+  "backup": {
+    "title": "バックアップと復元",
+    "description": "コアの設定と Android の設定です。バックアップには認証情報が含まれ、暗号化されません。",
+    "export": "エクスポート",
+    "exportHint": "バックアップファイルをダウンロードフォルダに保存します。",
+    "download": "バックアップをダウンロード",
+    "restore": "復元",
+    "restoreHint": "復元すると設定が置き換えられ、コアが再起動します。",
+    "choose": "バックアップファイルを選択",
+    "createdAt": "作成日時",
+    "nodes": "ノード",
+    "rules": "ルーティングルール",
+    "preferences": "Android の設定",
+    "restoreNow": "復元",
+    "restoreConfirm": "現在の設定をこのバックアップで置き換えますか？コアが再起動します。",
+    "restarting": "復元中です。コアが再起動し、このページは再接続します。"
+  },
+  "update": {
+    "title": "アップデート",
+    "description": "このアプリのアップデートです。インストールには Android のインストーラーを使います。",
+    "app": "アプリ",
+    "package": "パッケージ",
+    "core": "コア",
+    "software": "ソフトウェアアップデート",
+    "channel": "チャネル",
+    "channels": {
+      "stable": "安定版",
+      "beta": "ベータ",
+      "main": "最新ビルド"
+    },
+    "current": "インストール済み: {{version}}",
+    "available": "利用可能: {{version}}",
+    "none": "アップデートはありません。",
+    "check": "アップデートを確認",
+    "install": "ダウンロードしてインストール",
+    "grant": "インストールを許可",
+    "permission": "このアプリにアップデートのインストールを許可してください。",
+    "stages": {
+      "CHECKING": "確認中…",
+      "DOWNLOADING": "ダウンロード中…",
+      "VERIFYING": "検証中…",
+      "INSTALLING": "インストール中…",
+      "COMPLETED": "アップデートをインストールしました。"
+    }
+  },
+  "privacy": {
+    "title": "プライバシー",
+    "consents": "同意の状態",
+    "vpn": "VPN のデータ開示",
+    "installedApps": "インストール済みアプリへのアクセス",
+    "granted": "同意済み",
+    "notGranted": "未同意",
+    "grantHint": "同意は、機能を使う前にアプリ自身の開示画面でのみ行えます。",
+    "withdraw": "同意を取り消す",
+    "withdrawn": "同意を取り消しました。VPN を停止しています。",
+    "contact": "プロジェクトに問い合わせ"
   }
 }

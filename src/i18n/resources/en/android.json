@@ -50,7 +50,13 @@
     "autoConnect": "Connect VPN after boot or update",
     "autoConnectHint": "Requires VPN permission; nothing connects without it.",
     "notificationSpeed": "Show traffic rate in the notification",
-    "trackUnderlyingNetwork": "Follow Wi-Fi and mobile network changes"
+    "trackUnderlyingNetwork": "Follow Wi-Fi and mobile network changes",
+    "allowLan": "Allow LAN connections",
+    "allowLanHint": "Other devices on this network can use the dashboard, settings, credentials and connection details. Only enable on a trusted network.",
+    "httpProxyPort": "HTTP proxy port advertised to apps",
+    "restartNeeded": "Restart the core to apply.",
+    "restartCore": "Restart core",
+    "processLookupMode": "Process lookup"
   },
   "options": {
     "mtuProfile": {
@@ -70,6 +76,11 @@
       "always": "Always",
       "charging_only": "Only while charging",
       "skip_in_power_save": "Skip in battery saver"
+    },
+    "processLookupMode": {
+      "off": "Off",
+      "rules_only": "Only for rules",
+      "always": "Always"
     }
   },
   "perApp": {
@@ -80,20 +91,113 @@
     "allow": "Use the VPN",
     "bypass": "Bypass the VPN",
     "consent": "Listing installed apps needs your consent in the app.",
-    "openNative": "Open the app list",
+    "openNative": "Allow app list access",
     "search": "Search apps",
     "system": "System apps",
     "count_one": "{{count}} app selected",
     "count_other": "{{count}} apps selected"
   },
-  "native": {
-    "title": "Android",
-    "hint": "These open native Android screens.",
-    "logs": "Logs",
-    "backup": "Backup & restore",
-    "update": "Updates",
-    "privacy": "Privacy",
-    "routes": "Route profiles",
-    "settings": "More Android settings"
+  "vpnSettings": "VPN & settings",
+  "routes": {
+    "title": "Route profiles",
+    "description": "IP ranges the Android VPN captures when the TUN inbound has no explicit routes.",
+    "newName": "New profile name",
+    "create": "Create",
+    "active": "In use",
+    "builtIn": "Built-in",
+    "count_one": "{{count}} range",
+    "count_other": "{{count}} ranges",
+    "placeholder": "One CIDR or IP address per line",
+    "save": "Save",
+    "revert": "Revert",
+    "delete": "Delete",
+    "deleteConfirm": "Delete route profile {{name}}?",
+    "saved": "Saved",
+    "preset": {
+      "All (Default)": "All (default)",
+      "Non-Local IPs": "Non-local IPs",
+      "Non-Chinese IPs": "Non-Chinese IPs"
+    },
+    "edit": "Edit",
+    "close": "Close"
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Android logs of this app, including the core.",
+    "filter": "Filter",
+    "level": "Level",
+    "levels": {
+      "V": "Verbose",
+      "D": "Debug",
+      "I": "Info",
+      "W": "Warning",
+      "E": "Error"
+    },
+    "lines": "Lines",
+    "lastLines_one": "Last {{count}} line",
+    "lastLines_other": "Last {{count}} lines",
+    "follow": "Follow",
+    "pause": "Pause",
+    "refresh": "Refresh",
+    "export": "Download",
+    "exportWarning": "Logs may contain destination domains, IP addresses, app identifiers and credentials. Review and redact them before sharing. Download?",
+    "empty": "No log lines."
+  },
+  "backup": {
+    "title": "Backup & restore",
+    "description": "Core configuration and Android preferences. Backups can contain credentials and are not encrypted.",
+    "export": "Export",
+    "exportHint": "Saves a backup file to Downloads.",
+    "download": "Download backup",
+    "restore": "Restore",
+    "restoreHint": "Restoring replaces the configuration and restarts the core.",
+    "choose": "Choose backup file",
+    "createdAt": "Created",
+    "nodes": "Nodes",
+    "rules": "Routing rules",
+    "preferences": "Android preferences",
+    "restoreNow": "Restore",
+    "restoreConfirm": "Replace the current configuration with this backup? The core restarts.",
+    "restarting": "Restoring. The core restarts and this page reconnects."
+  },
+  "update": {
+    "title": "Updates",
+    "description": "Software updates for this app. Installation uses the Android installer.",
+    "app": "App",
+    "package": "Package",
+    "core": "Core",
+    "software": "Software update",
+    "channel": "Channel",
+    "channels": {
+      "stable": "Stable",
+      "beta": "Beta",
+      "main": "Latest build"
+    },
+    "current": "Installed: {{version}}",
+    "available": "Available: {{version}}",
+    "none": "No update found.",
+    "check": "Check for updates",
+    "install": "Download and install",
+    "grant": "Allow installing",
+    "permission": "Allow this app to install updates.",
+    "stages": {
+      "CHECKING": "Checking…",
+      "DOWNLOADING": "Downloading…",
+      "VERIFYING": "Verifying…",
+      "INSTALLING": "Installing…",
+      "COMPLETED": "Update installed."
+    }
+  },
+  "privacy": {
+    "title": "Privacy",
+    "consents": "Your choices",
+    "vpn": "VPN data disclosure",
+    "installedApps": "Installed apps access",
+    "granted": "Accepted",
+    "notGranted": "Not accepted",
+    "grantHint": "Consent is given only in the app's own disclosure, before the feature is used.",
+    "withdraw": "Withdraw consent",
+    "withdrawn": "Consent withdrawn. The VPN is stopping.",
+    "contact": "Contact the project"
   }
 }
