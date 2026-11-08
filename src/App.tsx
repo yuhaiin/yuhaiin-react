@@ -10,7 +10,10 @@ import { useHashLocation } from '@/hooks/useHashLocation';
 import clsx from 'clsx';
 import { MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { motionTiming } from '@/component/v2/styles';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { initializationStatus } from '@/auth/api';
+import { establishLocalConnection, getSession } from '@/auth/session';
+import { getApiUrl } from '@/common/apiurl';
 import { Route, Router, Switch, useLocation } from 'wouter';
 import { navigationOrder } from './docs/nav/navigation';
 import { appRoutes } from './routes';
@@ -28,10 +31,42 @@ declare global {
 // WebUI preferences are local to this browser and need no controller session.
 const publicPaths = ['/login', '/docs/webui'];
 
+const loopbackHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+function isLoopbackController(controller: string) {
+    try { return loopbackHosts.includes(new URL(controller || window.location.href).hostname); }
+    catch { return false; }
+}
+
+/**
+ * Sessions live in memory, so every load starts without one. A loopback
+ * controller without an identity module (the Android app, a local desktop core)
+ * needs no sign-in: connect before rendering, so a reload neither flashes the
+ * sign-in card nor loses the current page.
+ */
+function useLocalConnection() {
+    const [checking, setChecking] = useState(() => !getSession() && isLoopbackController(getApiUrl()));
+    useEffect(() => {
+        if (!checking) return;
+        const request = new AbortController();
+        const timeout = window.setTimeout(() => request.abort(), 3000);
+        const controller = getApiUrl();
+        let cancelled = false;
+        void initializationStatus(controller, request.signal)
+            .then(status => { if (!cancelled && status.authentication === 'none') establishLocalConnection(controller); })
+            .catch(() => undefined)
+            // A timeout falls through to the sign-in page, which reports the error.
+            .finally(() => { window.clearTimeout(timeout); if (!cancelled) setChecking(false); });
+        return () => { cancelled = true; window.clearTimeout(timeout); request.abort(); };
+    }, [checking]);
+    return checking;
+}
+
 function AppContent() {
     const [location, navigate] = useLocation();
     const session = useSession();
-    useEffect(() => { if (!session && !publicPaths.includes(location)) navigate("/login"); }, [session, location, navigate]);
+    const connecting = useLocalConnection();
+    useEffect(() => { if (!connecting && !session && !publicPaths.includes(location)) navigate("/login"); }, [connecting, session, location, navigate]);
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
@@ -74,6 +109,8 @@ function AppContent() {
         </div>
     );
 
+    // A blank page in the app background; the check takes a few milliseconds.
+    if (connecting) return <div className="h-[100dvh] bg-ui-bg" aria-busy="true" />;
     return (
         <GlobalToastProvider>
             <ConfirmationHost />
