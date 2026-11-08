@@ -1,7 +1,7 @@
-import { Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
 
 type Label = { namespace: 'nav' | 'ui' | 'routing'; key: string };
-export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean }
+export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean; platform?: 'android' }
 interface NavigationGroup { label: Label; icon: LucideIcon; items: NavigationLink[] }
 interface NavigationSection { label: Label; items: (NavigationLink | NavigationGroup)[] }
 const nav = (key: string): Label => ({ namespace: 'nav', key });
@@ -38,6 +38,8 @@ export const navigationSections: NavigationSection[] = [
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Globe },
     ] },
     { label: nav('system'), items: [
+        // Shown only inside the Android app, detected through the platform API.
+        { path: '/docs/android', label: nav('android'), icon: Smartphone, platform: 'android' },
         { label: nav('accountSecurity'), icon: UserCog, items: [
             { path: '/docs/security', label: nav('account'), icon: UserRound },
             { path: '/docs/security/credentials', label: nav('credentials'), icon: KeyRound },

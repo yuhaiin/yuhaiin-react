@@ -8,6 +8,8 @@ import { navigationOrder } from './navigation';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@/hooks/use-media-query', () => ({ useMediaQuery: () => true }));
 vi.mock('wouter', () => ({ useLocation: () => ['/', vi.fn()] }));
+let android: object | null = { platform: 'android', session: true };
+vi.mock('@/hooks/use-android-platform', () => ({ useAndroidPlatform: () => android }));
 it('uses the rendered menu order for page transitions and keeps every route reachable', async () => {
     const host = document.createElement('div'); document.body.append(host);
     const root = createRoot(host);
@@ -18,9 +20,24 @@ it('uses the rendered menu order for page transitions and keeps every route reac
         }
         const visiblePaths = [...host.querySelectorAll<HTMLAnchorElement>('nav a[href]')].map(link => link.getAttribute('href')!.slice(1));
         expect(visiblePaths).toEqual(navigationOrder.filter(path => path !== '/login'));
-        expect(new Set(visiblePaths).size).toBe(31);
+        expect(new Set(visiblePaths).size).toBe(32);
         expect([...navigationOrder].sort()).toEqual(appRoutes.map(route => route.path).sort());
     } finally { act(() => root.unmount()); host.remove(); }
+});
+
+it('shows the Android page only to the in-app WebView session', async () => {
+    android = null;
+    const host = document.createElement('div'); document.body.append(host);
+    const root = createRoot(host);
+    try {
+        await act(async () => root.render(<Sidebar show={false} onHide={() => undefined} />));
+        for (const button of host.querySelectorAll<HTMLButtonElement>('button[aria-expanded=false]')) {
+            await act(async () => button.click());
+        }
+        const visiblePaths = [...host.querySelectorAll<HTMLAnchorElement>('nav a[href]')].map(link => link.getAttribute('href')!.slice(1));
+        expect(visiblePaths).not.toContain('/docs/android');
+        expect(visiblePaths).toHaveLength(31);
+    } finally { android = { platform: 'android', session: true }; act(() => root.unmount()); host.remove(); }
 });
 
 it('uses the owning page label for mobile titles without resource query or trailing-slash differences', async () => {

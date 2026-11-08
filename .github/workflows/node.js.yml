@@ -3,11 +3,13 @@
 
 name: Node.js CI
 
+# v2 branch: publishes the Web UI to the yuhaiin.github.io "v2" branch, which only
+# the core's v2 builds embed. The public site and stable cores keep using "main".
 on:
   push:
-    branches: ["main"]
+    branches: ["v2"]
   pull_request:
-    branches: ["main"]
+    branches: ["v2"]
 
 # Cancel superseded workflow runs on the same ref.
 concurrency:
@@ -94,7 +96,7 @@ jobs:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./publish
           external_repository: yuhaiin/yuhaiin.github.io
-          publish_branch: main # default: gh-pages
+          publish_branch: v2 # never main from this branch
           enable_jekyll: false
 
       - name: upload_static
