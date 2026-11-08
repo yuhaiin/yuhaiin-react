@@ -48,6 +48,8 @@ const RouteEditor: FC<{ profile: RouteProfile; onChanged: () => void }> = ({ pro
     const { t } = useTranslation('android');
     const [draft, setDraft] = useState(profile.content);
     const [status, setStatus] = useState<{ error?: string; saved?: boolean }>({});
+    // Collapsed by default: long lists (1000+ ranges) would otherwise take over scrolling.
+    const [open, setOpen] = useState(false);
     const dirty = draft !== profile.content;
     const save = async () => {
         try { await saveRouteProfile(profile.name, draft); setStatus({ saved: true }); onChanged(); }
@@ -65,9 +67,12 @@ const RouteEditor: FC<{ profile: RouteProfile; onChanged: () => void }> = ({ pro
                 {profile.active && <Badge variant="success" pill>{t('routes.active')}</Badge>}
                 {profile.preset && <Badge variant="secondary" pill>{t('routes.builtIn')}</Badge>}
             </div>
-            <span className="text-xs text-ui-muted">{t('routes.count', { count: routeLines(draft) })}</span>
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-ui-muted">{t('routes.count', { count: routeLines(draft) })}</span>
+                <Button size="sm" variant="outline-secondary" aria-expanded={open} onClick={() => setOpen(!open)}>{t(open ? 'routes.close' : 'routes.edit')}</Button>
+            </div>
         </CardHeader>
-        <CardBody className="flex flex-col gap-2">
+        {open && <CardBody className="flex flex-col gap-2">
             <Textarea rows={6} spellCheck={false} className="font-mono text-xs" aria-label={profile.name} value={draft}
                 placeholder={t('routes.placeholder')} onChange={e => { setDraft(e.target.value); setStatus({}); }} />
             <div className="flex flex-wrap items-center gap-2">
@@ -77,6 +82,6 @@ const RouteEditor: FC<{ profile: RouteProfile; onChanged: () => void }> = ({ pro
                 {status.saved && !dirty && <span className="text-sm text-ui-success">{t('routes.saved')}</span>}
                 {status.error && <span className="text-sm text-ui-danger">{status.error}</span>}
             </div>
-        </CardBody>
+        </CardBody>}
     </Card>;
 };

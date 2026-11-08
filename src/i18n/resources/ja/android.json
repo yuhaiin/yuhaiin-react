@@ -117,7 +117,9 @@
       "All (Default)": "すべて（既定）",
       "Non-Local IPs": "ローカル以外の IP",
       "Non-Chinese IPs": "中国以外の IP"
-    }
+    },
+    "edit": "編集",
+    "close": "閉じる"
   },
   "logs": {
     "title": "ログ",

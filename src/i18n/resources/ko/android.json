@@ -117,7 +117,9 @@
       "All (Default)": "전체 (기본)",
       "Non-Local IPs": "로컬 외 IP",
       "Non-Chinese IPs": "중국 외 IP"
-    }
+    },
+    "edit": "편집",
+    "close": "닫기"
   },
   "logs": {
     "title": "로그",

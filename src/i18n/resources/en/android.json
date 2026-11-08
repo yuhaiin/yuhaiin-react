@@ -117,7 +117,9 @@
       "All (Default)": "All (default)",
       "Non-Local IPs": "Non-local IPs",
       "Non-Chinese IPs": "Non-Chinese IPs"
-    }
+    },
+    "edit": "Edit",
+    "close": "Close"
   },
   "logs": {
     "title": "Logs",
