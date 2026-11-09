@@ -22,5 +22,14 @@
   "credentials": "Credentials",
   "usageAudit": "Usage & audit",
   "administration": "Administration",
-  "android": "Android"
+  "android": "Android",
+  "tabs": {
+    "home": "Home",
+    "nodes": "Nodes",
+    "routing": "Routing",
+    "connections": "Connections",
+    "more": "More"
+  },
+  "primary": "Primary navigation",
+  "more": "More pages"
 }

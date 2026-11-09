@@ -22,5 +22,14 @@
   "credentials": "認証情報",
   "usageAudit": "利用状況",
   "administration": "管理",
-  "android": "Android"
+  "android": "Android",
+  "tabs": {
+    "home": "ホーム",
+    "nodes": "ノード",
+    "routing": "ルーティング",
+    "connections": "接続",
+    "more": "その他"
+  },
+  "primary": "メインナビゲーション",
+  "more": "その他のページ"
 }

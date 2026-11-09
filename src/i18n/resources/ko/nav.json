@@ -22,5 +22,14 @@
   "credentials": "인증 정보",
   "usageAudit": "사용량 및 감사",
   "administration": "관리",
-  "android": "Android"
+  "android": "Android",
+  "tabs": {
+    "home": "홈",
+    "nodes": "노드",
+    "routing": "라우팅",
+    "connections": "연결",
+    "more": "더 보기"
+  },
+  "primary": "기본 탐색",
+  "more": "다른 페이지"
 }

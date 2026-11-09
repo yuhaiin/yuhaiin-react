@@ -91,7 +91,7 @@ const normalizePath = (path: string) => {
 
 function SidebarSection({ title, children }: { title: string; children: React.ReactNode }) {
     return <section aria-label={title} className="flex flex-col gap-1 [&+section]:mt-4">
-        <h2 className="px-3.5 pb-1 text-[0.6875rem] font-medium tracking-wide text-sidebar-color">{title}</h2>
+        <h2 className="px-3.5 pb-1 text-xs font-medium tracking-wide text-sidebar-color">{title}</h2>
         {children}
     </section>;
 }

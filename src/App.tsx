@@ -9,7 +9,9 @@ import NavBarContainer from '@/docs/nav/NavBarContainer';
 import { useHashLocation } from '@/hooks/useHashLocation';
 import clsx from 'clsx';
 import { MotionConfig, motion, useReducedMotion } from 'motion/react';
-import { motionTiming } from '@/component/v2/styles';
+import { motionEase, motionTiming } from '@/component/v2/styles';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { useNavigationSnapshot } from '@/hooks/navigation';
 import { useEffect, useState } from 'react';
 import { initializationStatus } from '@/auth/api';
 import { establishLocalConnection, getSession } from '@/auth/session';
@@ -73,7 +75,11 @@ function AppContent() {
     }, [location])
 
     const reducedMotion = useReducedMotion();
-    const direction = useSmartAnimation(location, navigationOrder);
+    const { index: historyIndex } = useNavigationSnapshot();
+    const direction = useSmartAnimation(location, navigationOrder, historyIndex);
+    // Phones move pages sideways like an app stack; wide screens keep a quiet vertical settle.
+    const desktop = useMediaQuery('(min-width: 1024px)');
+    const offset = reducedMotion ? 0 : direction * (desktop ? 6 : 16);
     const isStandalone = location === '/login' || !session;
     const content = (
         <div className={clsx(
@@ -84,16 +90,17 @@ function AppContent() {
             <motion.div
                 data-ui-transition="page"
                 key={location}
-                initial={{ opacity: 0, y: reducedMotion ? 0 : direction * 6 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: desktop ? 0 : offset, y: desktop ? offset : 0 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
                 className={clsx(
                     'absolute inset-0 box-border h-full w-full',
                     'overflow-y-auto overflow-x-hidden',
                     !session && location === '/docs/webui' && 'p-4 sm:p-5',
-                    !isStandalone && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)+12px)] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
-                    !isStandalone && 'lg:pt-[20px] lg:pl-[292px]'
+                    !isStandalone && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)+12px)] px-[var(--page-gutter)] pb-[calc(20px+var(--bottom-nav-space))]',
+                    // Past --content-max the page centers in the area beside the sidebar instead of stretching.
+                    !isStandalone && 'lg:pt-[20px] lg:pl-[calc(292px+max(0px,(100%-312px-var(--content-max))/2))] lg:pr-[calc(20px+max(0px,(100%-312px-var(--content-max))/2))]'
                 )}
-                transition={{ duration: reducedMotion ? 0 : motionTiming.normal, ease: "easeOut" }}
+                transition={{ duration: reducedMotion ? 0 : motionTiming.slow, ease: motionEase.standard }}
             >
                 <Router hook={() => [location, navigate]}>
                     <Switch>
