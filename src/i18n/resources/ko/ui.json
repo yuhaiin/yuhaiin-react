@@ -1342,5 +1342,22 @@
     "nebulaConfig": "Nebula 클라이언트 설정(YAML)",
     "awgObfuscation": "AmneziaWG 3.1 난독화",
     "awgHelp": "H1~H4에는 숫자 또는 숫자 범위를 지정합니다. I1~I5는 상위 패킷 템플릿을 사용합니다. 피어끼리 같은 설정을 사용하세요."
-  }
+  },
+  "frontendUpdate": "프런트엔드 업데이트",
+  "frontendRequiresNewCore": "이 기능을 사용하려면 yuhaiin Core 업데이트가 필요합니다.",
+  "frontendUpdateDescription": "Core 또는 VPN을 재시작하지 않고 Web UI를 업데이트합니다.",
+  "frontendActiveVersion": "사용 중인 UI",
+  "frontendSource": "출처",
+  "frontendEmbeddedVersion": "내장 UI",
+  "frontendEmbeddedTakesPriority": "바이너리에 내장된 UI가 더 최신이거나 같으므로 내장 버전을 우선 사용합니다.",
+  "frontendAvailable": "호환되는 프런트엔드 업데이트가 있습니다.",
+  "frontendUnavailable": "업데이트 불가: {{reason}}",
+  "frontendUpToDate": "현재 UI가 같거나 더 최신입니다.",
+  "frontendUpdateRequiresReload": "Web UI만 다시 로드하며 프록시 연결은 유지됩니다.",
+  "frontendApply": "프런트엔드 설치",
+  "frontendApplyConfirmation": "이 UI를 설치하고 화면을 다시 로드할까요?",
+  "frontendRollback": "프런트엔드 되돌리기",
+  "frontendRollbackConfirmation": "이전 UI로 되돌리고 다시 로드할까요?",
+  "frontendUpdateComplete": "UI를 전환했습니다.",
+  "frontendExternalOverride": "EXTERNAL_WEB이 활성화되어 OTA를 사용할 수 없습니다."
 }
