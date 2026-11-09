@@ -9,6 +9,14 @@
   },
   "log": {
     "empty": "ログエントリを待機中…",
-    "noSearchResults": "検索に一致するログエントリはありません。"
+    "noSearchResults": "検索に一致するログエントリはありません。",
+    "details": "ログの詳細",
+    "level": "レベル",
+    "source": "発生元",
+    "message": "メッセージ",
+    "fields": "フィールド",
+    "raw": "元の行",
+    "copyLine": "行をコピー",
+    "copied": "コピーしました"
   }
 }

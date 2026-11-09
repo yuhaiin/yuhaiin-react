@@ -9,6 +9,14 @@
   },
   "log": {
     "empty": "Waiting for log entries...",
-    "noSearchResults": "No log entries match this search."
+    "noSearchResults": "No log entries match this search.",
+    "details": "Log details",
+    "level": "Level",
+    "source": "Source",
+    "message": "Message",
+    "fields": "Fields",
+    "raw": "Raw line",
+    "copyLine": "Copy line",
+    "copied": "Copied"
   }
 }
