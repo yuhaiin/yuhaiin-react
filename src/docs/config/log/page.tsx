@@ -1,15 +1,18 @@
 import { PageHeader } from '@/component/v2/page-header';
 import { usePageVisible } from "@/common/hooks";
-import { LogRingBuffer, levelStyles, parseLogLine, type LogEntry } from "./log-buffer";
+import { LogRingBuffer, levelStyles, parseLogLine, passesMinLevel, type LogEntry, type LogLevel } from "./log-buffer";
+import { exportAndroidLogs, getAndroidLogs, startDownload } from '@/api/android';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
 
 import { AuthenticatedEventSource } from "@/auth/event-stream";
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, MainContainer } from '@/component/v2/card'
+import { Select } from '@/component/v2/select';
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
-import { ArrowUp, Pause, Play, Radio, Trash2 } from 'lucide-react'
+import { ArrowUp, Download, Pause, Play, Radio, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
@@ -18,6 +21,13 @@ import { VList, type VListHandle } from "virtua"
 const LOG_RENDER_INTERVAL_MS = 250;
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
+type LogSource = 'core' | 'android'
+// Android logs are polled; after the first full read only the tail is needed to find new lines.
+const ANDROID_POLL_MS = 3000;
+const ANDROID_POLL_LINES = 1000;
+const MIN_LEVELS: readonly LogLevel[] = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
+const LEVEL_LABEL_KEY: Partial<Record<LogLevel, string>> = { TRACE: 'V', DEBUG: 'D', INFO: 'I', WARN: 'W', ERROR: 'E' };
+const errorText = (e: unknown) => e instanceof Error ? e.message : String(e);
 
 
 
@@ -68,6 +78,16 @@ export default function LogComponent() {
     const { t: uiT } = useTranslation('ui');
 
     const { t } = useTranslation("config");
+    const { t: androidT } = useTranslation("android");
+    const platform = useAndroidPlatform();
+    const [source, setSource] = useState<LogSource>('core');
+    // The Android source only exists inside the app's WebView.
+    const activeSource: LogSource = platform ? source : 'core';
+    const [minLevel, setMinLevel] = useState<LogLevel>('TRACE');
+    const [exporting, setExporting] = useState(false);
+    const [actionError, setActionError] = useState<string>();
+    // Newest logcat line already in the buffer; later polls append only what follows it.
+    const lastAndroidLineRef = useRef<string | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = useDeferredValue(searchTerm)
     const [retention, setRetention] = useState<LogRetention>(2000)
@@ -99,7 +119,7 @@ export default function LogComponent() {
     }, [publish]);
 
     useEffect(() => {
-        if (paused || !visible) return;
+        if (activeSource !== 'core' || paused || !visible) return;
         let reconnectTimer: number | undefined;
         let flushTimer: number | undefined;
         let stopped = false;
@@ -138,7 +158,42 @@ export default function LogComponent() {
             if (followLatestRef.current) publish();
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [logBuffer, publish, streamNonce, paused, visible, retention])
+    }, [logBuffer, publish, streamNonce, paused, visible, retention, activeSource])
+
+    useEffect(() => {
+        if (activeSource !== 'android' || paused || !visible) return;
+        let stopped = false;
+        let timer: number | undefined;
+        const controller = new AbortController();
+        const poll = async () => {
+            try {
+                const first = lastAndroidLineRef.current === undefined;
+                const text = await getAndroidLogs(first ? retention : ANDROID_POLL_LINES, controller.signal);
+                if (stopped) return;
+                const lines = text.split('\n').filter(Boolean);
+                const last = lastAndroidLineRef.current;
+                const at = last === undefined ? -1 : lines.lastIndexOf(last);
+                const fresh = at >= 0 ? lines.slice(at + 1) : lines;
+                if (fresh.length > 0) {
+                    lastAndroidLineRef.current = fresh[fresh.length - 1];
+                    logBuffer.append(fresh.slice(-retention).reverse());
+                    if (followLatestRef.current) publish();
+                    else setPendingCount(logBuffer.latestId - shownLatestIdRef.current);
+                }
+                setLogError(undefined);
+            } catch (error) {
+                if (stopped) return;
+                setLogError({ code: 500, msg: errorText(error) });
+            }
+            if (!stopped) timer = window.setTimeout(poll, ANDROID_POLL_MS);
+        };
+        void poll();
+        return () => {
+            stopped = true;
+            controller.abort();
+            if (timer !== undefined) window.clearTimeout(timer);
+        };
+    }, [activeSource, logBuffer, publish, paused, visible, retention])
 
     // Snapshot publication, not mutable buffer writes, controls virtual-list reconciliation.
     const version = localVersion
@@ -150,27 +205,30 @@ export default function LogComponent() {
 
         for (let i = 0; i < logBuffer.size; i++) {
             const entry = logBuffer.get(i)
-            if (!entry) continue
+            if (!entry || !passesMinLevel(entry, minLevel)) continue
             if (!search || (entry.lowerLine ??= entry.line.toLowerCase()).includes(search)) {
                 entries.push(entry)
             }
         }
 
         return entries
-    }, [logBuffer, version, deferredSearchTerm])
+    }, [logBuffer, version, deferredSearchTerm, minLevel])
+
+    // Any change of what is shown remounts the list so stale row sizes never survive.
+    const filterKey = `${deferredSearchTerm}\n${minLevel}`;
 
     // virtua caches item sizes by index and only reconciles the cache by the change in length: at the
     // start when `shift` is set, otherwise at the end. A flush both prepends new rows and trims old rows
     // from the end, so it is fed to the list in two commits (prepend with shift, then trim without) to
     // keep every measured size attached to its own row. Both commits happen before paint.
     const [display, setDisplay] = useState<{ items: LogEntry[]; shift: boolean; epoch: number; search: string }>(
-        () => ({ items: visibleLog, shift: false, epoch: 0, search: deferredSearchTerm }));
+        () => ({ items: visibleLog, shift: false, epoch: 0, search: filterKey }));
     useLayoutEffect(() => {
         // The second render is the point: virtua's cache only reconciles on a committed data change, so the
         // shifted prepend must commit before the unshifted trim. Deriving during render would merge them.
         // oxlint-disable-next-line react/set-state-in-effect
         setDisplay(prev => {
-            if (prev.search !== deferredSearchTerm) return { items: visibleLog, shift: false, epoch: prev.epoch + 1, search: deferredSearchTerm };
+            if (prev.search !== filterKey) return { items: visibleLog, shift: false, epoch: prev.epoch + 1, search: filterKey };
             if (prev.items === visibleLog) return prev.shift ? { ...prev, shift: false } : prev;
             const head = prev.items[0];
             const prepended = head ? visibleLog.findIndex(entry => entry.id === head.id) : -1;
@@ -179,7 +237,7 @@ export default function LogComponent() {
             if (prepended < 0 && head && visibleLog.length > 0) return { ...prev, items: visibleLog, shift: false, epoch: prev.epoch + 1 };
             return { ...prev, items: visibleLog, shift: false };
         });
-    }, [visibleLog, display, deferredSearchTerm]);
+    }, [visibleLog, display, filterKey]);
     const latestLogId = display.items[0]?.id;
 
     useEffect(() => {
@@ -197,11 +255,36 @@ export default function LogComponent() {
         if (!LOG_RETENTION_OPTIONS.includes(next)) return
         setRetention(next)
         logBuffer.setCapacity(next)
+        // A larger window must be read again from logcat, which has no cursor to resume from.
+        if (activeSource === 'android') { logBuffer.clear(); lastAndroidLineRef.current = undefined }
         publish()
-    }, [logBuffer, publish])
+    }, [logBuffer, publish, activeSource])
+
+    const changeSource = useCallback((value: string) => {
+        if ((value !== 'core' && value !== 'android') || value === activeSource) return
+        setSource(value)
+        setPaused(false)
+        setLogError(undefined)
+        setActionError(undefined)
+        logBuffer.clear()
+        lastAndroidLineRef.current = undefined
+        followLatestRef.current = true
+        publish()
+    }, [logBuffer, publish, activeSource])
+
+    const downloadAndroidLogs = useCallback(async () => {
+        // Logs can contain destinations, addresses and credentials.
+        if (!window.confirm(androidT('logs.exportWarning'))) return
+        setExporting(true)
+        setActionError(undefined)
+        try { startDownload(await exportAndroidLogs()) }
+        catch (error) { setActionError(errorText(error)) }
+        finally { setExporting(false) }
+    }, [androidT])
 
     const clearLogs = useCallback(() => {
         logBuffer.clear()
+        lastAndroidLineRef.current = undefined
         followLatestRef.current = true
         publish()
     }, [logBuffer, publish])
@@ -234,6 +317,24 @@ export default function LogComponent() {
                             </div>
                         </div>
                     </div>
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            {platform && (
+                                <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={activeSource} onValueChange={(v) => v && changeSource(v)}>
+                                    <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-2.5" value="core">{androidT("logs.sourceCore")}</ToggleItem>
+                                    <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-2.5" value="android">{androidT("logs.sourceAndroid")}</ToggleItem>
+                                </ToggleGroup>
+                            )}
+                            <Select size="sm" triggerClassName="!w-auto min-w-24" ariaLabel={androidT("logs.level")} value={minLevel} onValueChange={(v) => { followLatestRef.current = true; publish(); setMinLevel(v as LogLevel); }}
+                                items={MIN_LEVELS.map(value => ({ value, label: androidT(`logs.levels.${LEVEL_LABEL_KEY[value]}`) }))} />
+                        </div>
+                        {activeSource === 'android' && (
+                            <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" loading={exporting} aria-label={androidT("logs.export")} title={androidT("logs.export")} onClick={downloadAndroidLogs}>
+                                <Download size={16} aria-hidden="true" />
+                            </Button>
+                        )}
+                    </div>
+                    {actionError && <p role="alert" className="mt-2 text-xs text-ui-danger">{actionError}</p>}
                     {(paused || !visible) && <p role="status" className="mt-2 text-xs text-ui-muted">{uiT("collectionPausesInTheBackgroundOrWhenPausedEventsDuringThatTimeAreNotCollectedRetainedLogsStayAvailable")}</p>}
                     {logError && (
                         <div className="mt-2 rounded-ui-lg border border-ui-danger/30 bg-ui-danger/10 px-3 py-2 text-xs text-ui-danger">

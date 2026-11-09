@@ -128,9 +128,6 @@
     "close": "Close"
   },
   "logs": {
-    "title": "Logs",
-    "description": "Android logs of this app, including the core.",
-    "filter": "Filter",
     "level": "Level",
     "levels": {
       "V": "Verbose",
@@ -139,15 +136,10 @@
       "W": "Warning",
       "E": "Error"
     },
-    "lines": "Lines",
-    "lastLines_one": "Last {{count}} line",
-    "lastLines_other": "Last {{count}} lines",
-    "follow": "Follow",
-    "pause": "Pause",
-    "refresh": "Refresh",
     "export": "Download",
     "exportWarning": "Logs may contain destination domains, IP addresses, app identifiers and credentials. Review and redact them before sharing. Download?",
-    "empty": "No log lines."
+    "sourceCore": "Core",
+    "sourceAndroid": "Android"
   },
   "backup": {
     "title": "Backup & restore",

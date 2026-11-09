@@ -128,9 +128,6 @@
     "close": "닫기"
   },
   "logs": {
-    "title": "로그",
-    "description": "코어를 포함한 이 앱의 Android 로그입니다.",
-    "filter": "필터",
     "level": "수준",
     "levels": {
       "V": "상세",
@@ -139,15 +136,10 @@
       "W": "경고",
       "E": "오류"
     },
-    "lines": "줄 수",
-    "lastLines_one": "최근 {{count}}줄",
-    "lastLines_other": "최근 {{count}}줄",
-    "follow": "따라가기",
-    "pause": "일시 중지",
-    "refresh": "새로 고침",
     "export": "다운로드",
     "exportWarning": "로그에는 대상 도메인, IP 주소, 앱 식별자, 자격 증명이 포함될 수 있습니다. 공유하기 전에 확인하고 가리세요. 다운로드할까요?",
-    "empty": "로그가 없습니다."
+    "sourceCore": "코어",
+    "sourceAndroid": "Android"
   },
   "backup": {
     "title": "백업 및 복원",

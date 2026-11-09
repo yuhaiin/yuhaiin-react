@@ -128,9 +128,6 @@
     "close": "閉じる"
   },
   "logs": {
-    "title": "ログ",
-    "description": "コアを含む、このアプリの Android ログです。",
-    "filter": "フィルター",
     "level": "レベル",
     "levels": {
       "V": "詳細",
@@ -139,15 +136,10 @@
       "W": "警告",
       "E": "エラー"
     },
-    "lines": "行数",
-    "lastLines_one": "直近 {{count}} 行",
-    "lastLines_other": "直近 {{count}} 行",
-    "follow": "追従",
-    "pause": "一時停止",
-    "refresh": "更新",
     "export": "ダウンロード",
     "exportWarning": "ログには接続先ドメイン、IP アドレス、アプリ識別子、認証情報が含まれる場合があります。共有前に確認・伏せ字にしてください。ダウンロードしますか？",
-    "empty": "ログはありません。"
+    "sourceCore": "コア",
+    "sourceAndroid": "Android"
   },
   "backup": {
     "title": "バックアップと復元",

@@ -43,7 +43,6 @@ export const navigationSections: NavigationSection[] = [
         { label: nav('android'), icon: Smartphone, platform: 'android', items: [
             { path: '/docs/android', label: android('vpnSettings'), icon: ShieldCheck },
             { path: '/docs/android/routes', label: android('routes.title'), icon: Route },
-            { path: '/docs/android/logs', label: android('logs.title'), icon: ScrollText },
             { path: '/docs/android/backup', label: android('backup.title'), icon: DatabaseBackup },
             { path: '/docs/android/update', label: android('update.title'), icon: Download },
             { path: '/docs/android/privacy', label: android('privacy.title'), icon: Lock },

@@ -1,24 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { previewAndroidBackup, startDownload } from '@/api/android';
-import { filterLogLines } from './logs/page';
 import { routeLines } from './routes/page';
 import { updateBusy } from './update/page';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 afterEach(() => vi.unstubAllGlobals());
-
-const log = [
-    '11-08 19:00:00.000  100  101 D yuhaiin: debug line',
-    '11-08 19:00:01.000  100  101 W yuhaiin: warn about example.com',
-    '11-08 19:00:02.000  100  101 E yuhaiin: error line',
-    '--------- beginning of main',
-].join('\n');
-
-it('filters logcat lines by level and text', () => {
-    expect(filterLogLines(log, '', 'V')).toHaveLength(4);
-    expect(filterLogLines(log, '', 'W')).toEqual([expect.stringContaining('warn'), expect.stringContaining('error'), '--------- beginning of main']);
-    expect(filterLogLines(log, 'EXAMPLE', 'V')).toEqual([expect.stringContaining('example.com')]);
-});
 
 it('counts route lines ignoring blanks', () => {
     expect(routeLines('10.0.0.0/8\n\n  \n1.1.1.1\n')).toBe(2);
