@@ -1342,5 +1342,22 @@
     "nebulaConfig": "Nebula client configuration (YAML)",
     "awgObfuscation": "AmneziaWG 3.1 obfuscation",
     "awgHelp": "H1–H4 accept a number or numeric range. I1–I5 use upstream packet templates. Configure peers consistently."
-  }
+  },
+  "frontendUpdate": "Frontend updates",
+  "frontendRequiresNewCore": "Update the yuhaiin Core to enable frontend updates or use this feature.",
+  "frontendUpdateDescription": "Update the web interface without restarting the Core or VPN.",
+  "frontendActiveVersion": "Active UI",
+  "frontendSource": "Source",
+  "frontendEmbeddedVersion": "Bundled UI",
+  "frontendEmbeddedTakesPriority": "The binary contains a newer or equally new UI, so the bundled version takes priority.",
+  "frontendAvailable": "A compatible frontend update is available.",
+  "frontendUnavailable": "Update is unavailable: {{reason}}",
+  "frontendUpToDate": "Already using an equally new or newer frontend.",
+  "frontendUpdateRequiresReload": "Only the web interface will reload; proxy connections remain active.",
+  "frontendApply": "Install frontend",
+  "frontendApplyConfirmation": "Install this frontend bundle and reload the web interface?",
+  "frontendRollback": "Rollback frontend",
+  "frontendRollbackConfirmation": "Restore the previous frontend and reload?",
+  "frontendUpdateComplete": "Frontend switched successfully.",
+  "frontendExternalOverride": "EXTERNAL_WEB is active, so managed OTA is disabled."
 }
