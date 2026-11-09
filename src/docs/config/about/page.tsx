@@ -1,4 +1,5 @@
 import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
+import { FrontendUpdatePanel } from './frontend-update';
 import { createID } from '@/common/id';
 import { UpdateCompatibilityDetails } from './update-compatibility';
 import { PageHeader } from '@/component/v2/page-header';
@@ -374,6 +375,7 @@ export default function About() {
                 </CardBody>
             </Card>
 
+            <FrontendUpdatePanel />
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-ui-muted">
                     {uiT("copy")} {COPYRIGHT_YEAR} {uiT("yuhaiinProjectDistributedUnderMitLicense")}</small>

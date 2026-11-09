@@ -1342,5 +1342,22 @@
     "nebulaConfig": "Nebula クライアント設定（YAML）",
     "awgObfuscation": "AmneziaWG 3.1 の難読化",
     "awgHelp": "H1〜H4 には数値または数値の範囲を指定します。I1〜I5 は上流のパケットテンプレートを使います。ピア同士で同じ設定にしてください。"
-  }
+  },
+  "frontendUpdate": "フロントエンドの更新",
+  "frontendRequiresNewCore": "この機能には新しい yuhaiin Core が必要です。",
+  "frontendUpdateDescription": "Core や VPN を再起動せずに Web UI を更新します。",
+  "frontendActiveVersion": "使用中の UI",
+  "frontendSource": "取得元",
+  "frontendEmbeddedVersion": "内蔵 UI",
+  "frontendEmbeddedTakesPriority": "バイナリに内蔵された UI の方が新しいか同じため、内蔵 UI を優先しています。",
+  "frontendAvailable": "互換性のあるフロントエンド更新があります。",
+  "frontendUnavailable": "更新不可: {{reason}}",
+  "frontendUpToDate": "すでに同じかそれ以上に新しい UI を使用しています。",
+  "frontendUpdateRequiresReload": "Web UI のみ再読み込みします。プロキシ接続は継続します。",
+  "frontendApply": "フロントエンドを更新",
+  "frontendApplyConfirmation": "新しい UI をインストールして画面を再読み込みしますか？",
+  "frontendRollback": "フロントエンドを戻す",
+  "frontendRollbackConfirmation": "以前の UI に戻して再読み込みしますか？",
+  "frontendUpdateComplete": "UI を切り替えました。",
+  "frontendExternalOverride": "EXTERNAL_WEB が有効なため、OTA は無効です。"
 }
