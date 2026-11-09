@@ -401,6 +401,11 @@ details:not([open]) > summary { margin-block-end: 0; }
     }
 }
 
+/* While the phone App Bar is scrolled away, page-level sticky bars move up with it. */
+@media (max-width: 1023.98px) {
+    html[data-app-bar="collapsed"] { --app-bar-collapse: var(--mobile-app-bar-height); }
+}
+
 /* Phone editors keep their primary actions on screen. The page scroller has a
    20px bottom padding, which the negative offset lets the bar cover. */
 @media (max-width: 767.98px) {
