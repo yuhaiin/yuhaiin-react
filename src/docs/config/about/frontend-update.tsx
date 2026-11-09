@@ -8,6 +8,16 @@ import { Button } from '@/component/v2/button';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { useTranslation } from 'react-i18next';
 
+function updateErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error !== null && typeof error === 'object') {
+    const response = error as { msg?: unknown; code?: unknown };
+    if (typeof response.msg === 'string' && response.msg) return response.msg;
+    if (typeof response.code === 'number') return `HTTP ${response.code}`;
+  }
+  return String(error);
+}
+
 export function FrontendUpdatePanel() {
   const { t } = useTranslation('ui');
   const notice = useContext(GlobalToastContext);
@@ -27,7 +37,7 @@ export function FrontendUpdatePanel() {
       notice.Info(t('frontendUpdateComplete'));
       if (refresh) window.location.reload();
     } catch (error) {
-      notice.Error(error instanceof Error ? error.message : String(error));
+      notice.Error(updateErrorMessage(error));
     } finally {
       setBusy(false);
     }
