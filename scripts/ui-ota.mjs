@@ -2,13 +2,22 @@
 // The immutable build number is what makes upgraded embedded assets win
 // over previously downloaded bundles.
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const mode = process.argv[2];
 if (mode === 'prepare') {
   const sha = (process.env.GITHUB_SHA || 'local').slice(0, 12).replace(/[^a-zA-Z0-9]/g, '');
-  const buildNumber = Number(process.env.UI_BUILD_NUMBER || Math.floor(Date.now() / 1000));
-  if (!Number.isSafeInteger(buildNumber) || buildNumber <= 0) throw new Error('Invalid UI_BUILD_NUMBER');
+  // First-parent history grows with each mainline commit, but never with a
+  // CI rerun. Use a distinct high range so previously published timestamp
+  // numbers and Core's legacy pseudo-version timestamps remain comparable.
+  // CI must checkout full history (fetch-depth: 0).
+  const firstParentCount = Number(execFileSync('git', ['rev-list', '--first-parent', '--count', 'HEAD'], {
+    encoding: 'utf8',
+  }).trim());
+  const buildNumber = 1_000_000_000_000 + firstParentCount;
+  if (!Number.isSafeInteger(firstParentCount) || firstParentCount <= 0 ||
+      !Number.isSafeInteger(buildNumber)) throw new Error('Invalid mainline history for UI build number');
   const build = {
     version: `ui-${buildNumber}-${sha}`,
     buildNumber,
