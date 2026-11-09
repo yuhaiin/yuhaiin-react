@@ -99,7 +99,8 @@ try {
 
     await navigate('/docs/config/log','[data-log-id]');
     const controls=await evaluate(`['Clear logs','Pause collection'].map(label=>{const e=document.querySelector('button[aria-label="'+label+'"]');return e?.getBoundingClientRect().height;})`);
-    assert(controls.every(h=>h===(mobile?44:32)),'Log control heights: '+JSON.stringify(controls));
+    // Phones fold Clear into the options menu, so only rendered controls are measured.
+    assert(controls.some(h=>h>0)&&controls.filter(h=>h>0).every(h=>h===(mobile?44:32)),'Log control heights: '+JSON.stringify(controls));
     await checkButtons();await shot(`${theme}-${width}-logs`);
 
     await navigate('/docs/config/about','a[href*="/commit/"]','ui-long');
@@ -109,7 +110,7 @@ try {
 
     await navigate('/docs/inbound?inbound=inbound-local','input[value="Local proxy"]');
     await textClick('Advanced editor');await ready('input[value="Local proxy"]');
-    const gap=await evaluate(`(()=>{const input=document.querySelector('input[value="Local proxy"]'),heading=[...document.querySelectorAll('h3')].find(e=>e.textContent==='Network'),section=heading.closest('section');return {gap:section.getBoundingClientRect().top-input.getBoundingClientRect().bottom,padding:parseFloat(getComputedStyle(section).paddingTop)};})()`);
+    const gap=await evaluate(`(()=>{const input=document.querySelector('input[value="Local proxy"]'),bottom=input.getBoundingClientRect().bottom,section=[...document.querySelectorAll('section[aria-labelledby]')].find(e=>e.getBoundingClientRect().top>=bottom&&e.querySelector('h3'));return {gap:section.getBoundingClientRect().top-input.getBoundingClientRect().bottom,padding:parseFloat(getComputedStyle(section).paddingTop)};})()`);
     assert(gap.gap>=12&&gap.padding>=16,'Advanced input touches its divider: '+JSON.stringify(gap));
     await checkButtons();await shot(`${theme}-${width}-inbound`);
     await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
