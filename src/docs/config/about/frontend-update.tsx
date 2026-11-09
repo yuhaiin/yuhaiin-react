@@ -18,11 +18,11 @@ export function FrontendUpdatePanel() {
   const [check, setCheck] = useState<FrontendCheck>();
   const [busy, setBusy] = useState(false);
 
-  async function perform(task: () => Promise<unknown>, refresh = false) {
+  async function perform(task: () => Promise<unknown>, refresh = false, clearCheck = true) {
     setBusy(true);
     try {
       await task();
-      setCheck(undefined);
+      if (clearCheck) setCheck(undefined);
       await mutate();
       notice.Info(t('frontendUpdateComplete'));
       if (refresh) window.location.reload();
@@ -63,7 +63,7 @@ export function FrontendUpdatePanel() {
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="default" permission="update:manage"
           disabled={busy || !canUpdate || !status || status.source === 'external'}
-          onClick={() => void perform(async () => setCheck(await frontendCheck()))}>
+          onClick={() => void perform(async () => setCheck(await frontendCheck()), false, false)}>
           <RefreshCw size={16} className="mr-2" />{t('checkForUpdates')}
         </Button>
         {check?.available && <Button variant="default" permission="update:manage"
