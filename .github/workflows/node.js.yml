@@ -92,7 +92,6 @@ jobs:
           cp -rf dist/* publish/
 
       - name: Package frontend OTA release
-        if: github.event_name != 'pull_request'
         run: |
           tar -czf frontend.tar.gz -C dist .
           node scripts/ui-ota.mjs release
