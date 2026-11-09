@@ -99,7 +99,9 @@
     "missing_other": "선택한 앱 {{count}}개가 설치되어 있지 않습니다",
     "removeMissing": "삭제",
     "empty": "일치하는 앱이 없습니다",
-    "missing_one": "선택한 앱 {{count}}개가 설치되어 있지 않습니다"
+    "missing_one": "선택한 앱 {{count}}개가 설치되어 있지 않습니다",
+    "loading": "설치된 앱을 불러오는 중…",
+    "waitingConsent": "앱에서 선택하기를 기다리는 중…"
   },
   "vpnSettings": "VPN 및 설정",
   "routes": {
