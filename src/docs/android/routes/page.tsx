@@ -1,7 +1,7 @@
 import { createRouteProfile, deleteRouteProfile, getRouteProfiles, saveRouteProfile, type RouteProfile } from '@/api/android';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardHeader } from '@/component/v2/card';
+import { Card, CardBody } from '@/component/v2/card';
 import { Input, Textarea } from '@/component/v2/input';
 import Loading from '@/component/v2/loading';
 import { useState, type FC } from 'react';
@@ -28,7 +28,7 @@ const RouteProfiles: FC = () => {
         catch (e) { setMessage(errorText(e)); }
     };
     return <>
-        <Card>
+        <Card noMargin>
             <CardBody className="flex flex-wrap items-center gap-3">
                 <Input className="min-w-0 flex-1" placeholder={t('routes.newName')} aria-label={t('routes.newName')} value={name} onChange={e => setName(e.target.value)} />
                 <Button size="sm" variant="primary" disabled={!name.trim()} onClick={create}>{t('routes.create')}</Button>
@@ -60,18 +60,18 @@ const RouteEditor: FC<{ profile: RouteProfile; onChanged: () => void }> = ({ pro
         try { await deleteRouteProfile(profile.name); onChanged(); }
         catch (e) { setStatus({ error: errorText(e) }); }
     };
-    return <Card>
-        <CardHeader className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-                <span className="truncate font-medium text-ui-heading">{t(`routes.preset.${profile.name}`, { defaultValue: profile.name })}</span>
-                {profile.active && <Badge variant="success" pill>{t('routes.active')}</Badge>}
-                {profile.preset && <Badge variant="secondary" pill>{t('routes.builtIn')}</Badge>}
+    return <Card noMargin>
+        <div className={`flex items-center justify-between gap-3 px-4 py-3.5${open ? ' border-b border-ui-border' : ''}`}>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <span className="break-words font-medium leading-snug text-ui-heading">{t(`routes.preset.${profile.name}`, { defaultValue: profile.name })}</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    {profile.active && <Badge variant="success" pill>{t('routes.active')}</Badge>}
+                    {profile.preset && <Badge variant="secondary" pill>{t('routes.builtIn')}</Badge>}
+                    <span className="text-xs tabular-nums text-ui-muted">{t('routes.count', { count: routeLines(draft) })}</span>
+                </div>
             </div>
-            <div className="flex items-center gap-2">
-                <span className="text-xs text-ui-muted">{t('routes.count', { count: routeLines(draft) })}</span>
-                <Button size="sm" variant="outline-secondary" aria-expanded={open} onClick={() => setOpen(!open)}>{t(open ? 'routes.close' : 'routes.edit')}</Button>
-            </div>
-        </CardHeader>
+            <Button size="sm" variant="outline-secondary" className="shrink-0 whitespace-nowrap" aria-expanded={open} onClick={() => setOpen(!open)}>{t(open ? 'routes.close' : 'routes.edit')}</Button>
+        </div>
         {open && <CardBody className="flex flex-col gap-2">
             <Textarea rows={6} spellCheck={false} className="font-mono text-xs" aria-label={profile.name} value={draft}
                 placeholder={t('routes.placeholder')} onChange={e => { setDraft(e.target.value); setStatus({}); }} />
