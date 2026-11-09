@@ -58,16 +58,16 @@ const LogLine: FC<{ entry: LogEntry; onOpen: (entry: LogEntry) => void }> = memo
             <div className={style.bar} />
             <div className="min-w-0 px-3 py-2 font-mono text-[12.5px] leading-5 selection:bg-amber-300/30">
                 <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-                    <span className={clsx("inline-flex h-5 min-w-[52px] items-center justify-center rounded px-1.5 text-[10px] font-semibold leading-none tracking-normal ring-1", style.badge)}>
+                    <span className={clsx("inline-flex h-5 min-w-[52px] items-center justify-center rounded px-1.5 text-xs font-semibold leading-none tracking-normal ring-1", style.badge)}>
                         {parsed.level}
                     </span>
                     {parsed.displayTime && (
-                        <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
+                        <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
                             {parsed.displayTime}
                         </span>
                     )}
                     {parsed.source && (
-                        <span className="min-w-0 truncate text-[11px] text-slate-400 dark:text-slate-500">
+                        <span className="min-w-0 truncate text-xs text-slate-400 dark:text-slate-500">
                             {parsed.source}
                         </span>
                     )}
@@ -320,8 +320,8 @@ export default function LogComponent() {
                 description={uiT("realTimeSystemEvents")}
                 className="mb-3 shrink-0"
                 actions={<div className="flex shrink-0 items-center gap-1.5">
-                    {activeSource === 'android' && <Badge variant="secondary" pill className="text-[0.7rem] px-2 py-1">{androidT("logs.sourceAndroid")}</Badge>}
-                    <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
+                    {activeSource === 'android' && <Badge variant="secondary" pill className="text-xs px-2 py-1">{androidT("logs.sourceAndroid")}</Badge>}
+                    <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-xs px-2 py-1">
                         <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
                     </Badge>
                 </div>}

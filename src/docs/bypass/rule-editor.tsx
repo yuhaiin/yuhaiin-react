@@ -94,7 +94,7 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             {actionError && <p role="alert" className="mb-4 text-sm text-ui-danger">{actionError}</p>}
             {!unavailable && !deleted && <RuleDraftForm value={draft} onChange={setDraft} options={options} />}
         </fieldset>
-        <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">
+        <footer className="ui-sticky-actions mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">
             {item && !creating ? <EditorDeleteButton permission="routes:write" label={uiT('deleteRule')} className="border-transparent" disabled={busy || deleted || unavailable} onClick={remove} /> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
             <div className={editorActionsClass}>
                 {!creating && dirty && <Button disabled={busy} onClick={reset}>{t('discardChanges')}</Button>}

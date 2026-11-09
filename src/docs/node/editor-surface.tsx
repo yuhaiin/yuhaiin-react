@@ -20,7 +20,7 @@ export function NodeEditorSurface({ presentation, show, title, dirty, onClose, c
                 {dirty && <span role="status" className="text-xs text-ui-warning">{t('unsavedChanges')}</span>}
             </header>
             <div className="min-w-0">{children}</div>
-            <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
+            <footer className="ui-sticky-actions mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
         </section>;
     }
     return <Modal open={show} onOpenChange={open => !open && onClose()}>

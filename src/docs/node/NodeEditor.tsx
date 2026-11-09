@@ -53,18 +53,18 @@ const NodeEditor: FC<{
     return (
     <EditingNodeID.Provider value={value.id}><SecretValues key={value.id} value={value} load={value.id ? signal => getNodeSecrets(value.id, signal) : undefined}><div>
         {editable && (
-            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mb-4 grid grid-cols-1 gap-4 @xl:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingInputVertical label={uiT("groupLabel")} value={value.group} reminds={groups.map(group => ({ label: group, value: group }))} showAllOnFocus onChange={(group) => onChange({ group })} disabled={!editable} />
-                <div className="md:col-span-2">
+                <div className="@xl:col-span-2">
                     <SwitchCard label={uiT("enabled")} checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
-                <details className="md:col-span-2 rounded-ui-md border border-ui-border/70 px-4 py-3 [--field-margin:0px]"><summary className="cursor-pointer text-sm font-medium">{t("nodeAdvancedSettings")}</summary>
+                <details className="@xl:col-span-2 rounded-ui-md border border-ui-border/70 px-4 py-3 [--field-margin:0px]"><summary className="cursor-pointer text-sm font-medium">{t("nodeAdvancedSettings")}</summary>
                 <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs text-ui-muted">
                     <dt>{uiT("nodeProtocol.identity")}</dt><dd className="break-all font-mono">{value.id}</dd>
                     {value.origin && <><dt>{uiT("nodeProtocol.origin")}</dt><dd className="break-all">{value.origin}</dd></>}
                 </dl>
-                <div className="mt-4 grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-x-4 gap-y-4 @xl:grid-cols-2">
                     <div className="grid content-start gap-1.5">
                         <SettingSelectVertical
                             label={uiT("nodeIPVersion")}
@@ -89,7 +89,7 @@ const NodeEditor: FC<{
                         />
                         <p className="text-xs text-ui-muted">{uiT("nodeLatencyURLHelp")}</p>
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="@xl:col-span-2">
                         <SwitchCard
                             label={uiT("nodeLatencyInsecureSkipVerify")}
                             description={uiT("nodeLatencyInsecureSkipVerifyHelp")}
@@ -332,12 +332,12 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "socks5":
             return (
                 <div className="grid gap-2">
-                    {!protocol.credentialRef && <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+                    {!protocol.credentialRef && <div className="grid grid-cols-1 gap-x-4 @xl:grid-cols-2">
                         <StringField label={uiT("username")} value={protocol.socks5.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />
                         <StringField secret label={uiT("password")} value={protocol.socks5.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
                     </div>}
                     <MoreOptions active={!!protocol.socks5.hostname || numberValue(protocol.socks5.override_port) > 0}>
-                        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-x-4 @xl:grid-cols-2">
                             <StringField label={uiT("hostname")} value={protocol.socks5.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
                             <NumberField label={uiT("overridePort")} value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
                         </div>
@@ -347,7 +347,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "ssh":
             return (
                 <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                         {!protocol.credentialRef && <StringField label={uiT("username")} value={protocol.ssh.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />}
                         {!protocol.credentialRef && <SettingInputVertical secret label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                         <SettingInputVertical label={uiT("sshHostKey")} value={protocol.ssh.host_key ?? ""} placeholder="SHA256:... / ssh-ed25519 AAAA..." disabled={!editable} onChange={(host_key) => patch(protocol, { host_key })} />
@@ -363,21 +363,21 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "http":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     {!protocol.credentialRef && <StringField label={uiT("username")} value={protocol.http.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />}
                     {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.http.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                 </div>
             );
         case "shadowsocks":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     <StringField label={uiT("method")} value={protocol.shadowsocks.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
                     {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.shadowsocks.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                 </div>
             );
         case "shadowsocksr":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     <StringField label={uiT("server")} value={protocol.shadowsocksr.server} disabled={!editable} onChange={(server) => patch(protocol, { server })} />
                     <StringField label={uiT("port")} value={protocol.shadowsocksr.port} disabled={!editable} onChange={(port) => patch(protocol, { port })} />
                     <StringField label={uiT("method")} value={protocol.shadowsocksr.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
@@ -390,7 +390,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "vmess":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
                     <StringField secret label={uiT("uuid")} value={protocol.vmess.id} disabled={!editable} onChange={(id) => patch(protocol, { id })} />
                     <StringField label={uiT("alterId")} value={protocol.vmess.aid} disabled={!editable} onChange={(aid) => patch(protocol, { aid })} />
                     <StringField label={uiT("nodeForm.security")} value={protocol.vmess.security} disabled={!editable} onChange={(security) => patch(protocol, { security })} />
@@ -400,7 +400,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <StringField secret label={uiT("uuid")} value={protocol.vless.uuid} disabled={!editable} onChange={(uuid) => patch(protocol, { uuid })} />;
         case "trojan":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.trojan.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <StringField label={uiT("nodeForm.peer")} value={protocol.trojan.peer} disabled={!editable} onChange={(peer) => patch(protocol, { peer })} />
                 </div>
@@ -415,7 +415,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "websocket":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     <StringField label={uiT("host")} value={protocol.websocket.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
                     <StringField label={uiT("path")} value={protocol.websocket.path} disabled={!editable} onChange={(path) => patch(protocol, { path })} />
                 </div>
@@ -423,7 +423,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "hysteria2":
             return (
                 <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                         <StringField label={uiT("host")} value={protocol.hysteria2.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
                         {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable} onChange={(auth) => patch(protocol, { auth })} />}
                         <NumberField label={uiT("uploadBandwidthBytes")} value={protocol.hysteria2.upload_bps} disabled={!editable} onChange={(upload_bps) => patch(protocol, { upload_bps })} />
@@ -436,7 +436,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <p className="text-sm text-ui-muted">{uiT(protocol.hysteria2.happy_eyeballs ? "hysteria2HappyEyeballsHelp" : "hysteria2AddressHopHelp")}</p>
                     {!protocol.hysteria2.happy_eyeballs && (
                         <>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
                         <SettingInputVertical label={uiT("hopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { hop_interval_seconds: Number(value) })} />
                         <SettingInputVertical label={uiT("minHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.min_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { min_hop_interval_seconds: Number(value) })} />
                         <SettingInputVertical label={uiT("maxHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.max_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { max_hop_interval_seconds: Number(value) })} />
@@ -461,7 +461,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "obfs_http":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     <StringField label={uiT("host")} value={protocol.obfs_http.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
                     <StringField label={uiT("port")} value={protocol.obfs_http.port} disabled={!editable} onChange={(port) => patch(protocol, { port })} />
                 </div>
@@ -469,7 +469,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "reality":
             return (
                 <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                         <StringField label={uiT("serverName")} value={protocol.reality.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
                         <StringField label={uiT("publicKey")} value={protocol.reality.public_key} disabled={!editable} onChange={(public_key) => patch(protocol, { public_key })} />
                         <StringField label={uiT("mldsa65Verify")} value={protocol.reality.mldsa65_verify} disabled={!editable} onChange={(mldsa65_verify) => patch(protocol, { mldsa65_verify })} />
@@ -512,7 +512,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <SoftEtherForm config={protocol.softether} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     <StringField label={uiT("hostname")} value={protocol.tailscale.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
                     <StringField secret label={uiT("authKey")} value={protocol.tailscale.auth_key} disabled={!editable} onChange={(auth_key) => patch(protocol, { auth_key })} />
                     <StringField label={uiT("controlUrl")} value={protocol.tailscale.control_url} disabled={!editable} onChange={(control_url) => patch(protocol, { control_url })} />
@@ -530,7 +530,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "aead":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                     {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.aead.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <StringField label={uiT("cryptoMethod")} value={protocol.aead.crypto_method} disabled={!editable} onChange={(crypto_method) => patch(protocol, { crypto_method })} />
                 </div>
@@ -557,14 +557,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "masque":
             return (
                 <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                         <StringField label={uiT("nodeForm.endpointHostPort")} value={protocol.masque.endpoint} disabled={!editable} onChange={(endpoint) => patch(protocol, { endpoint })} />
                         <StringField label={uiT("nodeForm.serverNameSni")} value={protocol.masque.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
                     </div>
                     <StringField label={uiT("nodeForm.connectIpUrl")} value={protocol.masque.url} disabled={!editable} onChange={(url) => patch(protocol, { url })} />
                     {!protocol.credentialRef && <StringField secret label={uiT("nodeForm.bearerToken")} value={protocol.masque.bearer_token} disabled={!editable} onChange={(bearer_token) => patch(protocol, { bearer_token })} />}
                     <InputList title={uiT("localAddresses")} data={protocol.masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                         <NumberField label="MTU" value={protocol.masque.mtu} disabled={!editable} onChange={(mtu) => patch(protocol, { mtu })} />
                         <SettingSelectVertical label={uiT("transport")} value={protocol.masque.transport || "h3"} disabled={!editable}
                             values={[["HTTP/3 (QUIC / BBR)", "h3"], ["HTTP/2 (TLS / TCP)", "h2"]]}

@@ -130,8 +130,12 @@ function HomePage() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <PageHeader title={t('nav:home')} className="mb-4" actions={activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>} />
-            <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
+            <PageHeader title={t('nav:home')} className="mb-3 lg:mb-4" actions={activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>} />
+            {/* One vertical rhythm: the stack's gap spaces every block, so no block carries its own margin. */}
+            <MainContainer className="flex flex-col gap-3 sm:gap-4">
+            {/* On Android the VPN state and its switch come first. */}
+            {android && <AndroidVpnCard compact />}
+            <div className="grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
                 <EndpointCard
                     label={t("tcpEndpoint")}
                     node={now?.tcp}
@@ -146,10 +150,8 @@ function HomePage() {
                 />
             </div>
 
-            <div className="mb-3"><FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" /></div>
+            <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" />
 
-            <MainContainer>
-                {android && <AndroidVpnCard compact />}
                 <SetupCard />
                 <Card className="min-h-[240px] sm:min-h-[300px]" density="compact">
                     <CardHeader className="flex-col items-stretch gap-3 !border-b-0 px-4 pb-1 pt-3.5 sm:flex-row sm:items-center">
@@ -187,7 +189,7 @@ function HomePage() {
                     </CardBody>
                 </Card>
 
-                <div className="my-5"><Activates showFooter={false} /></div>
+                <div className="py-1"><Activates showFooter={false} /></div>
                 <Card density="compact">
                     <CardHeader className="px-4 py-3.5">
                         <IconBox

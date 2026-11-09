@@ -63,7 +63,7 @@ const InfoRow: FC<{
                         tone="primary"
                         className="flex-shrink-0 w-8 h-8 text-[0.9rem] border-none"
                     />
-                    <span className="text-ui-muted text-xs font-bold uppercase opacity-75 min-w-[90px] text-[0.7rem] tracking-[0.5px]">
+                    <span className="text-ui-muted text-xs font-medium min-w-[90px]">
                         {label}
                     </span>
                 </div>

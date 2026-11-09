@@ -76,7 +76,7 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
                     {dirty && <span role="status" className="text-xs text-ui-warning">{t('unsavedChanges')}</span>}</div>
             </header>
             {body}
-            <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
+            <footer className="ui-sticky-actions mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
         </section> : <Modal open={open} onOpenChange={next => !next && close()}><ModalContent width={600}>
             <ModalHeader closeButton><ModalTitle>{item?.name ?? t('newSelector')}</ModalTitle></ModalHeader>
             <ModalBody>{body}</ModalBody>

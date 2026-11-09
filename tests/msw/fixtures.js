@@ -11,7 +11,8 @@ const reviewedUpdateDigest = 'a'.repeat(64);
 localStorage.setItem('api_url_v2', JSON.stringify(''));
 const principal = { userId: 'preview-admin', credentialType: 'session', permissions: [...new Set([...Object.values(operationPermissions), 'identity:read', 'tokens:own', 'users:manage', 'tokens:manage', 'security:read', 'metrics:read'])] };
 establishSession('synthetic-msw-session', principal, Math.floor(Date.now() / 1000) + 28800, '');
-localStorage.setItem('yuhaiin.webui.language','en');
+// ?lang=ja|ko previews translated layouts; English otherwise.
+localStorage.setItem('yuhaiin.webui.language',new URLSearchParams(location.search).get('lang')||'en');
 // Synthetic backup state is confined to the reliability UI preview.
 let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enabled:false,accessKey:'',secretKey:'',bucket:'',region:'',endpointUrl:'',usePathStyle:false,storageClass:''},recovery:{enabled:false,target:'local',recipient:'age1-synthetic-public-recipient',intervalMinutes:1440,timeoutMinutes:30,keepCount:10,keepDays:30,includeHistory:false,allowMaintenance:false}};
 let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',localState:'missing',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
@@ -97,7 +98,27 @@ function stream(event,payload,repeat=false){
   return new HttpResponse(new ReadableStream({start(controller){ const send=()=>controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`));send(); if(repeat) timer=setInterval(send,1000); else timer=setInterval(()=>controller.enqueue(encoder.encode(': heartbeat\n\n')),10000); },cancel(){clearInterval(timer);}}),{headers:{'Content-Type':'text/event-stream','Cache-Control':'no-cache'}});
 }
 if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
+// ?scenario=android previews the in-app WebView session: the platform API
+// answers with synthetic device state (the real one is same-origin only).
+const androidPreview=scenario.startsWith('android');
+let androidVpnEnabled=scenario!=='android-off';
+const androidStatus=()=>({platform:'android',core:{running:true,startedAt:Date.now()-3600000,port:50051,https:false,lanAccess:false},vpn:{enabled:androidVpnEnabled,inboundId:'tun',inboundStatus:'running',runtime:{state:androidVpnEnabled?'running':'stopped',inboundId:'tun',generation:3,applied:androidVpnEnabled?{mtu:9000,ipv4:'172.19.0.1',ipv4Prefix:24,ipv6:'fdfe:dcba:9876::1',ipv6Prefix:64,dns:['172.19.0.2'],routes:[],excludes:[],fakeIpRoutes:['198.18.0.0/15'],platformRevision:2}:undefined,reconfigurations:2,reconfigureFailures:0,lastSwitchMillis:84,startedAt:Date.now()-3500000,changedAt:Date.now()-3500000},authorization:{prepared:true,consent:true,alwaysOn:false,lockdown:false}}});
+let androidSettings={values:{perApp:false,appBypass:false,appList:['org.example.mail'],routeProfile:'Default',mtuProfile:'jumbo',meteredMode:'follow',appendHTTPProxy:false,autoConnect:true,bootConnectPolicy:'last',notificationSpeed:true,coreBackgroundPolicy:'keep',trackUnderlyingNetwork:true,allowLan:false,processLookupMode:'auto',httpProxyPort:8188},restartRequired:['allowLan'],routeProfiles:['Default','China direct'],options:{mtuProfile:['standard','jumbo'],meteredMode:['follow','metered','unmetered'],coreBackgroundPolicy:['keep','stop'],bootConnectPolicy:['never','last','always'],processLookupMode:['auto','off']}};
+const androidApps=Array.from({length:40},(_,i)=>({name:i===0?'Mail':`Example app ${i}`,packageName:i===0?'org.example.mail':`org.example.app${i}`,system:i%7===0}));
+const androidHandlers=androidPreview?[
+  http.get('/android/v1/capabilities',()=>HttpResponse.json({platform:'android',version:1,features:['vpn','settings','apps','routes','backup','update','privacy','logs'],session:true})),
+  http.get('/android/v1/status',()=>HttpResponse.json(androidStatus())),
+  http.post('/android/v1/vpn',async({request})=>{androidVpnEnabled=Boolean((await request.json()).enabled);return HttpResponse.json(androidStatus());}),
+  http.get('/android/v1/settings',()=>HttpResponse.json(androidSettings)),
+  http.put('/android/v1/settings',async({request})=>{androidSettings={...androidSettings,values:{...androidSettings.values,...await request.json()}};return HttpResponse.json(androidSettings);}),
+  http.get('/android/v1/apps',()=>HttpResponse.json({apps:androidApps})),
+  http.get('/android/v1/app',()=>HttpResponse.json({core:{version:'v2.0.0-preview',commit:'aaaaaaa'},app:{applicationId:'io.github.asutorufa.yuhaiin',versionName:'2.0.0',versionCode:200,commit:'bbbbbbb',updateTrack:'stable'}})),
+  http.get('/android/v1/routes',()=>HttpResponse.json({active:'Default',profiles:[{name:'Default',preset:true,active:true,content:'0.0.0.0/0\n::/0'},{name:'China direct',preset:false,active:false,content:'0.0.0.0/1\n128.0.0.0/1'}]})),
+  http.get('/android/v1/privacy',()=>HttpResponse.json({title:'Privacy policy',effectiveDate:'2026-01-01',sections:[{title:'VPN data',body:'Traffic stays on the device unless a configured node forwards it.'},{title:'Installed apps',body:'The app list is read only for per-app routing.'}],contactUrl:'https://example.invalid/contact',withdrawBody:'Withdrawing stops the VPN.',consents:{vpn:true,installedApps:true}})),
+  http.get('/android/v1/update',()=>HttpResponse.json({channel:'stable',channels:['stable','beta'],checking:false,stage:'IDLE',progress:0,downloadedBytes:0,totalBytes:0,release:{version:'2.0.1',tag:'v2.0.1',notes:'Synthetic release notes.',publishedAt:'2026-11-01T00:00:00Z',assetSize:31457280},currentVersion:'2.0.0'})),
+]:[];
 const worker=setupWorker(
+  ...androidHandlers,
   http.post('/api/v2/backup/recovery/imports',()=>{
     if(scenario!=='reliability')return errorResponse('Synthetic import fixture is unavailable',404);
     // Synthetic browser data only; actual age verification is covered by the

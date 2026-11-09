@@ -144,12 +144,12 @@ function ApiHostsCard() {
                             <div className="truncate text-sm font-medium text-ui-heading">
                                 {t('api.sameOrigin')}
                             </div>
-                            <div className="mt-0.5 truncate font-mono text-[11px] text-ui-muted">
+                            <div className="mt-0.5 truncate font-mono text-xs text-ui-muted">
                                 {typeof window !== "undefined" ? window.location.origin : "/"}
                             </div>
                         </div>
                         {active === "" && (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-xs font-semibold text-ui-primary">
                                 <Check size={12} />
                                 {t('api.active')}
                             </span>
@@ -185,12 +185,12 @@ function ApiHostsCard() {
                                         <div className="truncate font-mono text-sm font-medium text-ui-heading" title={host}>
                                             {displayApiHost(host, t('api.sameOrigin'))}
                                         </div>
-                                        <div className="mt-0.5 text-[11px] text-ui-muted">
+                                        <div className="mt-0.5 text-xs text-ui-muted">
                                             {isActive ? t('api.activeHint') : t('api.switchHint')}
                                         </div>
                                     </div>
                                     {isActive && (
-                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-xs font-semibold text-ui-primary">
                                             <Check size={12} />
                                             {t('api.active')}
                                         </span>

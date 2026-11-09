@@ -1,9 +1,10 @@
 import { AndroidAPIError, nativeActionURL, setAndroidVpn, userActionCodes, vpnActive, type AndroidStatus, type PlatformVpnState } from '@/api/android';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardHeader } from '@/component/v2/card';
+import { Card, CardBody } from '@/component/v2/card';
+import { iconToneStyles, type IconTone } from '@/component/v2/styles';
 import { useAndroidStatus } from '@/hooks/use-android-platform';
-import { Cpu, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Cpu, ShieldAlert, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,6 +19,11 @@ const stateVariant: Record<PlatformVpnState, Variant> = {
     failed: 'danger',
     revoked: 'danger',
 };
+
+const stateTone: Record<Variant, { color: string; borderColor: string; background: string }> = Object.fromEntries(
+    (Object.entries({ success: 'success', info: 'info', warning: 'warning', danger: 'danger', secondary: 'neutral' }) as [Variant, IconTone][])
+        .map(([variant, tone]) => [variant, { color: iconToneStyles[tone].color, borderColor: iconToneStyles[tone].border, background: iconToneStyles[tone].background }]),
+) as Record<Variant, { color: string; borderColor: string; background: string }>;
 
 /** Shown when the OS or the in-app disclosure must approve the VPN first. */
 export const AuthorizeVpnLink: FC<{ code: string }> = ({ code }) => {
@@ -64,31 +70,41 @@ export const AndroidVpnCard: FC<{ compact?: boolean }> = ({ compact }) => {
         }
     };
 
-    return <Card>
-        <CardHeader className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-                {active ? <ShieldCheck size={18} className="text-ui-success" /> : <ShieldOff size={18} className="text-ui-muted" />}
-                <span className="font-medium text-ui-heading">{t('vpn.title')}</span>
-                <Badge variant={stateVariant[state]} pill>{t(`state.${state}`)}</Badge>
+    const tone = stateTone[stateVariant[state]];
+    const Icon = active ? ShieldCheck : state === 'failed' || state === 'revoked' ? ShieldAlert : ShieldOff;
+    const transitional = state === 'establishing' || state === 'stopping' || state === 'reconfiguring';
+
+    // The connection state and its one action lead; core details and diagnostics follow.
+    return <section aria-label={t('vpn.title')} className="ui-card mb-4 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 p-4 sm:p-5">
+            <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border" style={tone}>
+                <Icon size={24} className={transitional ? 'motion-safe:animate-pulse' : undefined} />
+            </span>
+            <div className="min-w-0 flex-1">
+                <p className="m-0 text-xs text-ui-muted">{t('vpn.title')}</p>
+                <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-lg font-semibold leading-snug text-ui-heading" aria-live="polite">
+                    <span className="whitespace-nowrap">{t(`state.${state}`)}</span>
+                    <Badge variant="secondary" className="text-xs font-normal">{t(status.vpn.enabled ? 'vpn.desiredOn' : 'vpn.desiredOff')}</Badge>
+                </p>
             </div>
-            <Button variant={status.vpn.enabled ? 'outline-danger' : 'primary'} size="sm" loading={pending} disabled={pending} onClick={toggle}>
+            <Button variant={status.vpn.enabled ? 'outline-danger' : 'primary'} loading={pending} disabled={pending} onClick={toggle}
+                className="min-h-11 min-w-32 max-sm:w-full">
                 {t(status.vpn.enabled ? 'vpn.disconnect' : 'vpn.connect')}
             </Button>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-3 text-sm">
+        </div>
+        <div className="flex flex-col gap-3 border-t border-ui-border px-4 py-3 text-sm sm:px-5">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-ui-muted">
-                <span className="inline-flex items-center gap-1"><Cpu size={14} />{t(status.core.running ? 'core.running' : 'core.stopped')}</span>
+                <span className="inline-flex items-center gap-1.5"><Cpu size={14} aria-hidden="true" />{t(status.core.running ? 'core.running' : 'core.stopped')}</span>
                 <span>{t('core.port', { port: status.core.port })}{status.core.https ? ' · HTTPS' : ''}</span>
                 {status.core.lanAccess && <span>{t('core.lan')}</span>}
-                <span>{t(status.vpn.enabled ? 'vpn.desiredOn' : 'vpn.desiredOff')}</span>
             </div>
             {state === 'reconfiguring' && <p className="m-0 text-ui-info">{t('vpn.reconfiguring')}</p>}
             {mismatch && state !== 'reconfiguring' && !code && <p className="m-0 text-ui-warning">{t('vpn.mismatch')}</p>}
             {code && <AuthorizeVpnLink code={code} />}
-            {(pendingError && !code) && <p className="m-0 text-ui-danger">{pendingError.message}</p>}
-            {(runtime.lastError && !code && !pendingError) && <p className="m-0 break-words text-ui-danger">{runtime.lastError}</p>}
-            {status.vpn.inboundError && !runtime.lastError && <p className="m-0 break-words text-ui-danger">{status.vpn.inboundError}</p>}
-            {!compact && runtime.applied && <dl className="m-0 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+            {(pendingError && !code) && <p role="alert" className="m-0 text-ui-danger">{pendingError.message}</p>}
+            {(runtime.lastError && !code && !pendingError) && <p className="m-0 ui-wrap-anywhere text-ui-danger">{runtime.lastError}</p>}
+            {status.vpn.inboundError && !runtime.lastError && <p className="m-0 ui-wrap-anywhere text-ui-danger">{status.vpn.inboundError}</p>}
+            {!compact && runtime.applied && <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 @container sm:grid-cols-2">
                 <Row label={t('vpn.generation')} value={String(runtime.generation)} />
                 <Row label="MTU" value={String(runtime.applied.mtu)} />
                 <Row label={t('vpn.addresses')} value={[runtime.applied.ipv4 && `${runtime.applied.ipv4}/${runtime.applied.ipv4Prefix}`, runtime.applied.ipv6 && `${runtime.applied.ipv6}/${runtime.applied.ipv6Prefix}`].filter(Boolean).join(', ')} />
@@ -99,11 +115,11 @@ export const AndroidVpnCard: FC<{ compact?: boolean }> = ({ compact }) => {
                 {runtime.lastSwitchMillis ? <Row label={t('vpn.lastSwitch')} value={`${runtime.lastSwitchMillis} ms`} /> : null}
             </dl>}
             {!compact && runtime.pending && <p className="m-0 text-ui-muted">{t('vpn.pending', { mtu: runtime.pending.mtu, routes: runtime.pending.fakeIpRoutes.join(', ') })}</p>}
-        </CardBody>
-    </Card>;
+        </div>
+    </section>;
 };
 
-const Row: FC<{ label: string; value: string }> = ({ label, value }) => <div className="flex min-w-0 gap-2">
-    <dt className="shrink-0 text-ui-muted">{label}</dt>
-    <dd className="m-0 min-w-0 break-words text-ui-heading">{value}</dd>
+const Row: FC<{ label: string; value: string }> = ({ label, value }) => <div className="min-w-0">
+    <dt className="text-xs text-ui-muted">{label}</dt>
+    <dd className="m-0 min-w-0 ui-wrap-anywhere font-mono text-[13px] text-ui-heading">{value}</dd>
 </div>;

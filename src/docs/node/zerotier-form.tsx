@@ -22,7 +22,7 @@ export const ZeroTierForm: FC<{
     };
     return (
         <div className="grid gap-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                 <StringField
                     label={t("zeroTierNetworkId")}
                     value={config.network_id ?? ""}

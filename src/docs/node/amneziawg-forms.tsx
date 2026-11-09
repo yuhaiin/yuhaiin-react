@@ -18,7 +18,7 @@ export const AmneziaWGForm: FC<{
     <fieldset className="grid gap-3 rounded-ui-md border border-ui-border p-3">
       <legend className="px-1 font-semibold">{t("nodeForm.awgObfuscation")}</legend>
       <p className="mb-0 text-sm text-ui-muted">{t("nodeForm.awgHelp")}</p>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
         {strings.map((key) => <StringField key={key} label={key} value={config[key] ?? ""} disabled={!editable}
           onChange={(value) => onChange({ [key]: value })} />)}
         {numbers.map((key) => <NumberField key={key} label={key} value={config[key] ?? 0} disabled={!editable}
