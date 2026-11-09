@@ -25,6 +25,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v7
@@ -55,6 +57,12 @@ jobs:
 
       - name: Stamp versioned frontend metadata
         run: node scripts/ui-ota.mjs prepare
+
+      - name: Verify deterministic build metadata
+        run: |
+          cp dist/ui-build.json /tmp/ui-build-before.json
+          node scripts/ui-ota.mjs prepare
+          cmp /tmp/ui-build-before.json dist/ui-build.json
 
       - run: |
           cat <<EOF > dist/go.mod
@@ -98,9 +106,24 @@ jobs:
           cp frontend.tar.gz publish/frontend.tar.gz
           cp frontend-update.json publish/ui-update.json
 
+      - name: Confirm latest main before publishing
+        id: publication
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          current="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [[ -z "$current" ]]; then
+            echo "::error::Unable to verify current main; refusing to publish"
+            exit 1
+          fi
+          if [[ "$current" == "$GITHUB_SHA" ]]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Not publishing an old workflow rerun: main is $current, build is $GITHUB_SHA"
+          fi
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
-        if: github.event_name != 'pull_request'
+        if: steps.publication.outputs.eligible == 'true'
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./publish
