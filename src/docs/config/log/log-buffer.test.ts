@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { LogRingBuffer, parseLogLine, passesMinLevel, type LogEntry } from './log-buffer';
+import { LogRingBuffer, parseLogFields, parseLogLine, passesMinLevel, type LogEntry } from './log-buffer';
 
 it('keeps the newest lines and frees entries when retention is reduced or cleared', () => {
     const buffer = new LogRingBuffer(3);
@@ -80,4 +80,14 @@ it('filters by minimum level and never hides unparsed lines', () => {
     expect(passesMinLevel(info, 'WARN')).toBe(false);
     expect(passesMinLevel(warn, 'WARN')).toBe(true);
     expect(passesMinLevel(header, 'ERROR')).toBe(true);
+});
+
+it('splits slog attributes into ordered fields and undoes quoting', () => {
+    expect(parseLogFields('err="use of \\"closed\\" connection" attempt=3 empty= tail="open')).toEqual([
+        { key: 'err', value: 'use of "closed" connection' },
+        { key: 'attempt', value: '3' },
+        { key: 'empty', value: '' },
+        { key: 'tail', value: 'open' },
+    ]);
+    expect(parseLogFields(undefined)).toEqual([]);
 });

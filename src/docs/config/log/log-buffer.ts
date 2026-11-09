@@ -126,6 +126,24 @@ const formatLogTime = (value?: string) => {
     return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
 }
 
+/** Splits slog-style `key=value key="quoted value"` text into ordered pairs. */
+export const parseLogFields = (details?: string): Array<{ key: string; value: string }> => {
+    if (!details) return [];
+    const fields: Array<{ key: string; value: string }> = [];
+    const pattern = /([A-Za-z_][\w.-]*)=("(?:\\.|[^"\\])*"?|\S*)/g;
+    for (let match = pattern.exec(details); match; match = pattern.exec(details)) {
+        let value = match[2];
+        if (value.startsWith('"')) {
+            const closed = value.length > 1 && value.endsWith('"');
+            const body = closed ? value.slice(1, -1) : value.slice(1);
+            // Quoted values are slog-escaped; undo the escapes, tolerating odd input.
+            try { value = JSON.parse(`"${body}"`) as string; } catch { value = body; }
+        }
+        fields.push({ key: match[1], value });
+    }
+    return fields;
+}
+
 // `logcat -v threadtime`: "MM-DD HH:MM:SS.mmm PID TID L TAG: message"
 const LOGCAT_LINE = /^\d{2}-\d{2} (\d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+\s+([VDIWEFA])\s+(\S[^:]*?)\s*: ?(.*)$/;
 const LOGCAT_LEVELS: Record<string, LogLevel> = { V: "TRACE", D: "DEBUG", I: "INFO", W: "WARN", E: "ERROR", F: "FATAL", A: "FATAL" };

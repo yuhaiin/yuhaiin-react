@@ -1,5 +1,6 @@
 import { PageHeader } from '@/component/v2/page-header';
 import { usePageVisible } from "@/common/hooks";
+import { LogDetailModal } from "./log-detail";
 import { LogRingBuffer, levelStyles, parseLogLine, passesMinLevel, type LogEntry, type LogLevel } from "./log-buffer";
 import { exportAndroidLogs, getAndroidLogs, startDownload } from '@/api/android';
 import { useAndroidPlatform } from '@/hooks/use-android-platform';
@@ -32,7 +33,7 @@ const errorText = (e: unknown) => e instanceof Error ? e.message : String(e);
 
 
 
-const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
+const LogLine: FC<{ entry: LogEntry; onOpen: (entry: LogEntry) => void }> = memo(({ entry, onOpen }) => {
     // Most streamed lines are never mounted by the virtualizer. Parse only visible rows.
     const parsed = useMemo(() => parseLogLine(entry.line), [entry.line]);
     const style = levelStyles[parsed.level];
@@ -40,8 +41,19 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     return (
         <div
             data-log-id={entry.id}
-            className="grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border bg-ui-surface hover:bg-ui-surface-muted [[data-scrolling]_&]:pointer-events-none"
+            role="button"
+            tabIndex={0}
+            aria-haspopup="dialog"
+            className="grid cursor-pointer grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border bg-ui-surface hover:bg-ui-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ui-focus [[data-scrolling]_&]:pointer-events-none"
             style={{ contain: "layout paint style" }}
+            // Selecting text to copy part of a line must not pop the dialog open.
+            onClick={() => { if (!window.getSelection()?.toString()) onOpen(entry); }}
+            onKeyDown={(event) => {
+                if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                    event.preventDefault();
+                    onOpen(entry);
+                }
+            }}
         >
             <div className={style.bar} />
             <div className="min-w-0 px-3 py-2 font-mono text-[12.5px] leading-5 selection:bg-amber-300/30">
@@ -73,7 +85,6 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     );
 });
 
-const renderLogLine = (entry: LogEntry) => <LogLine key={entry.id} entry={entry} />;
 
 export default function LogComponent() {
     const { t: uiT } = useTranslation('ui');
@@ -81,6 +92,11 @@ export default function LogComponent() {
     const { t } = useTranslation("config");
     const { t: androidT } = useTranslation("android");
     const platform = useAndroidPlatform();
+    // The dialog mounts on first use and keeps its last line so the close animation has content.
+    const [detail, setDetail] = useState<LogEntry | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
+    const openDetail = useCallback((entry: LogEntry) => { setDetail(entry); setDetailOpen(true); }, []);
+    const renderLogLine = useCallback((entry: LogEntry) => <LogLine key={entry.id} entry={entry} onOpen={openDetail} />, [openDetail]);
     const [source, setSource] = useState<LogSource>('core');
     // The Android source only exists inside the app's WebView.
     const activeSource: LogSource = platform ? source : 'core';
@@ -430,6 +446,7 @@ export default function LogComponent() {
                     )}
                 </CardBody>
             </Card>
+            {detail && <LogDetailModal entry={detail} open={detailOpen} onClose={() => setDetailOpen(false)} />}
         </MainContainer>
     );
 }
