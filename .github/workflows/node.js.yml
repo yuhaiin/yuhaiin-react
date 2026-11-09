@@ -9,9 +9,11 @@ on:
   pull_request:
     branches: ["main"]
 
-# Cancel superseded workflow runs on the same ref.
+# Only cancel runs of the identical commit. Rerunning an old main SHA must not
+# cancel a newer build before it publishes. The publication check rejects
+# stale commits independently.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
