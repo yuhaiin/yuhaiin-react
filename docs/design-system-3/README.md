@@ -47,7 +47,7 @@ matrix also passes.
 | --- | --- | --- |
 | `--page-gutter` | 12px < 360px, 16px < 640px, 20px | Page side padding below lg; full-bleed strips cancel it |
 | `--bottom-nav-height` | 64px | Phone tab bar, excluding the gesture inset |
-| `--bottom-nav-space` | tab bar + `env(safe-area-inset-bottom)` while the bar shows, else the inset | Page bottom padding, snackbars |
+| `--bottom-nav-space` | tab bar + `env(safe-area-inset-bottom)` while the bar shows, else the inset | Page bottom padding |
 | `--bottom-sticky-under` | inset while the bar is hidden, else 0 | Sticky editor actions |
 | `--content-max` | 1680px | Past this the page centers beside the sidebar |
 
@@ -84,7 +84,7 @@ The tab bar (`src/docs/nav/BottomNav.tsx`):
 - Tabs the session cannot read are not shown (same `canReadRoute` as the sidebar).
 - It steps aside (slides down, `inert`) while a record or draft is open on a phone (`?node=`, `?rule=`, `?new=` …; from md the detail sits beside its list), while a text field has focus (soft keyboard), and on viewports shorter than 500px (landscape phones).
 - Tapping the current tab scrolls the page to the top.
-- Visibility is published as `html[data-bottom-nav]`, so fixed UI outside the page tree (snackbars) and the page padding stack above it.
+- Visibility is published as `html[data-bottom-nav]`, so fixed UI outside the page tree and the page padding stack above it.
 
 Android draws edge to edge and consumes only the horizontal (cutout) insets; the
 top and bottom insets are applied once, in CSS, by the app bar and the tab bar.
@@ -97,7 +97,7 @@ top and bottom insets are applied once, in CSS, by the app bar and the tab bar.
 | `ResourceEditorFrame`, rule, selector and node editors, Gateway save bar | Footer uses `.ui-sticky-actions`: on phones Save/Cancel stay pinned at the bottom of long forms. |
 | `Modal` | Desktop dialogs settle from 0.96 → 1 (was a spring from 0.2). Below md every dialog is a bottom sheet by default (`mobileSheet={false}` opts out); drag the handle or header down to close. `ModalBody` is a `@container`. |
 | `Card` | Carries `.ui-card`; its default bottom margin is dropped when a flex/grid `gap` already spaces it or when it is the last child. |
-| Toasts | Phones show snackbars above the tab bar (bottom, thumb reach); desktop keeps the top-right stack. |
+| Toasts | Phones show notices full width just below the App Bar, so they never cover the tab bar, sticky Save bars or actions at the end of a page; desktop keeps the top-right stack. |
 | `PageHeader` sticky actions | Use `--page-gutter`. |
 | `FilterSearch`, workspace search, pagination | 44px on phones. |
 | Android VPN card | Status-first hero: state, desired state, one Connect/Disconnect action (full width on phones), then core details and diagnostics. Shown first on Home. |
