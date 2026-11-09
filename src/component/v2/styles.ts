@@ -82,4 +82,7 @@ export const ui = {
 };
 
 /** Seconds for Motion; CSS durations use the corresponding global tokens. */
-export const motionTiming = { fast: 0.12, normal: 0.16, slow: 0.2 } as const;
+export const motionTiming = { fast: 0.12, normal: 0.18, slow: 0.22, sheet: 0.28 } as const;
+
+/** Motion easing matching the CSS `--ease-*` tokens. */
+export const motionEase = { standard: [0.2, 0, 0, 1], sheet: [0.32, 0.72, 0, 1] } as const;

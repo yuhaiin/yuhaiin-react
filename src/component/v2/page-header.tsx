@@ -26,6 +26,6 @@ export function PageHeader({ title, description, actions, className, embedded = 
             <Heading className={cn('tracking-tight text-ui-heading', embedded ? 'm-0 text-base font-medium' : 'sr-only text-2xl font-semibold lg:not-sr-only')}>{title}</Heading>
             {description && <p className="mt-1 text-sm text-ui-muted">{description}</p>}
         </div>
-        {actions && <div className={cn('flex flex-wrap items-center gap-2', stickyActions && 'max-lg:sticky max-lg:-top-3 max-lg:z-10 max-lg:-mx-3 max-lg:mb-2 max-lg:bg-ui-bg max-lg:px-3 max-lg:py-2 sm:max-lg:-mx-5 sm:max-lg:px-5')}>{actions}</div>}
+        {actions && <div className={cn('flex flex-wrap items-center gap-2', stickyActions && 'max-lg:sticky max-lg:-top-3 max-lg:z-10 max-lg:-mx-[var(--page-gutter)] max-lg:mb-2 max-lg:bg-ui-bg max-lg:px-[var(--page-gutter)] max-lg:py-2')}>{actions}</div>}
     </header>;
 }

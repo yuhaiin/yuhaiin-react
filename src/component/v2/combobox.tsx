@@ -169,7 +169,7 @@ export const Combobox: FC<ComboboxProps> = ({
                                     >
                                         <span className="font-normal block truncate">{opt.label}</span>
                                         {opt.details && opt.details.length > 0 && (
-                                            <div className="pl-0 mt-[2px] font-mono text-[0.75em] text-ui-muted whitespace-nowrap overflow-hidden text-ellipsis">
+                                            <div className="pl-0 mt-[2px] font-mono text-xs text-ui-muted whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {opt.details.map((d, di) => (
                                                     <span key={di} className="inline-block mr-[6px] last:mr-0 after:content-[','] last:after:content-['']">{d}</span>
                                                 ))}
