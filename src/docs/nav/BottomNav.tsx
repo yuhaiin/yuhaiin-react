@@ -71,7 +71,13 @@ export function useBottomNavVisible() {
     return !(phone && hasOpenDetail(search)) && !typing && !short;
 }
 
-export const BottomNav = forwardRef<HTMLButtonElement, { visible: boolean; moreOpen: boolean; onMore: () => void }>(({ visible, moreOpen, onMore }, moreRef) => {
+export const BottomNav = forwardRef<HTMLButtonElement, {
+    visible: boolean;
+    /** Slid away while the page scrolls down; unlike !visible it keeps the page's bottom space. */
+    collapsed?: boolean;
+    moreOpen: boolean;
+    onMore: () => void;
+}>(({ visible, collapsed = false, moreOpen, onMore }, moreRef) => {
     const { t } = useTranslation('nav');
     const [location, navigate] = useLocation();
     const session = useSession();
@@ -114,12 +120,12 @@ export const BottomNav = forwardRef<HTMLButtonElement, { visible: boolean; moreO
     return <nav aria-label={t('primary')} data-bottom-nav={visible ? 'visible' : 'hidden'}
         className={clsx(
             'fixed inset-x-0 bottom-0 z-[1030] border-t border-ui-border pb-[env(safe-area-inset-bottom)] lg:hidden',
-            'transition-transform duration-[var(--motion-normal)] ease-out will-change-transform',
-            !visible && 'pointer-events-none translate-y-full',
+            'transition-transform duration-[var(--motion-slow)] ease-[var(--ease-standard)] will-change-transform',
+            (!visible || collapsed) && 'pointer-events-none translate-y-full',
         )}
         style={{ backgroundColor: 'var(--sidebar-bg)' }}
-        aria-hidden={visible ? undefined : true}
-        inert={!visible}>
+        aria-hidden={visible && !collapsed ? undefined : true}
+        inert={!visible || collapsed}>
         <LayoutGroup id="bottom-nav">
             <div className="mx-auto flex h-[var(--bottom-nav-height)] max-w-xl items-stretch gap-1 px-2 py-1">
                 {tabs.map(tab => item(tab.key, tab.icon, { href: `#${tab.path}`, onClick: () => select(tab) }))}
