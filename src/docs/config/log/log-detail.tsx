@@ -27,7 +27,7 @@ export const LogDetailModal: FC<{ entry: LogEntry; open: boolean; onClose: () =>
                     <ModalBody>
                             <div className="space-y-4">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span className={clsx("inline-flex h-6 min-w-[56px] items-center justify-center rounded px-2 font-mono text-[11px] font-semibold ring-1", style.badge)}>
+                                    <span className={clsx("inline-flex h-6 min-w-[56px] items-center justify-center rounded px-2 font-mono text-xs font-semibold ring-1", style.badge)}>
                                         {parsed.level}
                                     </span>
                                     {(parsed.time ?? parsed.displayTime) && (

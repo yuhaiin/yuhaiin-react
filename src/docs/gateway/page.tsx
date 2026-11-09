@@ -182,7 +182,7 @@ export default function GatewayPage() {
           )}
         </div>
         {phone && (dirty || pending) && (
-          <div className="sticky bottom-[calc(-20px-env(safe-area-inset-bottom))] z-10 -mx-3 flex gap-2 border-t border-ui-border bg-ui-bg px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <div className="ui-sticky-actions flex gap-2">
             <Button className="flex-1" variant="primary" loading={pending} disabled={!dirty}
               onClick={() => void save()}>{t("saveActivate")}</Button>
             <Button className="flex-1" variant="outline-secondary" disabled={!dirty || pending}

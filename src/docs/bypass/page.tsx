@@ -170,7 +170,7 @@ function BypassComponent() {
                         <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{uiT('routeRules')}</h2><div className="flex shrink-0 items-center gap-2">{isValidating && <Spinner size="sm" />}<span title={t('ruleOrderHelp', { count: data.page.total })} className="text-xs tabular-nums text-ui-muted">{data.page.total}</span></div></div>
                         <FilterSearch className="w-full" onSearch={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
-                    <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">
+                    <div className="md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
                         {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList onReordered={refresh} items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
                             resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
                             page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}

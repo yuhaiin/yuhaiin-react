@@ -64,9 +64,9 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
                         <div className="flex shrink-0 items-center gap-2"><span className="text-xs tabular-nums text-ui-muted">{pagination?.total ?? items.length}</span>
                             {embedded && <>{actions}<Button variant="primary" size="sm" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={14} aria-hidden="true" />{uiT('add')}</Button></>}</div></div>
                     {search && <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" aria-hidden="true" />
-                        <Input type="search" aria-label={commonT('state.search')} placeholder={commonT('state.search')} value={search.value} onChange={event => search.onChange(event.target.value)} className="h-9 bg-ui-surface-muted/70 pl-9 text-xs" /></div>}
+                        <Input type="search" aria-label={commonT('state.search')} placeholder={commonT('state.search')} value={search.value} onChange={event => search.onChange(event.target.value)} className="h-9 bg-ui-surface-muted/70 pl-9 text-xs max-md:h-11 max-md:text-base" /></div>}
                 </div>
-                <ul className="m-0 max-h-[min(72vh,900px)] list-none divide-y divide-ui-border/40 overflow-y-auto overscroll-contain p-0">
+                <ul className="m-0 list-none divide-y divide-ui-border/40 p-0 md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
                     {items.map(item => <li key={item.id}><button type="button" aria-label={item.name} aria-current={selectedId === item.id ? 'true' : undefined}
                         className={clsx('relative flex min-h-[52px] w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selectedId !== item.id && 'hover:bg-ui-surface-muted/75')}
                         onClick={() => onSelect(item.id)}>
@@ -78,9 +78,9 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
                     {!items.length && <li className="px-3 py-8 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
                 </ul>
                 {pagination && pages > 1 && <div className="mt-3 flex items-center justify-between border-t border-ui-border/50 pt-3 text-xs text-ui-muted">
-                    <Button variant="outline-secondary" size="icon" disabled={pagination.page <= 1} aria-label={t('previousPage')} onClick={() => pagination.onChange(pagination.page - 1)}><ChevronLeft size={16} /></Button>
+                    <Button variant="outline-secondary" size="icon" className="max-md:h-11 max-md:w-11" disabled={pagination.page <= 1} aria-label={t('previousPage')} onClick={() => pagination.onChange(pagination.page - 1)}><ChevronLeft size={16} /></Button>
                     <span className="tabular-nums">{pagination.page} / {pages}</span>
-                    <Button variant="outline-secondary" size="icon" disabled={pagination.page >= pages} aria-label={t('nextPage')} onClick={() => pagination.onChange(pagination.page + 1)}><ChevronRight size={16} /></Button>
+                    <Button variant="outline-secondary" size="icon" className="max-md:h-11 max-md:w-11" disabled={pagination.page >= pages} aria-label={t('nextPage')} onClick={() => pagination.onChange(pagination.page + 1)}><ChevronRight size={16} /></Button>
                 </div>}
             </WorkspaceDirectory>
             <WorkspaceDetail hiddenOnMobile={!editing} transitionKey={selectedId || (editing ? 'new-resource' : 'empty')} order={items.findIndex(item => item.id === selectedId)}>
@@ -112,9 +112,10 @@ export function ResourceEditorFrame({ title, label, presentation = 'modal', open
 }) {
     const { t } = useTranslation('routing');
     if (presentation === 'inline') return <section aria-label={label} className="min-w-0">
-        <header className="mb-4 space-y-3 border-b border-ui-border pb-4"><Button variant="outline-secondary" className="gap-2 md:hidden" onClick={onClose}><ArrowLeft size={16} />{t('backToDirectory')}</Button><h2 className="break-words text-xl font-medium text-ui-heading">{title}</h2></header>
+        <header className="mb-4 space-y-2 border-b border-ui-border pb-4"><Button variant="ghost" className="-ml-2 gap-2 px-2 text-ui-fg md:hidden" onClick={onClose}><ArrowLeft size={18} />{t('backToDirectory')}</Button><h2 className="ui-wrap-anywhere text-xl font-medium text-ui-heading">{title}</h2></header>
         <div className="min-w-0">{children}</div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-5">{footer}</div>
+        {/* On a phone the save/cancel row stays reachable at the bottom of long forms. */}
+        <div className="ui-sticky-actions mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-5">{footer}</div>
     </section>;
     return <Modal open={open} onOpenChange={next => !next && onClose()}><ModalContent width={760}>
         <ModalHeader closeButton><ModalTitle>{title}</ModalTitle></ModalHeader><ModalBody>{children}</ModalBody><ModalFooter className="flex flex-wrap items-center justify-between gap-3">{footer}</ModalFooter>

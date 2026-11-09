@@ -185,7 +185,7 @@ const ResultChip: FC<{ label: string; value: NodeLatencyValue | undefined; loadi
     const failed = !loading && isLatencyError(value);
     return (
         <div title={failed ? value.error : undefined} className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-ui-border/80 bg-ui-bg px-3 py-1.5">
-            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" />
                 : <span className={clsx("truncate text-sm font-medium", !failed && "font-mono", latencyTextClass(value))}>{failed ? uiT('failedLabel') : latencyText(value)}</span>}
@@ -197,7 +197,7 @@ const ResultRow: FC<{ label: string; value: NodeLatencyValue | undefined; loadin
     if (!loading && isEmptyLatency(value)) return null;
     return (
         <div className="flex min-w-0 items-start gap-3 rounded-ui-md border border-ui-border/70 bg-ui-bg/80 px-3 py-2">
-            <span className="mt-0.5 w-16 shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            <span className="mt-0.5 w-16 shrink-0 text-xs font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" className="mt-0.5" />
                 : (
@@ -302,7 +302,7 @@ const GroupPicker: FC<{
                             >
                                 <span className="min-w-0 flex-1 truncate font-medium">{group}</span>
                                 <span className={clsx(
-                                    "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                                    "rounded-full px-1.5 py-0.5 text-xs font-semibold",
                                     active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
                                 )}>
                                     {count}
@@ -386,7 +386,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-xs leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
-                {runtime && <span className="shrink-0 font-mono text-[11px] tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
+                {runtime && <span className="shrink-0 font-mono text-xs tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
                     ↓ {formatNodeBytes(runtime.downloadBps)}/s
                 </span>}
                 {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && (isLatencyError(latency.tcp)
@@ -622,13 +622,15 @@ export default function Group() {
                     <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => { setPage(1); setQuery(e.target.value); }} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
                 </div>
                 {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : isLoading || !querySettled ? <Loading /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
-                    groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
+                    groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'var(--node-list-height)', width: '100%' }}
+                        // Phones get a list that fills the screen under the group picker instead of a short inner box.
+                        className="[--node-list-height:min(72vh,900px)] max-md:[--node-list-height:max(320px,calc(100dvh-var(--mobile-app-bar-height)-env(safe-area-inset-top)-var(--bottom-nav-space)-190px))]">
                         {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />}
-                    </VList> : <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />)}</div>}
+                    </VList> : <div className="md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />)}</div>}
                 {data && data.page.total > (data.page.pageSize || NODE_PAGE_SIZE) && <div className="flex items-center justify-center gap-3 border-t border-ui-border/60 pt-3">
-                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 max-md:h-11 max-md:w-11" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
                     <span className="text-xs tabular-nums text-ui-muted">{page} / {Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))}</span>
-                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 max-md:h-11 max-md:w-11" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
                 </div>}
             </WorkspaceDirectory>
             <WorkspaceDetail hiddenOnMobile={!showdata.show} transitionKey={showdata.new ? 'new-node' : showdata.id}>

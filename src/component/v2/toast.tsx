@@ -112,7 +112,10 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
           ))}
         </AnimatePresence>
 
-        <ToastPrimitive.Viewport className="fixed top-0 right-0 flex flex-col p-[20px] gap-[10px] w-[380px] max-w-[100vw] m-0 list-none z-[2147483647] outline-none" />
+        {/* Phones show notices full width just below the App Bar: the bottom of the
+            screen holds the tab bar, sticky Save bars and actions at the end of a page,
+            which a notice must not cover. Wide screens keep the top-right stack. */}
+        <ToastPrimitive.Viewport className="fixed z-[2147483647] m-0 flex max-w-[100vw] list-none flex-col gap-2.5 outline-none max-sm:inset-x-0 max-sm:top-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top))] max-sm:p-3 sm:top-0 sm:right-0 sm:w-[380px] sm:p-5" />
       </ToastPrimitive.Provider>
     </GlobalToastContext.Provider>
   );

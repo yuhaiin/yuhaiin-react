@@ -379,7 +379,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     className="absolute top-0 left-0 w-full h-full overflow-hidden"
                 />
             </div>
-            <div className="flex justify-between pb-2 text-[11px] tabular-nums text-ui-muted" style={{ paddingLeft: AXIS_WIDTH + PLOT_PADDING_X, paddingRight: PLOT_PADDING_X }}>
+            <div className="flex justify-between pb-2 text-xs tabular-nums text-ui-muted" style={{ paddingLeft: AXIS_WIDTH + PLOT_PADDING_X, paddingRight: PLOT_PADDING_X }}>
                 <span>{data.labels[0] ?? ""}</span>
                 <span>{data.labels.length > 0 ? t('now') : ""}</span>
             </div>

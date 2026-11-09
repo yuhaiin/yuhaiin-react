@@ -57,7 +57,7 @@ function PipelineStep({ index, title, count, action, last = false, children }: {
   return (
     <section className="relative pb-3 pl-7">
       <span aria-hidden="true"
-        className="absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ui-border bg-ui-surface text-[11px] font-medium tabular-nums text-ui-secondary">
+        className="absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ui-border bg-ui-surface text-xs font-medium tabular-nums text-ui-secondary">
         {index}
       </span>
       {!last && <span aria-hidden="true" className="absolute bottom-0 left-[9.5px] top-7 w-px bg-ui-border/70" />}
@@ -384,7 +384,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                   <p className="mt-1 truncate pl-0 text-xs text-ui-secondary">
                     {item.enabled ? t("enabled") : t("disabled")} · {item.listen || t("interception")}
                   </p>
-                  <p className="mt-1 text-[11px] text-ui-secondary">
+                  <p className="mt-1 text-xs text-ui-secondary">
                     {itemRuntime?.requests ?? 0} {t("requests")}
                   </p>
                 </button>

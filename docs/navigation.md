@@ -68,6 +68,24 @@ list instead of reopening the record.
 In-page Back buttons call `useCloseGuard`'s close (which asks) and then
 `close()` with the answer, so they never ask twice.
 
+## Phone tab bar and transitions
+
+Below lg a tab bar (`src/docs/nav/BottomNav.tsx`) links Home, Nodes, Routing and
+Connections; **More** opens the navigation drawer, which is a history layer like
+before. Tabs navigate with `navigate()` (push, guarded by unsaved-change checks);
+none of them adds or replaces entries of its own. The bar hides while a record or
+draft parameter from the table above is in the URL below md, while a text field has
+focus, and on viewports shorter than 500px.
+
+Below md the directory and the detail share the page scroller. Opening a record
+stores the list's scroll offset under its history index and starts the detail at
+the top; returning to that entry (in-page Back, system Back or Forward) restores
+it.
+
+Page transitions read the same history: a traversal to a lower index animates
+backwards, moving into a sub-page forwards and back up to its parent backwards;
+other moves follow the sidebar order.
+
 ## Android WebView
 
 Handled by the Web UI:

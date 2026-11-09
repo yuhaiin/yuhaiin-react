@@ -59,7 +59,7 @@ const CertificateForm: FC<{
     <div className="grid gap-4">
         <SettingInputBytes label={uiT("certificatePem")} value={base64ToBytes(cert.cert)} disabled={!editable} onChange={(value) => onChange({ ...cert, cert: bytesToBase64(value) })} />
         <SettingInputBytes secret label={uiT("privateKeyPem")} value={base64ToBytes(cert.key)} disabled={!editable} onChange={(value) => onChange({ ...cert, key: bytesToBase64(value) })} />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
             <StringField label={uiT("certFilePath")} value={cert.cert_file_path} disabled={!editable} onChange={(cert_file_path) => onChange({ ...cert, cert_file_path })} />
             <StringField label={uiT("keyFilePath")} value={cert.key_file_path} disabled={!editable} onChange={(key_file_path) => onChange({ ...cert, key_file_path })} />
         </div>

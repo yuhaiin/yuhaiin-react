@@ -7,7 +7,7 @@ import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
 import { useMediaQuery } from "../../hooks/use-media-query";
 import { useHistoryLayer } from "../../hooks/use-history-layer";
-import { cn, motionTiming, ui } from "./styles";
+import { cn, motionEase, motionTiming, ui } from "./styles";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string, close: () => void }>({ open: false, transformOrigin: 'center center', close: () => undefined });
@@ -59,19 +59,16 @@ const overlayVariants = {
     visible: { opacity: 1 },
 };
 
+// A small settle reads as "this opened" without the zoom of a large scale change.
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
-    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
-        type: 'spring', stiffness: 300, damping: 25,
-        opacity: { duration: motionTiming.normal, ease: 'easeOut' },
-    } },
-    exit: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%", transition: { duration: motionTiming.slow, ease: 'easeInOut' } },
+    hidden: { opacity: 0, scale: 0.96, y: "-50%", x: "-50%" },
+    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: { duration: motionTiming.normal, ease: motionEase.standard } },
+    exit: { opacity: 0, scale: 0.98, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
 };
 
-const sheetEase = [0.32, 0.72, 0, 1] as const;
 const sheetVariants = {
     hidden: { y: "100%" },
-    visible: { y: 0, transition: { duration: 0.28, ease: sheetEase } },
+    visible: { y: 0, transition: { duration: motionTiming.sheet, ease: motionEase.sheet } },
     exit: { y: "100%", transition: { duration: motionTiming.slow, ease: 'easeIn' } },
 };
 const reducedSheetVariants = {
@@ -84,7 +81,11 @@ const SHEET_DISMISS_VELOCITY = 500;
 
 type ModalContentProps = React.ComponentProps<typeof DialogPrimitive.Content> & {
     width?: number;
-    /** Below md, slides up from the bottom edge and can be dragged down to close. */
+    /**
+     * Below md, slides up from the bottom edge and can be dragged down by its
+     * handle or header to close. On by default so phones share one pattern;
+     * pass false for a dialog that must stay centered.
+     */
     mobileSheet?: boolean;
 };
 
@@ -122,7 +123,7 @@ const ModalDialog = ({ className, children, style, width = 500, sheet, ...props 
                             className={cn(
                                 "fixed min-w-0 z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border shadow-ui-elevated",
                                 sheet
-                                    ? "inset-x-0 bottom-0 w-full max-h-[85dvh] rounded-t-ui-lg border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
+                                    ? "inset-x-0 bottom-0 w-full max-h-[calc(100dvh-env(safe-area-inset-top)-24px)] rounded-t-[16px] border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
                                     : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] rounded-ui-lg",
                                 className
                             )}
@@ -171,7 +172,7 @@ const ModalSheetContent = (props: Omit<ModalContentProps, 'mobileSheet'>) => {
     return <ModalDialog sheet={narrow} {...props} />;
 };
 
-const ModalContent = ({ mobileSheet = false, ...props }: ModalContentProps) =>
+const ModalContent = ({ mobileSheet = true, ...props }: ModalContentProps) =>
     mobileSheet ? <ModalSheetContent {...props} /> : <ModalDialog sheet={false} {...props} />;
 ModalContent.displayName = "ModalContent";
 
@@ -221,7 +222,8 @@ ModalTitle.displayName = "ModalTitle";
 
 // 4. Body
 const ModalBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto overscroll-contain p-4", className)} {...props} />
+    // A size container, so forms lay out by the dialog's width like they do in a workspace pane.
+    <div className={clsx("@container relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto overscroll-contain p-4", className)} {...props} />
 );
 
 // 5. Footer

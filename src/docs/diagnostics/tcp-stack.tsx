@@ -96,7 +96,7 @@ function FlowRow({ flow }: { flow: TCPFlowDiagnostic }) {
     const { t } = useTranslation('diagnostics');
     const cell = 'px-3 py-1.5 align-top';
     const num = `${cell} text-right font-mono tabular-nums`;
-    const sub = 'text-[11px] text-ui-muted';
+    const sub = 'text-xs text-ui-muted';
     return <tr className="border-t border-ui-border/50 text-xs hover:bg-ui-surface-muted/60">
         <td className={cell}>
             <div className="break-all font-mono text-ui-heading">{flow.remote}</div>
@@ -485,7 +485,7 @@ export function TCPStackPanel() {
             </div>
             <WorkspaceLayout>
                 <WorkspaceDirectory label={t(view === 'inbound' ? 'tcp.inboundsTitle' : 'tcp.outboundsTitle')} hiddenOnMobile={mobileOpen}>
-                    <ul className="m-0 max-h-[min(72vh,900px)] list-none divide-y divide-ui-border/40 overflow-y-auto overscroll-contain p-0">
+                    <ul className="m-0 list-none divide-y divide-ui-border/40 p-0 md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
                         {rows.map(row => <DirectoryRow key={row.id} row={row} selected={row.id === selected} onSelect={() => { setSelection(current => ({ ...current, [view]: row.id })); setMobileOpen(true); }} />)}
                         {!rows.length && <li className="px-3 py-8 text-center text-xs text-ui-muted">{t(view === 'inbound' ? 'tcp.noInbounds' : 'tcp.noOutbounds')}</li>}
                     </ul>

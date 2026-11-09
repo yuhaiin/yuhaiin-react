@@ -84,7 +84,7 @@ export default function Subscribe() {
     if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>;
     if (isLoading && !data) return <Loading />;
     return <MainContainer><ResourceWorkspace title={t('subscriptionsTitle')} description={uiT('manageRemoteConfigurationLinks')}
-        items={items.map(item => ({ id: item.name, name: item.name, description: subscriptionSource(item.url), icon: <Rss />, status: <span className="text-[0.625rem] uppercase text-ui-muted">{!item.type || item.type === 'reserve' ? t('subscriptionAutoDetect') : item.type}</span> }))}
+        items={items.map(item => ({ id: item.name, name: item.name, description: subscriptionSource(item.url), icon: <Rss />, status: <span className="text-xs uppercase text-ui-muted">{!item.type || item.type === 'reserve' ? t('subscriptionAutoDetect') : item.type}</span> }))}
         selectedId={selection.id} editing={selection.creating || Boolean(selected)} onSelect={selection.select} onCreate={() => selection.create()} createDisabled={selection.creating}
         search={{ value: query, onChange: setQuery }}>
         {(selection.creating || selected) && <SubscriptionEditor key={selection.creating ? 'new' : selection.id} item={selected} creating={selection.creating} onClose={selection.close}

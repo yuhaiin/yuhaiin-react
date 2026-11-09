@@ -18,7 +18,7 @@ export const SoftEtherForm: FC<{
 
     return (
         <div className="grid gap-3">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                 <SettingInputVertical label={t("softEtherGateway")} value={config.gateway ?? ""}
                     disabled={!editable} placeholder="vpn.example.com:443"
                     onChange={(gateway) => onChange({ gateway })} />
@@ -59,7 +59,7 @@ export const SoftEtherForm: FC<{
                 <p className="text-sm text-ui-muted">{t("softEtherSecretHelp")}</p>
             </div>}
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                 <SettingInputVertical label={t("softEtherStaticIPv4")} value={config.address ?? ""}
                     disabled={!editable} placeholder="192.168.30.25/24"
                     onChange={(address) => onChange({ address })} />

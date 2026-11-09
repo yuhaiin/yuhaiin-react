@@ -22,7 +22,7 @@ export const Card: FC<{
 }> = ({ children, className, style, interactive = false, noMargin = false, density = "normal" }) => (
     <div
         className={clsx(
-            "flex flex-col relative overflow-hidden",
+            "ui-card flex flex-col relative overflow-hidden",
             ui.card,
             interactive && ui.cardInteractive,
             !noMargin && (density === "compact" ? "mb-3" : "mb-6"),
@@ -595,7 +595,7 @@ export const FilterSearch: FC<{
                 }}
                 className={clsx(
                     "w-full bg-ui-surface-muted border border-ui-border rounded-ui-md focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
-                    size === 'sm' ? "h-8 pl-10 pr-8 max-sm:pr-11 text-sm" : "h-10 pl-12 pr-10 max-sm:pr-11",
+                    size === 'sm' ? "h-8 pl-10 pr-8 max-sm:h-11 max-sm:pr-11 max-sm:text-base text-sm" : "h-10 pl-12 pr-10 max-sm:h-11 max-sm:pr-11 max-sm:text-base",
                     inputClassName
                 )}
                 style={inputStyle}

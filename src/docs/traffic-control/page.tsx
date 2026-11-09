@@ -80,7 +80,7 @@ function ProfileList({ editor }: { editor: Editor }) {
                                 <span className="min-w-0 flex-1">
                                     <span className="flex min-w-0 items-center gap-2">
                                         <span className="truncate text-sm font-medium text-ui-heading">{name}</span>
-                                        {isDefault && <span className="shrink-0 rounded-full bg-ui-primary/15 px-2 py-0.5 text-[11px] font-medium text-ui-primary">{t('defaultBadge')}</span>}
+                                        {isDefault && <span className="shrink-0 rounded-full bg-ui-primary/15 px-2 py-0.5 text-xs font-medium text-ui-primary">{t('defaultBadge')}</span>}
                                     </span>
                                     <span className="mt-0.5 block truncate text-xs text-ui-secondary">
                                         {summary(draft.profiles[name])} · {t('usedBy', { count: used })}
