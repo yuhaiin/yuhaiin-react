@@ -10,7 +10,7 @@ it('collapses on a long scroll down, restores on scroll up, near the top and on 
     main.append(scroller); document.body.append(main);
     const host = document.createElement('div'); document.body.append(host);
     const root = createRoot(host);
-    function Probe({ page }: { page: object }) { return <span>{String(useScrollCollapse(page, true))}</span>; }
+    function Probe({ page }: { page: object }) { return <span>{String(useScrollCollapse(page, true).collapsed)}</span>; }
     const pageA = {}, pageB = {};
     const scrollTo = (top: number) => act(() => { scroller.scrollTop = top; scroller.dispatchEvent(new Event('scroll')); });
     try {

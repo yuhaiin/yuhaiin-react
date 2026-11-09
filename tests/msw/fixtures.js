@@ -307,6 +307,13 @@ const worker=setupWorker(
       if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
       result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:'',operation:protectedUpdateReady&&updateOperationId?{id:updateOperationId,phase:elapsed>=4500?'completed':elapsed<1500?'capturing':'starting',sourceSha256:'b'.repeat(64),targetSha256:reviewedUpdateDigest,backupJobId:'synthetic-job',backupId:'synthetic-update-point',startedAt:new Date(updateStartedAt).toISOString()}:undefined};
     }
+    // Frontend OTA panel; the check waits a moment so its pending state is visible.
+    else if(op==='frontend.status'||op==='frontend.check'){
+      const build=(version)=>({version,buildNumber:Number(version.split('-')[2]),apiContract:1});
+      const status={source:'downloaded',active:build('ui-v2-2000000000547-8f1ed6dd0fba'),embedded:build('ui-v2-2000000000544-38574a76b4cd'),installed:build('ui-v2-2000000000547-8f1ed6dd0fba'),capabilities:['ota']};
+      if(op==='frontend.check'){await new Promise(r=>setTimeout(r,900));result={status,release:{...build('ui-v2-2000000000552-0123456789ab'),url:'https://example.invalid/ui.zip',sha256:'a'.repeat(64),size:1048576},available:true,compatible:true};}
+      else result=status;
+    }
     else if(op==='info'){
       const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;
       if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
