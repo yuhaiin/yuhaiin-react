@@ -139,7 +139,9 @@
     "export": "ダウンロード",
     "exportWarning": "ログには接続先ドメイン、IP アドレス、アプリ識別子、認証情報が含まれる場合があります。共有前に確認・伏せ字にしてください。ダウンロードしますか？",
     "sourceCore": "コア",
-    "sourceAndroid": "Android"
+    "sourceAndroid": "Android",
+    "source": "ソース",
+    "retention": "保持行数"
   },
   "backup": {
     "title": "バックアップと復元",

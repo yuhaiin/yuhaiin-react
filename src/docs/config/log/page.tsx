@@ -8,11 +8,12 @@ import { AuthenticatedEventSource } from "@/auth/event-stream";
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, MainContainer } from '@/component/v2/card'
+import { Dropdown, DropdownContent, DropdownGroup, DropdownItem, DropdownLabel, DropdownRadioGroup, DropdownRadioItem, DropdownTrigger } from '@/component/v2/dropdown';
 import { Select } from '@/component/v2/select';
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
-import { ArrowUp, Download, Pause, Play, Radio, Trash2 } from 'lucide-react'
+import { ArrowUp, Download, Pause, Play, Radio, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
@@ -260,6 +261,13 @@ export default function LogComponent() {
         publish()
     }, [logBuffer, publish, activeSource])
 
+    const changeMinLevel = useCallback((value: string) => {
+        if (!MIN_LEVELS.includes(value as LogLevel)) return
+        followLatestRef.current = true
+        publish()
+        setMinLevel(value as LogLevel)
+    }, [publish])
+
     const changeSource = useCallback((value: string) => {
         if ((value !== 'core' && value !== 'android') || value === activeSource) return
         setSource(value)
@@ -295,44 +303,77 @@ export default function LogComponent() {
                 title={uiT("log")}
                 description={uiT("realTimeSystemEvents")}
                 className="mb-3 shrink-0"
-                actions={<Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
-                    <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
-                </Badge>}
+                actions={<div className="flex shrink-0 items-center gap-1.5">
+                    {activeSource === 'android' && <Badge variant="secondary" pill className="text-[0.7rem] px-2 py-1">{androidT("logs.sourceAndroid")}</Badge>}
+                    <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
+                        <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
+                    </Badge>
+                </div>}
             />
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
-                    <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; publish(); setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
-                        <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
-                            <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
-                                {LOG_RETENTION_OPTIONS.map(value => (
-                                    <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-1.5 sm:!px-2.5" key={value} value={String(value)}>{value}</ToggleItem>
-                                ))}
-                            </ToggleGroup>
-                            <div className="flex shrink-0 items-center gap-2">
-                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
-                                    <Trash2 size={16} />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; publish(); setSearchTerm(term); }} className="min-w-0 flex-1 basis-48" inputClassName="max-sm:min-h-11 max-sm:text-base" />
+                        {/* Phones: everything but search and pause folds into one menu so the list keeps the screen. */}
+                        <Dropdown>
+                            <DropdownTrigger asChild>
+                                <Button className="relative max-sm:!h-11 max-sm:!w-11 sm:hidden" size="icon" variant="outline-secondary" aria-label={uiT("moreOptions")} title={uiT("moreOptions")}>
+                                    <SlidersHorizontal size={16} />
+                                    {minLevel !== 'TRACE' && <span aria-hidden="true" className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-ui-primary" />}
                                 </Button>
-                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            </DropdownTrigger>
+                            <DropdownContent align="end" className="!w-56" viewportClassName="max-h-[calc(var(--radix-dropdown-menu-content-available-height)-1rem)]">
+                                {platform && (
+                                    <DropdownGroup>
+                                        <DropdownLabel>{androidT("logs.source")}</DropdownLabel>
+                                        <DropdownRadioGroup value={activeSource} onValueChange={changeSource}>
+                                            <DropdownRadioItem value="core">{androidT("logs.sourceCore")}</DropdownRadioItem>
+                                            <DropdownRadioItem value="android">{androidT("logs.sourceAndroid")}</DropdownRadioItem>
+                                        </DropdownRadioGroup>
+                                    </DropdownGroup>
+                                )}
+                                <DropdownGroup>
+                                    <DropdownLabel>{androidT("logs.level")}</DropdownLabel>
+                                    <DropdownRadioGroup value={minLevel} onValueChange={changeMinLevel}>
+                                        {MIN_LEVELS.map(value => <DropdownRadioItem key={value} value={value}>{androidT(`logs.levels.${LEVEL_LABEL_KEY[value]}`)}</DropdownRadioItem>)}
+                                    </DropdownRadioGroup>
+                                </DropdownGroup>
+                                <DropdownGroup>
+                                    <DropdownLabel>{androidT("logs.retention")}</DropdownLabel>
+                                    <DropdownRadioGroup value={String(retention)} onValueChange={changeRetention}>
+                                        {LOG_RETENTION_OPTIONS.map(value => <DropdownRadioItem key={value} value={String(value)}>{value}</DropdownRadioItem>)}
+                                    </DropdownRadioGroup>
+                                </DropdownGroup>
+                                <div role="separator" className="my-1 h-px bg-ui-border" />
+                                <DropdownItem onSelect={clearLogs}><Trash2 size={14} aria-hidden="true" />{uiT("clearLogs")}</DropdownItem>
+                                {activeSource === 'android' && <DropdownItem disabled={exporting} onSelect={downloadAndroidLogs}><Download size={14} aria-hidden="true" />{androidT("logs.export")}</DropdownItem>}
+                            </DropdownContent>
+                        </Dropdown>
+                        {/* Wider screens have room to show the same controls inline. */}
+                        <div className="hidden min-w-0 items-center gap-2 sm:flex sm:flex-wrap">
                             {platform && (
-                                <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={activeSource} onValueChange={(v) => v && changeSource(v)}>
+                                <ToggleGroup className="shrink-0 flex-nowrap" type="single" value={activeSource} onValueChange={(v) => v && changeSource(v)}>
                                     <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-2.5" value="core">{androidT("logs.sourceCore")}</ToggleItem>
                                     <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-2.5" value="android">{androidT("logs.sourceAndroid")}</ToggleItem>
                                 </ToggleGroup>
                             )}
-                            <Select size="sm" triggerClassName="!w-auto min-w-24" ariaLabel={androidT("logs.level")} value={minLevel} onValueChange={(v) => { followLatestRef.current = true; publish(); setMinLevel(v as LogLevel); }}
+                            <Select size="sm" triggerClassName="!w-auto min-w-24" ariaLabel={androidT("logs.level")} value={minLevel} onValueChange={changeMinLevel}
                                 items={MIN_LEVELS.map(value => ({ value, label: androidT(`logs.levels.${LEVEL_LABEL_KEY[value]}`) }))} />
-                        </div>
-                        {activeSource === 'android' && (
-                            <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" loading={exporting} aria-label={androidT("logs.export")} title={androidT("logs.export")} onClick={downloadAndroidLogs}>
-                                <Download size={16} aria-hidden="true" />
+                            <ToggleGroup className="shrink-0 flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                                {LOG_RETENTION_OPTIONS.map(value => (
+                                    <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-2.5" key={value} value={String(value)}>{value}</ToggleItem>
+                                ))}
+                            </ToggleGroup>
+                            <Button size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
+                                <Trash2 size={16} />
                             </Button>
-                        )}
+                            {activeSource === 'android' && (
+                                <Button size="icon" variant="outline-secondary" loading={exporting} aria-label={androidT("logs.export")} title={androidT("logs.export")} onClick={downloadAndroidLogs}>
+                                    <Download size={16} aria-hidden="true" />
+                                </Button>
+                            )}
+                        </div>
+                        <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
                     </div>
                     {actionError && <p role="alert" className="mt-2 text-xs text-ui-danger">{actionError}</p>}
                     {(paused || !visible) && <p role="status" className="mt-2 text-xs text-ui-muted">{uiT("collectionPausesInTheBackgroundOrWhenPausedEventsDuringThatTimeAreNotCollectedRetainedLogsStayAvailable")}</p>}

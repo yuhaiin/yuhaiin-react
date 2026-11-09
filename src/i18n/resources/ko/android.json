@@ -139,7 +139,9 @@
     "export": "다운로드",
     "exportWarning": "로그에는 대상 도메인, IP 주소, 앱 식별자, 자격 증명이 포함될 수 있습니다. 공유하기 전에 확인하고 가리세요. 다운로드할까요?",
     "sourceCore": "코어",
-    "sourceAndroid": "Android"
+    "sourceAndroid": "Android",
+    "source": "소스",
+    "retention": "보관 줄 수"
   },
   "backup": {
     "title": "백업 및 복원",

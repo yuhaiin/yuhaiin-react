@@ -139,7 +139,9 @@
     "export": "Download",
     "exportWarning": "Logs may contain destination domains, IP addresses, app identifiers and credentials. Review and redact them before sharing. Download?",
     "sourceCore": "Core",
-    "sourceAndroid": "Android"
+    "sourceAndroid": "Android",
+    "source": "Source",
+    "retention": "Lines kept"
   },
   "backup": {
     "title": "Backup & restore",
