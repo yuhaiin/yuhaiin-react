@@ -1,7 +1,6 @@
 import { useSecretIsolation } from "@/component/secret-values";
 import { isValidTimezone, timezoneOptions } from "@/common/timezones";
 import { useSession } from "@/auth/context";
-import { useBackendCapability } from "@/hooks/use-backend-capability";
 import { PageHeader } from '@/component/v2/page-header';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { useTranslation } from 'react-i18next';
@@ -58,7 +57,6 @@ function ConfigComponent() {
     const invalidOrigin = origins.length > 32 || origins.some((origin) => !validTrustedOrigin(origin)) || new Set(origins).size !== origins.length;
     const wrap = setting?.wrap;
     const timezoneChoices = useMemo(() => timezoneOptions(), []);
-    const supportsWrapTimezone = useBackendCapability("ssh.wrap.timezone.v1");
     const validID = (value: number) => Number.isSafeInteger(value) && value > 0 && value <= 0xffffffff;
     const wrapInvalid = Boolean((wrap?.timezone && !isValidTimezone(wrap.timezone)) || (wrap?.enabled && (!validID(wrap.uid) || !validID(wrap.gid) ||
         (wrap.socket !== "" && !wrap.socket.startsWith("/")) ||
@@ -184,13 +182,11 @@ function ConfigComponent() {
                                 value={String(setting.wrap.gid)}
                                 onChange={(value) => update(prev => ({ ...prev, wrap: { ...prev.wrap, gid: Number(value) } }))} />
                             <div className="md:col-span-2">
-                                {supportsWrapTimezone ? <>
-                                    <SettingInputVertical label={uiT("wrapTimezone")} value={setting.wrap.timezone}
-                                        onChange={(timezone) => update(prev => ({ ...prev, wrap: { ...prev.wrap, timezone } }))}
-                                        reminds={[{ value: "", label: uiT("wrapTimezoneInherit") }, ...timezoneChoices]}
-                                        showAllOnFocus placeholder={uiT("wrapTimezoneInherit")} spellCheck={false} autoComplete="off" />
-                                    <p className="mt-1 text-xs text-ui-muted">{uiT("wrapTimezoneHelp")}</p>
-                                </> : <p role="note" className="text-sm text-ui-muted">{uiT("frontendRequiresNewCore")}</p>}
+                                <SettingInputVertical label={uiT("wrapTimezone")} value={setting.wrap.timezone}
+                                    onChange={(timezone) => update(prev => ({ ...prev, wrap: { ...prev.wrap, timezone } }))}
+                                    reminds={[{ value: "", label: uiT("wrapTimezoneInherit") }, ...timezoneChoices]}
+                                    showAllOnFocus placeholder={uiT("wrapTimezoneInherit")} spellCheck={false} autoComplete="off" />
+                                <p className="mt-1 text-xs text-ui-muted">{uiT("wrapTimezoneHelp")}</p>
                             </div>
                             <div className="md:col-span-2">
                                 <SettingInputVertical label={uiT("wrapCgroupRoot")} value={setting.wrap.cgroupRoot}
