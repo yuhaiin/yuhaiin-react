@@ -404,6 +404,10 @@ details:not([open]) > summary { margin-block-end: 0; }
 /* While the phone App Bar is scrolled away, page-level sticky bars move up with it. */
 @media (max-width: 1023.98px) {
     html[data-app-bar="collapsed"] { --app-bar-collapse: var(--mobile-app-bar-height); }
+    /* A full-height page with its own list scroller grows into the bars' space. */
+    html[data-app-bar="collapsed"][data-chrome-reclaim] { --chrome-top-reclaim: var(--mobile-app-bar-height); }
+    html[data-app-bar="collapsed"][data-chrome-reclaim][data-bottom-nav="visible"] { --chrome-bottom-reclaim: var(--bottom-nav-height); }
+    html[data-chrome-animate] [data-ui-transition="page"] { transition: padding var(--motion-slow) var(--ease-standard); }
 }
 
 /* Phone editors keep their primary actions on screen. The page scroller has a
