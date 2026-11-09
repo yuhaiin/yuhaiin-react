@@ -29,16 +29,21 @@ vi.mock("@/component/route-target-picker", () => ({
   RouteTargetPicker: () => <div>existing target picker</div>,
 }));
 
+// jsdom has no layout: answer the width queries the page asks for.
+function stubViewport(size: "desktop" | "phone") {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: size === "phone" ? query.includes("max-width") : query.includes("min-width"),
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }));
+}
+
 let host: HTMLDivElement;
 let root: Root;
 let config: Config;
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal("matchMedia", () => ({
-    matches: false,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-  }));
+  stubViewport("desktop");
   const gateway = {
     ...newGateway(),
     id: "g",
@@ -597,3 +602,24 @@ it("configures HTTPS MITM directly on the Gateway without attaching an Inbound",
 });
 
 afterEach(resetTestAuth);
+
+it("starts on the list of gateways on a phone instead of opening the first one", async () => {
+  stubViewport("phone");
+  await render();
+  expect(host.textContent).toContain("gatewayDirectoryHelp");
+  expect(host.querySelector('nav[aria-label="gateway"]')).toBeNull();
+  expect(window.location.hash).not.toContain("gateway=");
+});
+
+it("shows Save and Discard on a phone only while there are unsaved changes", async () => {
+  stubViewport("phone");
+  await render();
+  const saveButtons = () => [...host.querySelectorAll("button")].filter((b) => b.textContent?.trim() === "saveActivate");
+  expect(saveButtons()).toHaveLength(0);
+  await act(async () => host.querySelector<HTMLButtonElement>("ul button")!.click());
+  await click("gatewaySettings");
+  edit(input("name"), "Renamed");
+  expect(saveButtons()).toHaveLength(1);
+  await click("discard");
+  expect(saveButtons()).toHaveLength(0);
+});

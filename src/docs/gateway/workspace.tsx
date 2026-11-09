@@ -135,9 +135,10 @@ function pruneUnusedPools(config: Config): Config {
 
 export function GatewayWorkspace({ config, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
-  // The open gateway lives in the URL (`?gateway=`). As before, the first one opens
-  // on every screen size; selecting it replaces the entry and adds no history.
-  const workspace = useWorkspaceNavigation("gateway", { autoSelect: config.gateways[0]?.id, autoSelectOnMobile: true });
+  // The open gateway lives in the URL (`?gateway=`). The desktop detail pane opens
+  // the first one (replacing the entry, so no history). Phones start on the list
+  // of gateways instead of being sent straight into the first one.
+  const workspace = useWorkspaceNavigation("gateway", { autoSelect: config.gateways[0]?.id });
   const selectedId = workspace.id || null;
   const openGateway = workspace.open;
   const [editorByGateway, setEditorByGateway] = useState<Record<string, GatewayEditorSelection>>({});
@@ -358,7 +359,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
             </div>
           )}
         </div>
-        <ul className="m-0 max-h-[min(72vh,900px)] list-none space-y-1 overflow-y-auto overscroll-contain p-0">
+        <ul className="m-0 list-none space-y-1 p-0 md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
           {config.gateways.map((item) => {
             const itemRuntime = status.find((entry) => entry.id === item.id);
             const selected = item.id === selectedId;
@@ -403,19 +404,21 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                 onClick={workspace.close}>
                 <ArrowLeft size={16} />{t("backToGateways")}
               </Button>
-              <div className="flex min-w-0 items-start gap-3">
+              {/* On phones the name gets the full width and the actions sit below it. */}
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">
                   <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">
                     {gateway.name || t("newGateway")}
                   </h2>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-ui-secondary">
-                    <span className={gateway.enabled ? "h-1.5 w-1.5 rounded-full bg-ui-success" : "h-1.5 w-1.5 rounded-full bg-ui-muted"} aria-hidden="true" />
-                    <span>{gateway.enabled ? t("enabled") : t("disabled")}</span>
-                    <span aria-hidden="true">·</span>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ui-secondary">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={gateway.enabled ? "h-1.5 w-1.5 rounded-full bg-ui-success" : "h-1.5 w-1.5 rounded-full bg-ui-muted"} aria-hidden="true" />
+                      {gateway.enabled ? t("enabled") : t("disabled")}
+                    </span>
                     <span>{runtime?.requests ?? 0} {t("requests")}</span>
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-1">
+                <div className="flex shrink-0 items-center gap-1">
                   <Button size="sm" variant={activeSelection.kind === "settings" ? "outline-primary" : "outline-secondary"}
                     className="gap-1.5" aria-pressed={activeSelection.kind === "settings"}
                     onClick={() => selectEditor({ kind: "settings" })}>
@@ -447,7 +450,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
               </p>
             )}
             <div className="grid min-w-0 gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
-              <nav aria-label={t("gateway")} className={`min-w-0 max-h-[min(68vh,760px)] overflow-y-auto pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
+              <nav aria-label={t("gateway")} className={`min-w-0 xl:max-h-[min(68vh,760px)] xl:overflow-y-auto xl:pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
                 <p className="mb-3 text-xs text-ui-muted">{t("pipelineHelp")}</p>
                 <PipelineStep index={1} title={t("entry")}>
                   <NavigationItem label={t("entry")} description={entrySummary(gateway, interception, t)}
@@ -501,7 +504,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                   {poolItem(poolOf(gateway.default), "default-pool")}
                 </PipelineStep>
               </nav>
-              <section className={`min-w-0 space-y-4 border-t border-ui-border/60 pt-4 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0 ${narrowEditorOpen ? "" : "hidden xl:block"}`}>
+              <section className={`min-w-0 space-y-4 xl:border-l xl:border-ui-border/60 xl:pl-5 ${narrowEditorOpen ? "" : "hidden xl:block"}`}>
                 <header className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Button size="sm" variant="outline-secondary" className="mb-2 gap-2 border-transparent xl:hidden"
