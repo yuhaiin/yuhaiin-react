@@ -21,10 +21,15 @@ const VersionCard: FC = () => {
     const { data } = useSWR('android/app', getAndroidApp);
     if (!data) return null;
     return <Card><CardBody>
-        <dl className="m-0 grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
-            <dt className="text-ui-muted">{t('update.app')}</dt><dd className="m-0 break-all">{data.app ? `${data.app.versionName} (${data.app.versionCode})` : '—'}</dd>
-            <dt className="text-ui-muted">{t('update.package')}</dt><dd className="m-0 break-all">{data.app?.applicationId ?? '—'}</dd>
-            <dt className="text-ui-muted">{t('update.core')}</dt><dd className="m-0 break-all">{data.core.version} {data.core.commit}</dd>
+        <dl className="m-0 flex flex-col gap-3 text-sm sm:grid sm:grid-cols-3 sm:gap-x-6">
+            {([
+                [t('update.app'), data.app ? `${data.app.versionName} (${data.app.versionCode})` : '—'],
+                [t('update.package'), data.app?.applicationId ?? '—'],
+                [t('update.core'), `${data.core.version} ${data.core.commit}`],
+            ] as const).map(([label, value]) => <div key={label} className="min-w-0">
+                <dt className="text-xs text-ui-muted">{label}</dt>
+                <dd className="m-0 break-all font-medium text-ui-heading">{value}</dd>
+            </div>)}
         </dl>
     </CardBody></Card>;
 };

@@ -48,7 +48,7 @@ it('uses the owning page label for mobile titles without resource query or trail
     expect(navigationLabel('/unknown')).toBeUndefined();
 });
 
-it('shows the reload control only to the in-app WebView session', async () => {
+it('shows the refresh control only to the in-app WebView session', async () => {
     const { default: NavBarContainer } = await import('./NavBarContainer');
     for (const session of [true, false]) {
         android = session ? { platform: 'android', session: true } : null;
@@ -56,7 +56,7 @@ it('shows the reload control only to the in-app WebView session', async () => {
         const root = createRoot(host);
         try {
             await act(async () => root.render(<NavBarContainer><p /></NavBarContainer>));
-            expect(host.querySelector('header button[aria-label="reload"]') !== null).toBe(session);
+            expect(host.querySelector('header button[aria-label="refresh"]') !== null).toBe(session);
         } finally { act(() => root.unmount()); host.remove(); }
     }
     android = { platform: 'android', session: true };

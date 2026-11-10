@@ -148,7 +148,7 @@ function HistoryTableRow<T>({ item, columns, template, onClick, fresh }: {
     // rest collapse into one dotted line under the title.
     return <Row role="row" onClick={() => onClick(item)} {...(fresh ? { "data-history-fresh": "", initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.4, ease: "easeOut" as const } } : {})}
         style={{ "--history-columns": template } as React.CSSProperties}
-        className="grid min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 border-b border-ui-border/60 bg-ui-surface px-3 py-2 text-sm last:border-b-0 hover:bg-ui-hover focus-within:bg-ui-hover md:min-h-[52px] md:[grid-template-columns:var(--history-columns)]">
+        className="grid min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 border-b border-ui-border/60 bg-ui-surface px-3 py-2 text-sm last:border-b-0 hover:bg-ui-hover focus-within:bg-ui-hover min-h-[52px] md:[grid-template-columns:var(--history-columns)]">
         {columns.map(column => {
             if (column === primary) return <div key={column.id} role="cell" className="col-start-1 row-start-1 min-w-0 md:col-auto md:row-auto">
                 <button type="button" aria-label={column.label?.(item)} className={cn("block w-full min-w-0 rounded-ui-sm text-left", ui.focusRing)}>{column.cell(item)}</button>

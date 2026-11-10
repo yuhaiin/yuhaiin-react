@@ -1,4 +1,5 @@
 import { navigation } from "@/hooks/navigation";
+import { DetailBack } from "@/component/v2/detail-back";
 import { parentLocation, useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { createID } from "@/common/id";
 import { Button } from "@/component/v2/button";
@@ -400,10 +401,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
         {gateway && interception ? (
           <div className="space-y-4">
             <header className="border-b border-ui-border/60 pb-4">
-              <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden"
-                onClick={workspace.close}>
-                <ArrowLeft size={16} />{t("backToGateways")}
-              </Button>
+              <DetailBack label={t("backToGateways")} onBack={workspace.close} />
               {/* On phones the name gets the full width and the actions sit below it. */}
               <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">

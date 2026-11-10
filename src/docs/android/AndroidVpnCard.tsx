@@ -3,6 +3,7 @@ import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody } from '@/component/v2/card';
 import { iconToneStyles, type IconTone } from '@/component/v2/styles';
+import { haptic } from '@/common/haptics';
 import { useAndroidStatus } from '@/hooks/use-android-platform';
 import { Cpu, ShieldAlert, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useState, type FC } from 'react';
@@ -59,6 +60,7 @@ export const AndroidVpnCard: FC<{ compact?: boolean }> = ({ compact }) => {
     const code = active ? undefined : pendingError?.code ?? (userActionCodes.has(runtime.errorCode ?? '') ? runtime.errorCode : undefined);
 
     const toggle = async () => {
+        haptic();
         setPending(true);
         setActionError(null);
         try {
@@ -104,13 +106,13 @@ export const AndroidVpnCard: FC<{ compact?: boolean }> = ({ compact }) => {
             {(pendingError && !code) && <p role="alert" className="m-0 text-ui-danger">{pendingError.message}</p>}
             {(runtime.lastError && !code && !pendingError) && <p className="m-0 ui-wrap-anywhere text-ui-danger">{runtime.lastError}</p>}
             {status.vpn.inboundError && !runtime.lastError && <p className="m-0 ui-wrap-anywhere text-ui-danger">{status.vpn.inboundError}</p>}
-            {!compact && runtime.applied && <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 @container sm:grid-cols-2">
+            {!compact && runtime.applied && <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-2 sm:gap-x-6">
                 <Row label={t('vpn.generation')} value={String(runtime.generation)} />
                 <Row label="MTU" value={String(runtime.applied.mtu)} />
-                <Row label={t('vpn.addresses')} value={[runtime.applied.ipv4 && `${runtime.applied.ipv4}/${runtime.applied.ipv4Prefix}`, runtime.applied.ipv6 && `${runtime.applied.ipv6}/${runtime.applied.ipv6Prefix}`].filter(Boolean).join(', ')} />
+                <Row wide label={t('vpn.addresses')} value={[runtime.applied.ipv4 && `${runtime.applied.ipv4}/${runtime.applied.ipv4Prefix}`, runtime.applied.ipv6 && `${runtime.applied.ipv6}/${runtime.applied.ipv6Prefix}`].filter(Boolean).join(', ')} />
                 <Row label="DNS" value={runtime.applied.dns.join(', ')} />
                 <Row label={t('vpn.fakeIpRoutes')} value={runtime.applied.fakeIpRoutes.join(', ') || '—'} />
-                <Row label={t('vpn.routes')} value={runtime.applied.routes.length ? runtime.applied.routes.join(', ') : t('vpn.profileRoutes')} />
+                <Row wide label={t('vpn.routes')} value={runtime.applied.routes.length ? runtime.applied.routes.join(', ') : t('vpn.profileRoutes')} />
                 <Row label={t('vpn.reconfigurations')} value={`${runtime.reconfigurations} / ${runtime.reconfigureFailures}`} />
                 {runtime.lastSwitchMillis ? <Row label={t('vpn.lastSwitch')} value={`${runtime.lastSwitchMillis} ms`} /> : null}
             </dl>}
@@ -119,7 +121,8 @@ export const AndroidVpnCard: FC<{ compact?: boolean }> = ({ compact }) => {
     </section>;
 };
 
-const Row: FC<{ label: string; value: string }> = ({ label, value }) => <div className="min-w-0">
+// Long values (addresses, route lists) take the full row on phones; short ones sit two-up.
+const Row: FC<{ label: string; value: string; wide?: boolean }> = ({ label, value, wide }) => <div className={wide ? 'col-span-2 min-w-0 sm:col-span-1' : 'min-w-0'}>
     <dt className="text-xs text-ui-muted">{label}</dt>
     <dd className="m-0 min-w-0 ui-wrap-anywhere font-mono text-[13px] text-ui-heading">{value}</dd>
 </div>;

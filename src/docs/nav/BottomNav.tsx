@@ -117,7 +117,7 @@ export const BottomNav = forwardRef<HTMLButtonElement, {
         return <button key={key} ref={props.ref} type="button" aria-haspopup="dialog" aria-expanded={props.expanded} aria-label={t('more')} className={className} onClick={props.onClick}>{content}</button>;
     };
 
-    return <nav aria-label={t('primary')} data-bottom-nav={visible ? 'visible' : 'hidden'}
+    return <nav aria-label={t('primary')} data-app-chrome data-bottom-nav={visible ? 'visible' : 'hidden'}
         className={clsx(
             'fixed inset-x-0 bottom-0 z-[1030] border-t border-ui-border pb-[env(safe-area-inset-bottom)] lg:hidden',
             'transition-transform duration-[var(--motion-slow)] ease-[var(--ease-standard)] will-change-transform',

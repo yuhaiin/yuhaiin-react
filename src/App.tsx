@@ -12,23 +12,15 @@ import { MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { motionEase, motionTiming } from '@/component/v2/styles';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useNavigationSnapshot } from '@/hooks/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { initializationStatus } from '@/auth/api';
 import { establishLocalConnection, getSession } from '@/auth/session';
 import { getApiUrl } from '@/common/apiurl';
 import { Route, Router, Switch, useLocation } from 'wouter';
 import { navigationOrder } from './docs/nav/navigation';
+import { sectionOf } from './docs/nav/SectionTabs';
+import { pageExitGhost } from './component/page-ghost';
 import { appRoutes } from './routes';
-
-interface AndroidInterface {
-    setRefreshEnabled?: (enabled: boolean) => void
-}
-
-declare global {
-    interface Window {
-        Android?: AndroidInterface
-    }
-}
 
 // WebUI preferences are local to this browser and need no controller session.
 const publicPaths = ['/login', '/docs/webui'];
@@ -70,15 +62,13 @@ function AppContent() {
     const connecting = useLocalConnection();
     useEffect(() => { if (!connecting && !session && !publicPaths.includes(location)) navigate("/login"); }, [connecting, session, location, navigate]);
 
-    useEffect(() => {
-        window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
-    }, [location])
-
     const reducedMotion = useReducedMotion();
     const { index: historyIndex } = useNavigationSnapshot();
-    const direction = useSmartAnimation(location, navigationOrder, historyIndex);
     // Phones move pages sideways like an app stack; wide screens keep a quiet vertical settle.
     const desktop = useMediaQuery('(min-width: 1024px)');
+    // Switching between tab-bar sections on a phone cross-fades, as native tabs do.
+    const direction = useSmartAnimation(location, navigationOrder, historyIndex, desktop ? undefined : sectionOf);
+    const leavePage = useMemo(() => pageExitGhost(location), [location]);
     const offset = reducedMotion ? 0 : direction * (desktop ? 6 : 16);
     const isStandalone = location === '/login' || !session;
     const content = (
@@ -86,8 +76,10 @@ function AppContent() {
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
             'h-[100dvh] min-h-[100dvh]'
         )}>
-            {/* The next page mounts at once, so navigation and its requests never wait on an exit. */}
+            {/* The next page mounts at once, so navigation and its requests never wait on an exit;
+                the page left behind fades out as an inert copy (page-ghost.ts). */}
             <motion.div
+                ref={leavePage}
                 data-ui-transition="page"
                 key={location}
                 initial={{ opacity: 0, x: desktop ? 0 : offset, y: desktop ? offset : 0 }}

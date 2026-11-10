@@ -57,7 +57,7 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
     }));
     const labels = { nav: t, ui: uiT, routing: routeT, android: androidT };
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
-        <SidebarNav aria-label={t('toggle')}>
+        <SidebarNav aria-label={t('menu')}>
             {sections.filter(section => section.items.length > 0).map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>
                 {section.items.map(item => {
                     const Icon = item.icon;
@@ -73,10 +73,10 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
                 })}
             </SidebarSection>)}
         </SidebarNav>
-        {/* Wide screens have no mobile header; it holds the reload control otherwise. */}
-        {android && <div className="mt-4 hidden px-3.5 lg:block">
+        {/* A full reload for a page that stopped responding; the App Bar only refreshes its data. */}
+        {android && <div className="mt-4 px-3.5">
             <button type="button" onClick={() => window.location.reload()}
-                className="flex w-full items-center rounded-ui-md px-3 py-2 text-left text-sm text-sidebar-color hover:bg-sidebar-active-bg focus-visible:ring-2 focus-visible:ring-ui-focus">
+                className="flex min-h-11 w-full items-center rounded-ui-md px-3 py-2 text-left text-sm text-sidebar-color hover:bg-sidebar-active-bg focus-visible:ring-2 focus-visible:ring-ui-focus">
                 <span aria-hidden="true" className="mr-2.5 flex w-6 shrink-0 justify-center"><RotateCw size={18} /></span>
                 {t('reload')}
             </button>

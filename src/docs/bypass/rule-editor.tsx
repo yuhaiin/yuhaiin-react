@@ -1,4 +1,5 @@
 import { EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
+import { DetailBack } from '@/component/v2/detail-back';
 import { StageChangeButton } from "@/component/configuration-change";
 import { confirmAction } from '@/component/v2/confirmation';
 import { applyRouteChanges, createRule, deleteRule, getRule, saveRule } from '@/api/route';
@@ -8,7 +9,7 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultRuleDraft, type RuleDraft, type RuleItem } from '@/contract/route';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
@@ -82,7 +83,7 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
     return <section aria-label={t('ruleEditor')} className="min-w-0">
         <header className="mb-5 flex min-w-0 items-start justify-between gap-3 border-b border-ui-border/60 pb-5">
             <div className="min-w-0">
-                <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent bg-transparent md:hidden" onClick={back}><ArrowLeft size={16} />{t('backToRules')}</Button>
+                <DetailBack label={t('backToRules')} onBack={back} />
                 <p className="mb-1 text-xs font-medium text-ui-muted">{creating ? uiT('newRouteRule') : t('ruleEditor')}</p>
                 <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">{draft.rule.name || item?.name || uiT('newRouteRule')}</h2>
             </div>
