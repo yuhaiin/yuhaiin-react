@@ -412,18 +412,25 @@ details:not([open]) > summary { margin-block-end: 0; }
     html[data-chrome-animate] [data-ui-transition="page"] { transition: padding var(--motion-slow) var(--ease-standard); }
 }
 
-/* Phone editors keep their primary actions on screen. The page scroller has a
-   20px bottom padding, which the negative offset lets the bar cover. */
+/* Phone editors keep their primary actions on screen.
+   - Sticky offsets count from inside the page scroller's padding (20px, plus the
+     gesture inset while the tab bar is hidden). The negative offset puts the bar
+     on the screen edge or on the tab bar; its own padding clears the inset.
+   - At the end of the page the same negative margin lets it take that padding
+     instead of leaving it as an empty strip, and the second shadow paints the bar's surface over whatever
+     wrapper padding is still below it, so no strip of page shows underneath.
+     A shadow never adds scrollable overflow. */
 @media (max-width: 767.98px) {
     .ui-sticky-actions {
         position: sticky;
         bottom: calc(-20px - var(--bottom-sticky-under));
         z-index: 10;
         margin-inline: calc(-1 * var(--page-gutter));
+        margin-bottom: calc(-20px - var(--bottom-sticky-under));
         padding: 12px var(--page-gutter) calc(12px + var(--bottom-sticky-under));
         background: var(--surface);
         border-top: 1px solid var(--border);
-        box-shadow: 0 -6px 16px -12px rgb(0 0 0 / 30%);
+        box-shadow: 0 -6px 16px -12px rgb(0 0 0 / 30%), 0 64px 0 0 var(--surface);
     }
 }
 
