@@ -31,3 +31,31 @@ it('collapses on a long scroll down, restores on scroll up, near the top and on 
         expect(host.textContent).toBe('false');
     } finally { act(() => root.unmount()); host.remove(); main.remove(); }
 });
+
+it('ignores the offset clamp when the bars resize a full-height list', () => {
+    const main = document.createElement('main');
+    const page = document.createElement('div'); page.dataset.uiTransition = 'page';
+    const list = document.createElement('div');
+    let height = window.innerHeight, content = 5000;
+    Object.defineProperty(list, 'clientHeight', { get: () => height });
+    Object.defineProperty(list, 'scrollHeight', { get: () => content });
+    page.append(list); main.append(page); document.body.append(main);
+    const host = document.createElement('div'); document.body.append(host);
+    const root = createRoot(host);
+    const entry = {};
+    function Probe() { const state = useScrollCollapse(entry, true); return <span>{`${state.collapsed}:${state.reclaim}`}</span>; }
+    const scrollTo = (top: number) => act(() => { list.scrollTop = top; list.dispatchEvent(new Event('scroll')); });
+    try {
+        act(() => root.render(<Probe />));
+        scrollTo(4000); scrollTo(4100);
+        expect(host.textContent).toBe('true:true');
+        // The list grew into the bars' space and its offset was clamped back.
+        height += 150; scrollTo(3950);
+        expect(host.textContent).toBe('true:true');
+        scrollTo(3900);
+        expect(host.textContent).toBe('false:false'); // the user scrolling up
+        // A list too short to stay scrolled after growing keeps the bars.
+        content = height + 160; scrollTo(100); scrollTo(160);
+        expect(host.textContent).toBe('false:false');
+    } finally { act(() => root.unmount()); host.remove(); main.remove(); }
+});

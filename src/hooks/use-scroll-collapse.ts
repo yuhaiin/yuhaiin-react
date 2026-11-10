@@ -29,10 +29,12 @@ export function useScrollCollapse(resetKey: unknown, enabled: boolean) {
     useEffect(() => {
         if (!enabled) return;
         const last = new WeakMap<Element, number>();
+        const heights = new WeakMap<Element, number>();
         let travel = 0;
         const set = (collapsed: boolean, reclaim: boolean) => setState(current =>
             current.key === key.current && current.collapsed === collapsed && current.reclaim === reclaim ? current : { key: key.current, collapsed, reclaim });
-        const appBar = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-app-bar-height')) || 56;
+        const length = (name: string, fallback: number) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || fallback;
+        const appBar = () => length('--mobile-app-bar-height', 56);
         const onScroll = (event: Event) => {
             const target = event.target;
             if (!(target instanceof HTMLElement) || !target.closest('main')) return;
@@ -45,13 +47,23 @@ export function useScrollCollapse(resetKey: unknown, enabled: boolean) {
             const inner = !target.matches('[data-ui-transition="page"]') && Boolean(page) && page!.scrollHeight - page!.clientHeight <= 1;
             const previous = last.get(target) ?? top;
             last.set(target, top);
+            const height = target.clientHeight;
+            const resized = heights.has(target) && heights.get(target) !== height;
+            heights.set(target, height);
             const delta = top - previous;
             if (!delta) return;
             // Near the top, both bars are always shown.
             if (top <= appBar()) { travel = 0; set(false, false); return; }
+            // The bars moving resizes a full-height list, and near its end that clamps the
+            // offset. Such a scroll is not the user's; counting it would bring the bars
+            // straight back, and they would bounce for as long as the finger moves.
+            if (resized) { travel = 0; return; }
             // Restart the count whenever the direction flips.
             travel = Math.sign(delta) === Math.sign(travel) ? travel + delta : delta;
-            if (travel > THRESHOLD) set(true, inner);
+            // A list that grows into the bars' space must stay scrolled past the top
+            // afterwards, or the bars would return at once.
+            const room = 2 * appBar() + length('--bottom-nav-height', 56);
+            if (travel > THRESHOLD) { if (!inner || target.scrollHeight - height > room) set(true, inner); }
             else if (travel < -THRESHOLD) set(false, false);
         };
         document.addEventListener('scroll', onScroll, { capture: true, passive: true });

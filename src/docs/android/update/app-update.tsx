@@ -47,10 +47,10 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
                     <dd className="m-0 break-all font-medium text-ui-heading">{value}</dd>
                 </div>)}
             </dl>}
-            <p className="m-0 text-ui-muted">{t('update.current', { version: data.currentVersion })}</p>
+            <p className="m-0 break-all text-ui-muted">{t('update.current', { version: data.currentVersion })}</p>
             {data.release
                 ? <div className="flex flex-col gap-1">
-                    <span className="font-medium text-ui-heading">{t('update.available', { version: data.release.version })}</span>
+                    <span className="break-all font-medium text-ui-heading">{t('update.available', { version: data.release.version })}</span>
                     {data.release.notes && <pre className="m-0 max-h-60 overflow-auto whitespace-pre-wrap rounded-ui-md bg-ui-surface-muted p-2 text-xs">{data.release.notes}</pre>}
                 </div>
                 : data.stage === 'IDLE' && !data.checking && <span>{t('update.none')}</span>}

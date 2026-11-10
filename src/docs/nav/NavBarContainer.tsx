@@ -9,13 +9,28 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import { BottomNav, useBottomNavVisible } from './BottomNav';
 import { useScrollCollapse } from '@/hooks/use-scroll-collapse';
-import { useNavigationSnapshot } from '@/hooks/navigation';
+import { useNavigationSnapshot, type Snapshot } from '@/hooks/navigation';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useAppBarBackHost } from '@/hooks/app-bar';
 import { useSoftRefresh } from '@/hooks/use-soft-refresh';
 import { PullToRefresh } from './PullToRefresh';
 import { SectionTabs, useSectionTabs } from './SectionTabs';
 import clsx from 'clsx';
+
+/**
+ * The navigation entry of the current page. A modal layer is a same-URL entry on
+ * top of its page: opening or closing one is not a page change, so the entry
+ * (and with it the collapsed bars) stays as it was.
+ */
+function usePageEntry(): Snapshot {
+    const snapshot = useNavigationSnapshot();
+    const [seen, setSeen] = useState({ page: snapshot, last: snapshot });
+    if (seen.last === snapshot) return seen.page;
+    const layer = snapshot.location === seen.last.location && Boolean(snapshot.state.layer || seen.last.state.layer);
+    const page = layer ? seen.page : snapshot;
+    setSeen({ page, last: snapshot });
+    return page;
+}
 
 function NavBarContainer({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation(['nav', 'ui', 'routing', 'android']);
@@ -29,14 +44,15 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     const [showSidebar, setShowSidebar] = useState(false);
     const bottomNav = useBottomNavVisible();
     const phone = useMediaQuery('(max-width: 1023px)');
+    // An open record on a phone turns the menu button into its Back arrow.
+    const back = useAppBarBackHost(useMediaQuery('(max-width: 767px)'));
     // Scrolling down slides both bars away; scrolling up or a page change brings them back.
-    const { collapsed, reclaim } = useScrollCollapse(useNavigationSnapshot(), phone && !showSidebar);
+    // Back must stay in reach, so the bars hold still while the App Bar shows it.
+    const { collapsed, reclaim } = useScrollCollapse(usePageEntry(), phone && !showSidebar && !back);
     // The Android app has no browser chrome, so its WebView gets a refresh control here.
     const android = useAndroidPlatform();
     // Refreshes the page's data in place; the drawer keeps a full reload for a stuck page.
     const { refreshing, refresh } = useSoftRefresh();
-    // An open record on a phone turns the menu button into its Back arrow.
-    const back = useAppBarBackHost(useMediaQuery('(max-width: 767px)'));
     const sections = useSectionTabs();
     const openFrom = (trigger: React.RefObject<HTMLButtonElement | null>) => {
         returnFocus.current = trigger.current;
