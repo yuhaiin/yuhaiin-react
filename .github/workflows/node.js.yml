@@ -3,16 +3,14 @@
 
 name: Node.js CI
 
-# v2 branch: publishes the Web UI to the yuhaiin.github.io "v2" branch, which only
-# the core's v2 builds embed. The public site and stable cores keep using "main".
 on:
   push:
-    branches: ["v2"]
+    branches: ["main"]
   pull_request:
-    branches: ["v2"]
+    branches: ["main"]
 
-# Only cancel runs of the identical commit. Rerunning an old v2 SHA must not
-# cancel a newer build before it publishes. The publication checks reject
+# Only cancel runs of the identical commit. Rerunning an old main SHA must not
+# cancel a newer build before it publishes. The publication check rejects
 # stale commits independently.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}
@@ -21,10 +19,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # The rolling OTA release is updated with the workflow token; the Pages
-    # deploy below uses PERSONAL_TOKEN for the other repository.
-    permissions:
-      contents: write
 
     strategy:
       matrix:
@@ -104,7 +98,6 @@ jobs:
           rm -rf publish/assets
           rm -rf publish/docs
           rm -rf publish/index.html
-          # The OTA archive and feed are release assets (below), not Pages files.
           rm -f publish/frontend.tar.gz publish/ui-update.json
           cp -rf dist/* publish/
 
@@ -112,20 +105,22 @@ jobs:
         run: |
           tar -czf frontend.tar.gz -C dist .
           node scripts/ui-ota.mjs release
+          cp frontend.tar.gz publish/frontend.tar.gz
+          cp frontend-update.json publish/ui-update.json
 
-      - name: Confirm latest v2 before publishing
+      - name: Confirm latest main before publishing
         id: publication
-        if: github.event_name == 'push' && github.ref == 'refs/heads/v2'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          current="$(git ls-remote origin refs/heads/v2 | cut -f1)"
+          current="$(git ls-remote origin refs/heads/main | cut -f1)"
           if [[ -z "$current" ]]; then
-            echo "::error::Unable to verify current v2; refusing to publish"
+            echo "::error::Unable to verify current main; refusing to publish"
             exit 1
           fi
           if [[ "$current" == "$GITHUB_SHA" ]]; then
             echo "eligible=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::Not publishing an old workflow rerun: v2 is $current, build is $GITHUB_SHA"
+            echo "::notice::Not publishing an old workflow rerun: main is $current, build is $GITHUB_SHA"
           fi
 
       - name: Deploy
@@ -135,34 +130,8 @@ jobs:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./publish
           external_repository: yuhaiin/yuhaiin.github.io
-          publish_branch: v2 # never main from this branch
+          publish_branch: main # default: gh-pages
           enable_jekyll: false
-
-      # The Core of v2 builds reads ui-v2/ui-update.json and ui-v2/frontend.tar.gz.
-      # Assets are replaced in place, so the archive goes first: a client that
-      # sees the old feed keeps its old archive hash, and one that sees the new
-      # feed with the old archive fails its size/SHA-256 check and retries later.
-      # A build is skipped unless it is newer than the published feed, which also
-      # covers two builds racing past the check above.
-      - name: Publish frontend OTA release assets
-        if: steps.publication.outputs.eligible == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ui-v2
-        run: |
-          if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --prerelease --latest=false --target "$GITHUB_SHA" \
-              --title "Web UI v2 (rolling OTA channel)" \
-              --notes "Rolling prerelease read by v2 Cores for Web UI updates. Assets are replaced by CI on every v2 build; do not edit them."
-          fi
-          mkdir -p ota
-          gh release download "$TAG" --pattern ui-update.json --dir ota --clobber || true
-          if node scripts/ui-ota.mjs newer ota/ui-update.json; then
-            cp frontend-update.json ota/next-ui-update.json
-            gh release upload "$TAG" frontend.tar.gz --clobber
-            cp ota/next-ui-update.json ota/ui-update.json
-            gh release upload "$TAG" ota/ui-update.json --clobber
-          fi
 
       - name: upload_static
         uses: actions/upload-artifact@v7
