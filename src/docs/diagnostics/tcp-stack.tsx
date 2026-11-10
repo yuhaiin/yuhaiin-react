@@ -18,6 +18,8 @@ import type { TCPFlowDiagnostic, TCPStackDiagnostic } from '@/contract/tools';
 import clsx from 'clsx';
 import { Info, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useWorkspaceNavigation } from '@/hooks/use-workspace-navigation';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatCounter, stackScopeSummary } from './network-overview';
 import { DetailSection } from './detail-section';
@@ -271,9 +273,14 @@ export function TCPStackPanel() {
     // The previous snapshot turns cumulative counters into "what changed since last time".
     const [{ current: snapshot, previous }, setSnapshots] = useState<{ current?: Snapshot; previous?: Snapshot }>({});
     const [busy, setBusy] = useState(false);
-    const [view, setView] = useState<View>('outbound');
+    const [chosenView, setView] = useState<View>('outbound');
     const [selection, setSelection] = useState<Partial<Record<View, string>>>({});
-    const [mobileOpen, setMobileOpen] = useState(false);
+    // A phone opens a row as its own screen. The open row lives in the URL, as on the
+    // other list pages, so system Back returns to the list and the tab bar steps aside.
+    const phone = useMediaQuery('(max-width: 767px)');
+    const openNode = useWorkspaceNavigation('node'), openInbound = useWorkspaceNavigation('inbound');
+    const view: View = openInbound.id ? 'inbound' : openNode.id ? 'outbound' : chosenView;
+    const opened = view === 'inbound' ? openInbound : openNode;
     const [autoRefresh, setAutoRefresh] = useState(readAutoRefresh);
     const pending = useRef<AbortController | null>(null);
     useEffect(() => () => { pending.current?.abort(); }, []);
@@ -412,7 +419,18 @@ export function TCPStackPanel() {
         };
     }).sort(byRank);
     const rows = view === 'inbound' ? inboundRows : outboundRows;
-    const selected = rows.some(row => row.id === selection[view]) ? selection[view] : rows[0]?.id;
+    const mobileOpen = rows.some(row => row.id === opened.id);
+    const selected = mobileOpen ? opened.id : rows.some(row => row.id === selection[view]) ? selection[view] : rows[0]?.id;
+    // The snapshot lives in memory: after a reload, or once the row is gone, the URL must not keep a detail open.
+    const stale = Boolean(opened.id) && !mobileOpen && !busy;
+    const closeOpened = opened.close;
+    useEffect(() => { if (stale) closeOpened(); }, [stale, closeOpened]);
+    const select = (id: string) => {
+        setSelection(current => ({ ...current, [view]: id }));
+        if (phone) void opened.open(id);
+    };
+    // With a row open, a phone shows only that row's detail.
+    const listOnly = mobileOpen && 'max-md:hidden';
 
     const elapsed = snapshot && previous ? (Date.parse(snapshot.at) - Date.parse(previous.at)) / 1000 : 0;
     const totalRate = (direction: 'upload' | 'download') => {
@@ -429,7 +447,7 @@ export function TCPStackPanel() {
     };
 
     return <section className="min-w-0 space-y-4">
-        <Card noMargin><CardBody>
+        <Card noMargin className={clsx(listOnly)}><CardBody>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base font-semibold text-ui-heading">{t('tcp.globalTitle')}</h2>
@@ -472,8 +490,8 @@ export function TCPStackPanel() {
             </>}
         </CardBody></Card>
         {snapshot && <div className="min-w-0 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-                <ToggleGroup type="single" value={view} onValueChange={next => { if (next) { setView(next as View); setMobileOpen(false); } }} aria-label={t('tcp.globalTitle')}>
+            <div className={clsx('flex flex-wrap items-center gap-2', listOnly)}>
+                <ToggleGroup type="single" value={view} onValueChange={next => { if (next) setView(next as View); }} aria-label={t('tcp.globalTitle')}>
                     <ToggleItem value="outbound">{t('tcp.outboundsTitle')} <span className="tabular-nums text-ui-muted">{outboundRows.length}</span></ToggleItem>
                     <ToggleItem value="inbound">{t('tcp.inboundsTitle')} <span className="tabular-nums text-ui-muted">{inboundRows.length}</span></ToggleItem>
                 </ToggleGroup>
@@ -485,18 +503,18 @@ export function TCPStackPanel() {
             <WorkspaceLayout>
                 <WorkspaceDirectory label={t(view === 'inbound' ? 'tcp.inboundsTitle' : 'tcp.outboundsTitle')} hiddenOnMobile={mobileOpen}>
                     <ul className="m-0 list-none divide-y divide-ui-border/40 p-0 md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
-                        {rows.map(row => <DirectoryRow key={row.id} row={row} selected={row.id === selected} onSelect={() => { setSelection(current => ({ ...current, [view]: row.id })); setMobileOpen(true); }} />)}
+                        {rows.map(row => <DirectoryRow key={row.id} row={row} selected={row.id === selected} onSelect={() => select(row.id)} />)}
                         {!rows.length && <li className="px-3 py-8 text-center text-xs text-ui-muted">{t(view === 'inbound' ? 'tcp.noInbounds' : 'tcp.noOutbounds')}</li>}
                     </ul>
                 </WorkspaceDirectory>
                 <WorkspaceDetail hiddenOnMobile={!mobileOpen} transitionKey={`${view}:${selected ?? 'empty'}`} order={rows.findIndex(row => row.id === selected)}>
                     {!selected ? <p className="flex min-h-80 items-center justify-center text-sm text-ui-muted">{t('tcp.selectItem')}</p>
                         : view === 'inbound'
-                            ? <InboundDetail id={selected} inbound={inboundsByID.get(selected)} stack={inboundStacks.find(s => s.inboundId === selected)} onBack={() => setMobileOpen(false)} />
-                            : <OutboundDetail id={selected} outbound={outboundsByID.get(selected)} previous={previousOutbounds.get(selected)} stack={outboundStacks.find(s => s.nodeId === selected)} udpSessions={snapshot.connections ? udpByNode.get(selected) ?? [] : undefined} counters={snapshot.totals?.counters} onBack={() => setMobileOpen(false)} />}
+                            ? <InboundDetail id={selected} inbound={inboundsByID.get(selected)} stack={inboundStacks.find(s => s.inboundId === selected)} onBack={opened.close} />
+                            : <OutboundDetail id={selected} outbound={outboundsByID.get(selected)} previous={previousOutbounds.get(selected)} stack={outboundStacks.find(s => s.nodeId === selected)} udpSessions={snapshot.connections ? udpByNode.get(selected) ?? [] : undefined} counters={snapshot.totals?.counters} onBack={opened.close} />}
                 </WorkspaceDetail>
             </WorkspaceLayout>
-            <p className="text-xs text-ui-muted">{t('tcp.privacy')}</p>
+            <p className={clsx('text-xs text-ui-muted', listOnly)}>{t('tcp.privacy')}</p>
         </div>}
     </section>;
 }

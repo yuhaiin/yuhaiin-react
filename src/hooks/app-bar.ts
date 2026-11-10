@@ -27,15 +27,16 @@ const subscribe = (listener: () => void) => { listeners.add(listener); return ()
 const getSnapshot = () => snapshot;
 
 /** Registers the Back action of an open detail. Returns true while the App Bar shows it. */
-export function useAppBarBack(label: string, onBack: () => void): boolean {
+export function useAppBarBack(label: string, onBack: () => void, enabled = true): boolean {
     const action = useRef(onBack);
     useEffect(() => { action.current = onBack; }, [onBack]);
     useLayoutEffect(() => {
+        if (!enabled) return;
         const entry: Entry = { id: Symbol('back'), label, run: () => action.current() };
         entries = [...entries, entry];
         publish();
         return () => { entries = entries.filter(item => item.id !== entry.id); publish(); };
-    }, [label]);
+    }, [label, enabled]);
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot).hosted;
 }
 
