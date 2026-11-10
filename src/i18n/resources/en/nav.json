@@ -5,7 +5,6 @@
   "bypass": "BYPASS",
   "connections": "Connections",
   "setting": "Settings",
-  "toggle": "Toggle navigation",
   "close": "Close navigation",
   "reload": "Reload page",
   "monitoring": "Overview & monitoring",
@@ -31,5 +30,10 @@
     "more": "More"
   },
   "primary": "Primary navigation",
-  "more": "More pages"
+  "more": "More pages",
+  "menu": "Navigation",
+  "openMenu": "Open navigation",
+  "refresh": "Refresh",
+  "refreshing": "Refreshing…",
+  "sections": "Pages in this section"
 }

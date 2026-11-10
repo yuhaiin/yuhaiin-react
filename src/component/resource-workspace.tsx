@@ -1,11 +1,12 @@
 import { PageHeader } from '@/component/v2/page-header';
+import { DetailBack } from '@/component/v2/detail-back';
 import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout, WorkspaceSelectionMarker } from './workspace-layout';
 import { Button } from './v2/button';
 import { Input } from './v2/input';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from './v2/modal';
 import { useWorkspaceNavigation } from '@/hooks/use-workspace-navigation';
 import clsx from 'clsx';
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search, Trash } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Search, Trash } from 'lucide-react';
 import { type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -112,7 +113,7 @@ export function ResourceEditorFrame({ title, label, presentation = 'modal', open
 }) {
     const { t } = useTranslation('routing');
     if (presentation === 'inline') return <section aria-label={label} className="min-w-0">
-        <header className="mb-4 space-y-2 border-b border-ui-border pb-4"><Button variant="ghost" className="-ml-2 gap-2 px-2 text-ui-fg md:hidden" onClick={onClose}><ArrowLeft size={18} />{t('backToDirectory')}</Button><h2 className="ui-wrap-anywhere text-xl font-medium text-ui-heading">{title}</h2></header>
+        <header className="mb-4 space-y-2 border-b border-ui-border pb-4"><DetailBack label={t('backToDirectory')} onBack={onClose} /><h2 className="ui-wrap-anywhere text-xl font-medium text-ui-heading">{title}</h2></header>
         <div className="min-w-0">{children}</div>
         {/* On a phone the save/cancel row stays reachable at the bottom of long forms. */}
         <div className="ui-sticky-actions mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-5">{footer}</div>

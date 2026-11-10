@@ -13,6 +13,7 @@ thing. All of them go through one history model.
 | Workspace hook | `src/hooks/use-workspace-navigation.ts` | List/detail state in the URL: `open`, `create`, `saved`, `close`, desktop auto-selection. |
 | Resource selection | `useResourceSelection(ids, param)` in `src/component/resource-workspace.tsx` | The workspace hook for `ResourceWorkspace` pages. |
 | Modal layer | `src/hooks/use-history-layer.ts` | Used by `Modal` (default on) and the mobile sidebar drawer. |
+| App Bar Back | `src/hooks/app-bar.ts`, `src/component/v2/detail-back.tsx` | On phones an open record's in-page Back is shown in the App Bar; it runs the same `close` action. |
 | Guard | `src/hooks/navigation-guard.ts` | `navigationBlocker()` (synchronous) and `allowNavigation()` over the existing `NAVIGATION_ATTEMPT` event used by `useCloseGuard`. |
 
 Every entry the app creates carries `history.state = { yuhaiin: 1, index, from,
@@ -41,7 +42,7 @@ one query parameter:
 
 | Action | History |
 |---|---|
-| Page change (sidebar, links, `navigate`) | push |
+| Page change (sidebar, tab bar, section tabs, links, `navigate`) | push |
 | Open a record, open a new draft | push |
 | Open another record from a record | push (Back returns to the previous record) |
 | Draft saved | replace (`?new=x` → `?x=<id>`) |

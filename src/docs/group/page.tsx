@@ -1,4 +1,5 @@
 import { PageHeader } from '@/component/v2/page-header';
+import { DetailBack } from '@/component/v2/detail-back';
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
@@ -36,7 +37,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { nodeGroupName, type Node, type NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useDebounceValue, useLocalStorage } from "usehooks-ts";
@@ -410,7 +411,7 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
     const hasStun = Boolean(busy?.stun || busy?.stun_tcp || latency?.stun || latency?.stun_tcp);
     return <>
         <header className="mb-5 border-b border-ui-border/60 pb-5">
-            <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent bg-transparent md:hidden" onClick={onBack}><ArrowLeft size={16} />{t('backToNodes')}</Button>
+            <DetailBack label={t('backToNodes')} onBack={onBack} />
             <p className="mb-1 text-xs text-ui-muted">{t('nodeDetails')}</p>
             <h2 className="break-words text-xl font-medium tracking-tight text-ui-heading">{item.name || item.id}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -637,7 +638,7 @@ export default function Group() {
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
                         runtime={nodeStatuses?.[selectedItem.id]} runtimeError={statusesError ? t("outboundStatusError") : undefined}
-                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
+                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><DetailBack label={t('backToNodes')} onBack={backToNodes} /><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}

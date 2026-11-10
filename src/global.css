@@ -403,6 +403,8 @@ details:not([open]) > summary { margin-block-end: 0; }
 
 /* While the phone App Bar is scrolled away, page-level sticky bars move up with it. */
 @media (max-width: 1023.98px) {
+    /* The section row (SectionTabs) is the App Bar's second line. */
+    html[data-section-tabs] { --mobile-app-bar-height: 100px; }
     html[data-app-bar="collapsed"] { --app-bar-collapse: var(--mobile-app-bar-height); }
     /* A full-height page with its own list scroller grows into the bars' space. */
     html[data-app-bar="collapsed"][data-chrome-reclaim] { --chrome-top-reclaim: var(--mobile-app-bar-height); }
@@ -439,3 +441,25 @@ details:not([open]) > summary { margin-block-end: 0; }
 
 /* Long words, URLs and IDs wrap instead of widening narrow layouts. */
 .ui-wrap-anywhere { overflow-wrap: anywhere; }
+
+/* Touch feel. The Web UI is the Android app's main screen, so controls answer
+   like native ones: no grey tap flash (pressed states are drawn by the
+   components), no double-tap zoom delay, and no accidental text selection or
+   link preview on chrome and buttons. Content text stays selectable. */
+html { -webkit-tap-highlight-color: transparent; }
+:is(a, button, summary, label, select, input:is([type="checkbox"], [type="radio"], [type="range"]), [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"]) { touch-action: manipulation; }
+:is(button, summary, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"], [data-app-chrome]) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+/* Fields inside a label or the chrome stay editable and selectable. */
+:is(input, textarea, [contenteditable]) { -webkit-user-select: text; user-select: text; }
+/* A list that reaches its end does not drag the page (or the WebView's glow) along. */
+[data-ui-transition="page"] { overscroll-behavior-y: contain; }
+html[data-pull-refresh] [data-ui-transition="page"] { overscroll-behavior-y: none; }
+
+/* Phone disclosure rows are finger-sized even when their text is one small line. */
+@media (max-width: 767.98px) and (pointer: coarse) {
+    details > summary { min-height: var(--height-touch); align-content: center; }
+}

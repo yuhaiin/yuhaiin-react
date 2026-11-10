@@ -1,4 +1,5 @@
 import { getTCPStackDiagnostics } from '@/api/tools';
+import { DetailBack } from '@/component/v2/detail-back';
 import { getTotalFlow, getConnections } from '@/api/connections';
 import { listInboundStatuses, type InboundRuntimeStatus } from '@/api/inbounds';
 import { activeNodes, selectedNodes } from '@/api/nodes';
@@ -15,7 +16,7 @@ import type { Connection, TotalFlow } from '@/contract/connection';
 import type { Node } from '@/contract/node';
 import type { TCPFlowDiagnostic, TCPStackDiagnostic } from '@/contract/tools';
 import clsx from 'clsx';
-import { ChevronLeft, Info, RefreshCw } from 'lucide-react';
+import { Info, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatCounter, stackScopeSummary } from './network-overview';
@@ -214,9 +215,7 @@ function DirectoryRow({ row, selected, onSelect }: { row: Row; selected: boolean
 function DetailHeader({ name, tone, state, meta, onBack }: { name: string; tone: Tone; state?: string; meta?: string; onBack: () => void }) {
     const { t } = useTranslation('diagnostics');
     return <div className="mb-3 space-y-1">
-        <button type="button" onClick={onBack} className="mb-2 inline-flex items-center gap-1 text-xs text-ui-muted hover:text-ui-heading md:hidden">
-            <ChevronLeft size={14} aria-hidden="true" />{t('tcp.backToList')}
-        </button>
+        <DetailBack label={t('tcp.backToList')} onBack={onBack} />
         <div className="flex min-w-0 items-center gap-2">
             <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-ui-heading" title={name}>{name}</h3>
             {state && <Badge variant={tone === 'muted' ? 'muted' : tone}>{state}</Badge>}

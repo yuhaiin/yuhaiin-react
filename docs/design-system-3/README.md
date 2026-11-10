@@ -75,7 +75,7 @@ text so mobile browsers do not zoom on focus.
 
 | Viewport | Navigation | Page |
 | --- | --- | --- |
-| < 1024px | App bar (menu, title, Android reload) + **tab bar** (Home, Nodes, Routing, Connections, More) | Single column, `--page-gutter` |
+| < 1024px | App bar (menu or Back, title, Android refresh; second row: the current section's pages) + **tab bar** (Home, Nodes, Routing, Connections, More) | Single column, `--page-gutter` |
 | ≥ 1024px | Fixed sidebar | Workspace columns, `--content-max` |
 
 The tab bar (`src/docs/nav/BottomNav.tsx`):
@@ -85,6 +85,14 @@ The tab bar (`src/docs/nav/BottomNav.tsx`):
 - It steps aside (slides down, `inert`) while a record or draft is open on a phone (`?node=`, `?rule=`, `?new=` …; from md the detail sits beside its list), while a text field has focus (soft keyboard), and on viewports shorter than 500px (landscape phones).
 - Tapping the current tab scrolls the page to the top.
 - Visibility is published as `html[data-bottom-nav]`, so fixed UI outside the page tree and the page padding stack above it.
+
+The App Bar (`src/docs/nav/NavBarContainer.tsx`):
+
+- **Section tabs** (`SectionTabs.tsx`): a tab owns several pages (Nodes: Nodes, Selectors, Subscribe …). They are listed in a 44px scrollable second row, so they are one tap away instead of behind the drawer. The row is hidden while a record is open on a phone, on viewports shorter than 500px and when the section has one readable page. `html[data-section-tabs]` raises `--mobile-app-bar-height` to 100px; page padding, toasts and sticky offsets follow the token.
+- **Back**: an open record on a phone replaces the menu button with Back. Details render `DetailBack` (`src/component/v2/detail-back.tsx`), which registers its action with the App Bar (`src/hooks/app-bar.ts`) and only draws its own button when no App Bar hosts it (from md, where the detail sits beside its list).
+- **Refresh**: the Android refresh button and pull-to-refresh (`PullToRefresh.tsx`, touch, phone shell) revalidate the page's data in place (`useSoftRefresh`); nothing remounts and scroll, drafts and open records stay. A full reload remains in the drawer for the Android app. Add `data-no-pull-refresh` to an area that owns vertical drags.
+
+Touch behavior (`src/global.css`): no tap highlight or double-tap zoom delay on controls, no text selection or long-press callout on chrome and buttons (fields keep selection), the page scroller contains overscroll, and `<summary>` rows are 44px on touch phones. `haptic()` (`src/common/haptics.ts`) gives a short tick for VPN connect/disconnect and an armed pull.
 
 Android draws edge to edge and consumes only the horizontal (cutout) insets; the
 top and bottom insets are applied once, in CSS, by the app bar and the tab bar.
@@ -109,10 +117,14 @@ top and bottom insets are applied once, in CSS, by the app bar and the tab bar.
 
 1. Back/Forward traversal (lower index) → backwards.
 2. Into a sub-page (`/docs/group` → `/docs/group/selectors`) → forwards; up to its parent → backwards.
-3. Otherwise the sidebar order.
+3. On phones, a move between two tab-bar sections has no direction: the pages cross-fade in place, as native tabs do.
+4. Otherwise the sidebar order.
 
 Phones move pages 16px horizontally; desktop keeps a 6px vertical settle. The next
 page mounts immediately; nothing waits for an exit, and query-only changes do not remount the page.
+The page left behind fades out over 120ms as an inert DOM copy (`src/component/page-ghost.ts`):
+it is already unmounted, so it cannot react to the new URL or keep requests alive. Pages over
+2500 elements and reduced-motion users skip the copy.
 
 ## Verification
 
