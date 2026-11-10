@@ -1,4 +1,4 @@
-import { Download, Lock, Route, Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Lock, Route, Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
 
 type Label = { namespace: 'nav' | 'ui' | 'routing' | 'android'; key: string };
 export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean; platform?: 'android' }
@@ -44,7 +44,6 @@ export const navigationSections: NavigationSection[] = [
             { path: '/docs/android', label: android('vpnSettings'), icon: ShieldCheck },
             { path: '/docs/android/routes', label: android('routes.title'), icon: Route },
             { path: '/docs/android/backup', label: android('backup.title'), icon: DatabaseBackup },
-            { path: '/docs/android/update', label: android('update.title'), icon: Download },
             { path: '/docs/android/privacy', label: android('privacy.title'), icon: Lock },
         ] },
         { label: nav('accountSecurity'), icon: UserCog, items: [

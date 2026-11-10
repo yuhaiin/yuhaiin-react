@@ -1,5 +1,7 @@
 import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
 import { FrontendUpdatePanel } from './frontend-update';
+import { AndroidAppUpdate } from '@/docs/android/update/app-update';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
 import { createID } from '@/common/id';
 import { UpdateCompatibilityDetails } from './update-compatibility';
 import { PageHeader } from '@/component/v2/page-header';
@@ -104,6 +106,8 @@ export default function About() {
     const [confirmation, setConfirmation] = useState<'apply' | UpdateHistoryEntry>();
     const [cancelling, setCancelling] = useState(false);
     const canManageUpdates = usePermission('update:manage');
+    // Inside the Android app the Core ships with the APK, so the app update replaces the desktop self-update.
+    const android = useAndroidPlatform();
     const { data: history, error: historyError, mutate: refreshHistory } = useSWR(
         canManageUpdates ? "/api/v2/update/history" : null,
         getUpdateHistory,
@@ -240,7 +244,7 @@ export default function About() {
                 )}
             </Card>
 
-            <Card className="order-1">
+            {android ? <AndroidAppUpdate className="order-1" /> : <Card className="order-1">
                 <CardHeader className="py-3">
                     <IconBox icon={Rocket} tone="success" title={uiT("softwareUpdate")} description={uiT("checkGithubReleasesForANewerDesktopBuild")} />
                 </CardHeader>
@@ -373,7 +377,7 @@ export default function About() {
                         </section>}
                     </div>
                 </CardBody>
-            </Card>
+            </Card>}
 
             <FrontendUpdatePanel />
             <div className="order-3 text-center mt-4 opacity-50 pb-12">

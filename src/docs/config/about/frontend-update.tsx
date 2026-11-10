@@ -36,7 +36,8 @@ export function FrontendUpdatePanel() {
       await task();
       if (clearCheck) setCheck(undefined);
       await mutate();
-      notice.Info(t('frontendUpdateComplete'));
+      // A check only shows its result below; nothing was switched yet.
+      if (action !== 'check') notice.Info(t('frontendUpdateComplete'));
       if (refresh) window.location.reload();
     } catch (error) {
       notice.Error(updateErrorMessage(error));
@@ -47,12 +48,12 @@ export function FrontendUpdatePanel() {
 
   // This page also runs against Core versions from before UI OTA existed.
   if (!status && error) return (
-    <Card className="order-2">
+    <Card className="order-1">
       <CardHeader><IconBox icon={PanelsTopLeft} title={t('frontendUpdate')} description={t('frontendRequiresNewCore')} tone="violet" /></CardHeader>
     </Card>
   );
 
-  return <Card className="order-2">
+  return <Card className="order-1">
     <CardHeader>
       <IconBox icon={PanelsTopLeft} title={t('frontendUpdate')}
         description={t('frontendUpdateDescription')} tone="violet" />

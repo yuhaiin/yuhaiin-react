@@ -22,8 +22,7 @@
   },
   "toast": {
     "notification": "알림",
-    "systemError": "시스템 오류",
-    "justNow": "방금"
+    "systemError": "시스템 오류"
   },
   "pagination": {
     "page": "페이지",

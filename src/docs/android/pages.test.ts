@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { previewAndroidBackup, startDownload } from '@/api/android';
 import { routeLines } from './routes/page';
-import { updateBusy } from './update/page';
+import { updateBusy } from './update/app-update';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 afterEach(() => vi.unstubAllGlobals());
