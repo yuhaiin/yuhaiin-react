@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigationSnapshot } from '@/hooks/navigation';
 import { animate, LayoutGroup, motion } from 'motion/react';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -22,10 +22,16 @@ const PHONE = '(max-width: 767px)';
 /** Full-bleed on phones: the page gutter is cancelled so rows and editors use the whole width. */
 const phoneBleed = 'max-md:-mx-[var(--page-gutter)] max-md:rounded-none max-md:border-x-0';
 
+const pageScroller = (element: HTMLElement | null) => element?.closest<HTMLElement>('[data-ui-transition="page"]') ?? null;
+
 /**
  * Below md the directory and detail share the page scroller. Leaving the list
  * stores its scroll offset (per history entry) and starts the detail at the
  * top; Back restores the offset, so long lists do not jump to their start.
+ *
+ * The offset is tracked while the list scrolls. It cannot be read when the list
+ * hides: by then the page is only as tall as the detail (a spinner on first
+ * open), and the browser has already clamped the scroller to that height.
  */
 function usePhoneListScroll(hidden: boolean, element: HTMLElement | null) {
     const phone = useMediaQuery(PHONE);
@@ -33,19 +39,39 @@ function usePhoneListScroll(hidden: boolean, element: HTMLElement | null) {
     const saved = useRef(new Map<number, number>());
     const previous = useRef(hidden);
     const listIndex = useRef(index);
+    const listTop = useRef(0);
+    useEffect(() => {
+        const scroller = phone ? pageScroller(element) : null;
+        if (!scroller) return;
+        const track = () => { if (!previous.current) listTop.current = scroller.scrollTop; };
+        track();
+        scroller.addEventListener('scroll', track, { passive: true });
+        return () => scroller.removeEventListener('scroll', track);
+    }, [phone, element]);
     useLayoutEffect(() => {
+        const scroller = phone ? pageScroller(element) : null;
         const was = previous.current;
         previous.current = hidden;
-        if (!phone || !element || was === hidden) { if (!hidden) listIndex.current = index; return; }
-        const scroller = element.closest<HTMLElement>('[data-ui-transition="page"]');
-        if (!scroller) return;
+        if (!scroller || was === hidden) {
+            if (hidden) return;
+            // A record that is still loading keeps the list on screen under its new entry.
+            if (scroller && listIndex.current !== index) saved.current.set(listIndex.current, listTop.current);
+            listIndex.current = index;
+            return;
+        }
         if (hidden) {
-            saved.current.set(listIndex.current, scroller.scrollTop);
+            saved.current.set(listIndex.current, listTop.current);
             scroller.scrollTop = 0;
         } else {
             listIndex.current = index;
             const top = saved.current.get(index);
-            if (top !== undefined) scroller.scrollTop = top;
+            if (top === undefined) { listTop.current = scroller.scrollTop; return; }
+            scroller.scrollTop = top;
+            listTop.current = top;
+            if (scroller.scrollTop >= top) return;
+            // Near its end the list needs the padding of the bars that return with it (tab bar, section tabs).
+            const frame = requestAnimationFrame(() => { if (!previous.current && listIndex.current === index) scroller.scrollTop = top; });
+            return () => cancelAnimationFrame(frame);
         }
     }, [hidden, phone, element, index]);
 }
