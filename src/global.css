@@ -30,32 +30,33 @@
 
 :root {
     color-scheme: light;
-    --canvas: #F7F8FA;
-    --surface: #FFFFFF;
-    --surface-muted: #F0F2F4;
-    --surface-raised: #FFFFFF;
-    --sidebar-surface: #FAFBFC;
-    --border: #DDE2E7;
-    --border-strong: #818992;
-    --text-primary: #22272E;
-    --text-secondary: #535D68;
-    --text-tertiary: #626E7B;
+    /* Warm, low-chroma neutrals keep the accent the only tinted role. */
+    --canvas: #F4F5F1;
+    --surface: #FEFEFC;
+    --surface-muted: #ECEFE9;
+    --surface-raised: #FEFEFC;
+    --sidebar-surface: #F9FAF6;
+    --border: #DCE0D6;
+    --border-strong: #7B8475;
+    --text-primary: #20251F;
+    --text-secondary: #4D5549;
+    --text-tertiary: #5B6457;
     --accent: var(--accent-light);
     --accent-soft: var(--accent-light-soft);
     --accent-foreground: #FFFFFF;
     --accent-hover: color-mix(in srgb, var(--accent) 90%, #000);
     --accent-active: color-mix(in srgb, var(--accent) 80%, #000);
     --focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
-    --color-danger: #BB3345;
-    --color-success: #237546;
-    --color-warning: #855A12;
-    --color-info: #296C85;
+    --color-danger: #B33244;
+    --color-success: #21703F;
+    --color-warning: #7F5610;
+    --color-info: #276680;
     --chart-download: #1F7FB8;
     --chart-upload: #B5762A;
     --color-violet: #79546D;
     --elevation-0: none;
-    --elevation-1: 0 1px 2px rgb(20 25 32 / 8%);
-    --elevation-2: 0 12px 36px -12px rgb(20 25 32 / 22%), 0 2px 6px rgb(20 25 32 / 8%);
+    --elevation-1: 0 1px 2px rgb(28 32 24 / 7%);
+    --elevation-2: 0 12px 36px -12px rgb(28 32 24 / 22%), 0 2px 6px rgb(28 32 24 / 8%);
     --shadow-elevated: var(--elevation-2);
     --shadow-card: var(--elevation-1);
     --sidebar-box-shadow: none;
@@ -70,6 +71,12 @@
     --radius-ui-lg: var(--radius-md);
     --radius-ui-xl: 12px;
     --mobile-app-bar-height: 56px;
+    /* Phone tab bar, excluding the gesture inset below it. */
+    --bottom-nav-height: 64px;
+    /* Page gutter below lg; the scroller and edge-to-edge strips share it. */
+    --page-gutter: 12px;
+    /* Wide screens stop growing the page here instead of stretching every row. */
+    --content-max: 1680px;
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -89,8 +96,11 @@
     --leading-body: 1.55;
     --leading-support: 1.5;
     --motion-fast: 120ms;
-    --motion-normal: 160ms;
-    --motion-slow: 200ms;
+    --motion-normal: 180ms;
+    --motion-slow: 220ms;
+    --motion-sheet: 280ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
     --height-field-xs: 28px;
     --height-touch: 44px;
     --height-field: 38px;
@@ -98,7 +108,7 @@
     --surface-readonly: var(--surface-muted);
     --disabled-bg: color-mix(in srgb, var(--surface-muted) 30%, var(--surface));
     --disabled-border: color-mix(in srgb, var(--border) 70%, transparent);
-    --disabled-fg: #5D6774;
+    --disabled-fg: #5A6356;
     --shadow-control: var(--elevation-1);
     --height-field-sm: 32px;
     --height-list-row: 52px;
@@ -109,19 +119,19 @@
 }
 html[data-bs-theme="dark"] {
     color-scheme: dark;
-    --canvas: #17191C;
-    --surface: #202327;
-    --surface-muted: #2A2E33;
-    --surface-raised: #2D3137;
-    --sidebar-surface: #1C1F23;
-    --border: #3D444D;
-    --border-strong: #89949F;
-    --text-primary: #ECEFF3;
-    --text-secondary: #B9C1CB;
-    --text-tertiary: #A4AFBC;
+    --canvas: #151A17;
+    --surface: #202722;
+    --surface-muted: #28302A;
+    --surface-raised: #2B332D;
+    --sidebar-surface: #1A201C;
+    --border: #3A443C;
+    --border-strong: #88948A;
+    --text-primary: #ECEFEA;
+    --text-secondary: #BAC3B8;
+    --text-tertiary: #A5B0A3;
     --accent: var(--accent-dark);
     --accent-soft: color-mix(in srgb, var(--accent) 13%, var(--surface));
-    --accent-foreground: #202327;
+    --accent-foreground: #202722;
     --accent-hover: color-mix(in srgb, var(--accent) 90%, #FFF);
     --accent-active: color-mix(in srgb, var(--accent) 80%, #FFF);
     --color-danger: #F0A3AC;
@@ -135,7 +145,7 @@ html[data-bs-theme="dark"] {
     --elevation-1: 0 1px 2px rgb(0 0 0 / 12%);
     --disabled-bg: color-mix(in srgb, var(--surface-muted) 30%, var(--surface));
     --disabled-border: color-mix(in srgb, var(--border) 70%, transparent);
-    --disabled-fg: #96A1AF;
+    --disabled-fg: #97A296;
 }
 
 /* Compatibility aliases keep existing consumers on the semantic system. */
@@ -197,6 +207,8 @@ html[data-bs-theme="dark"] {
     --shadow-focus: 0 0 0 3px var(--focus-ring);
 }
 html[data-bs-theme="dark"] { --color-danger-foreground: #311B20; }
+@media (min-width: 360px) { :root { --page-gutter: 16px; } }
+@media (min-width: 640px) { :root { --page-gutter: 20px; } }
 .accent-swatch { background: var(--accent-light); }
 html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
 
@@ -316,7 +328,7 @@ html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
 
 /* The sidebar hides its scrollbar. These layers stay fixed while the two covers
    scroll with the content, so a shadow shows only on an edge with more items. */
-:root { --sidebar-scroll-shadow: rgb(20 25 32 / 14%); }
+:root { --sidebar-scroll-shadow: rgb(28 32 24 / 14%); }
 html[data-bs-theme="dark"] { --sidebar-scroll-shadow: rgb(0 0 0 / 50%); }
 .sidebar-panel {
     background:
@@ -377,3 +389,84 @@ html[data-bs-theme="dark"] { --sidebar-scroll-shadow: rgb(0 0 0 / 50%); }
 
 /* Collapsed <details> keep their hidden children in the DOM, so space-y-* and mb-* still push the summary's bottom margin out as an empty band. Unlayered so it wins over utilities. */
 details:not([open]) > summary { margin-block-end: 0; }
+
+/* Space the phone tab bar takes at the bottom of the viewport. Fixed and sticky
+   bottom UI (page padding, toasts, sticky editor actions) stack above it. */
+:root { --bottom-nav-space: env(safe-area-inset-bottom, 0px); --bottom-sticky-under: env(safe-area-inset-bottom, 0px); }
+@media (max-width: 1023.98px) {
+    html[data-bottom-nav="visible"] {
+        --bottom-nav-space: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+        /* The tab bar already covers the gesture inset. */
+        --bottom-sticky-under: 0px;
+    }
+}
+
+/* While the phone App Bar is scrolled away, page-level sticky bars move up with it. */
+@media (max-width: 1023.98px) {
+    /* The section row (SectionTabs) is the App Bar's second line. */
+    html[data-section-tabs] { --mobile-app-bar-height: 100px; }
+    html[data-app-bar="collapsed"] { --app-bar-collapse: var(--mobile-app-bar-height); }
+    /* A full-height page with its own list scroller grows into the bars' space. */
+    html[data-app-bar="collapsed"][data-chrome-reclaim] { --chrome-top-reclaim: var(--mobile-app-bar-height); }
+    html[data-app-bar="collapsed"][data-chrome-reclaim][data-bottom-nav="visible"] { --chrome-bottom-reclaim: var(--bottom-nav-height); }
+    html[data-chrome-animate] [data-ui-transition="page"] { transition: padding var(--motion-slow) var(--ease-standard); }
+}
+
+/* Phone editors keep their primary actions on screen.
+   - Sticky offsets count from inside the page scroller's padding (20px, plus the
+     gesture inset while the tab bar is hidden). The negative offset puts the bar
+     on the screen edge or on the tab bar; its own padding clears the inset.
+   - At the end of the page the same negative margin lets it take that padding
+     instead of leaving it as an empty strip, and the second shadow paints the bar's surface over whatever
+     wrapper padding is still below it, so no strip of page shows underneath.
+     A shadow never adds scrollable overflow. */
+@media (max-width: 767.98px) {
+    .ui-sticky-actions {
+        position: sticky;
+        bottom: calc(-20px - var(--bottom-sticky-under));
+        z-index: 10;
+        margin-inline: calc(-1 * var(--page-gutter));
+        margin-bottom: calc(-20px - var(--bottom-sticky-under));
+        padding: 12px var(--page-gutter) calc(12px + var(--bottom-sticky-under));
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -6px 16px -12px rgb(0 0 0 / 30%), 0 64px 0 0 var(--surface);
+    }
+}
+
+/* Cards keep their default bottom margin for plain flow layouts, but a gap or
+   stack owner already spaces its children, and the last card needs none. */
+.ui-card:last-child,
+:is(.flex, .grid):is([class*=" gap-"], [class^="gap-"], [class*=" gap-y-"]) > .ui-card { margin-bottom: 0; }
+
+/* Phone list ↔ detail: the directory slides back in from the left when a
+   record closes. A CSS animation restarts when display:none ends. */
+@keyframes workspace-return { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 767.98px) {
+    .workspace-directory { animation: workspace-return var(--motion-slow) var(--ease-standard); }
+}
+
+/* Long words, URLs and IDs wrap instead of widening narrow layouts. */
+.ui-wrap-anywhere { overflow-wrap: anywhere; }
+
+/* Touch feel. The Web UI is the Android app's main screen, so controls answer
+   like native ones: no grey tap flash (pressed states are drawn by the
+   components), no double-tap zoom delay, and no accidental text selection or
+   link preview on chrome and buttons. Content text stays selectable. */
+html { -webkit-tap-highlight-color: transparent; }
+:is(a, button, summary, label, select, input:is([type="checkbox"], [type="radio"], [type="range"]), [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"]) { touch-action: manipulation; }
+:is(button, summary, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"], [data-app-chrome]) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+/* Fields inside a label or the chrome stay editable and selectable. */
+:is(input, textarea, [contenteditable]) { -webkit-user-select: text; user-select: text; }
+/* A list that reaches its end does not drag the page (or the WebView's glow) along. */
+[data-ui-transition="page"] { overscroll-behavior-y: contain; }
+html[data-pull-refresh] [data-ui-transition="page"] { overscroll-behavior-y: none; }
+
+/* Phone disclosure rows are finger-sized even when their text is one small line. */
+@media (max-width: 767.98px) and (pointer: coarse) {
+    details > summary { min-height: var(--height-touch); align-content: center; }
+}

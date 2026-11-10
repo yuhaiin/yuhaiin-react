@@ -1,3 +1,4 @@
+import { navigation } from '@/hooks/navigation';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
 import { loginWithPasskey, passkeySupported } from '@/auth/passkey';
@@ -37,7 +38,7 @@ export default function LoginPage() {
                 if (status.authentication === 'none') {
                     setApiUrl(controller);
                     establishLocalConnection(getApiUrl());
-                    window.location.hash = '/';
+                    navigation.replace('/');
                     return;
                 }
                 setRequired(status.required); setExpiresAt(status.expiresAt);
@@ -64,7 +65,7 @@ export default function LoginPage() {
                 await enroll(capability, enteredPassword);
                 setCapability(''); discardEnrollment(); setRequired(false); setMode('login'); setNotice(t('enrolled'));
             } else {
-                await login(name, enteredPassword); window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
+                await login(name, enteredPassword); navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
             }
         } catch (cause) {
             const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : 0;
@@ -77,7 +78,7 @@ export default function LoginPage() {
             requireSecureController(controller);
             setApiUrl(controller);
             await loginWithPasskey();
-            window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
+            navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
         } catch { setError(t('passkeyFailed')); }
         finally { setBusy(false); }
     };

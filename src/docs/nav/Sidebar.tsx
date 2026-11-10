@@ -1,6 +1,8 @@
 import { useSession } from '@/auth/context';
 import { canReadRoute } from '@/auth/policy';
 import { navigationSections } from './navigation';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
+import { RotateCw } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -16,6 +18,7 @@ interface SidebarProps {
 function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
     const { t: uiT } = useTranslation('ui');
     const { t: routeT } = useTranslation('routing');
+    const { t: androidT } = useTranslation('android');
 
     const { t } = useTranslation('nav');
     const [pathname, navigate] = useLocation();
@@ -41,18 +44,20 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
         path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
 
     const session = useSession();
+    const android = useAndroidPlatform();
     const visible = (path: string) => !session || canReadRoute(path, session.principal.permissions);
     const sections = navigationSections.map(section => ({
         ...section,
         items: section.items.flatMap<(typeof navigationSections)[number]['items'][number]>(item => {
-            if ('path' in item) return visible(item.path) ? [item] : [];
+            if ('path' in item) return visible(item.path) && (!item.platform || android) ? [item] : [];
+            if (item.platform && !android) return [];
             const items = item.items.filter(link => visible(link.path));
             return items.length ? [{ ...item, items }] : [];
         }),
     }));
-    const labels = { nav: t, ui: uiT, routing: routeT };
+    const labels = { nav: t, ui: uiT, routing: routeT, android: androidT };
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
-        <SidebarNav aria-label={t('toggle')}>
+        <SidebarNav aria-label={t('menu')}>
             {sections.filter(section => section.items.length > 0).map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>
                 {section.items.map(item => {
                     const Icon = item.icon;
@@ -68,6 +73,14 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
                 })}
             </SidebarSection>)}
         </SidebarNav>
+        {/* A full reload for a page that stopped responding; the App Bar only refreshes its data. */}
+        {android && <div className="mt-4 px-3.5">
+            <button type="button" onClick={() => window.location.reload()}
+                className="flex min-h-11 w-full items-center rounded-ui-md px-3 py-2 text-left text-sm text-sidebar-color hover:bg-sidebar-active-bg focus-visible:ring-2 focus-visible:ring-ui-focus">
+                <span aria-hidden="true" className="mr-2.5 flex w-6 shrink-0 justify-center"><RotateCw size={18} /></span>
+                {t('reload')}
+            </button>
+        </div>}
     </SidebarRoot>;
 }
 
@@ -78,7 +91,7 @@ const normalizePath = (path: string) => {
 
 function SidebarSection({ title, children }: { title: string; children: React.ReactNode }) {
     return <section aria-label={title} className="flex flex-col gap-1 [&+section]:mt-4">
-        <h2 className="px-3.5 pb-1 text-[0.6875rem] font-medium tracking-wide text-sidebar-color">{title}</h2>
+        <h2 className="px-3.5 pb-1 text-xs font-medium tracking-wide text-sidebar-color">{title}</h2>
         {children}
     </section>;
 }

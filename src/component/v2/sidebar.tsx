@@ -3,6 +3,7 @@ import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
 import { ChevronRight } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useHistoryLayer } from '@/hooks/use-history-layer';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { LayoutGroup, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -23,12 +24,14 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
     const desktop = useMediaQuery('(min-width: 1024px)');
     const { t } = useTranslation('nav');
     React.useEffect(() => { if (desktop && show) onHide?.(); }, [desktop, show, onHide]);
+    // Android Back closes the drawer first.
+    useHistoryLayer(Boolean(show) && !desktop, () => onHide?.());
     const panelClass = clsx(
         "sidebar-panel fixed z-[1050] text-sidebar-color border border-sidebar-border shadow-sidebar py-4 overflow-y-auto [&::-webkit-scrollbar]:w-0",
         className
     );
     if (desktop) return (
-        <div ref={ref} className={clsx(panelClass, "top-sidebar-gap left-sidebar-gap h-[calc(100dvh-2*var(--sidebar-gap))] w-[260px] rounded-sidebar-radius")} {...props}>
+        <div ref={ref} data-app-chrome className={clsx(panelClass, "top-sidebar-gap left-sidebar-gap h-[calc(100dvh-2*var(--sidebar-gap))] w-[260px] rounded-sidebar-radius")} {...props}>
             {children}
         </div>
     );
@@ -38,13 +41,14 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
                 <DialogPrimitive.Overlay className="sidebar-backdrop fixed inset-0 bg-black/50 z-[1040]" />
                 <DialogPrimitive.Content
                     ref={ref}
+                    data-app-chrome
                     className={clsx(panelClass, "sidebar-drawer top-0 left-0 h-dvh w-[280px] max-w-[calc(100vw-32px)] pt-[max(20px,env(safe-area-inset-top))] pb-[max(20px,env(safe-area-inset-bottom))] outline-none")}
                     aria-describedby={undefined}
                     onCloseAutoFocus={event => { event.preventDefault(); triggerRef?.current?.focus(); }}
                     {...props}
                 >
                     <div className="flex items-center justify-between px-5 pb-3">
-                        <DialogPrimitive.Title className="text-sm font-semibold">{t('toggle')}</DialogPrimitive.Title>
+                        <DialogPrimitive.Title className="text-base font-semibold text-sidebar-header">Yuhaiin</DialogPrimitive.Title>
                         <DialogPrimitive.Close className="flex h-11 w-11 items-center justify-center rounded-ui-md focus-visible:ring-2 focus-visible:ring-ui-focus" aria-label={t('ui:closeNavigation')}>×</DialogPrimitive.Close>
                     </div>
                     {children}

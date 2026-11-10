@@ -22,8 +22,7 @@
   },
   "toast": {
     "notification": "通知",
-    "systemError": "システムエラー",
-    "justNow": "たった今"
+    "systemError": "システムエラー"
   },
   "pagination": {
     "page": "ページ",

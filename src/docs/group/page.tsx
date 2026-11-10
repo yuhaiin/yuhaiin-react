@@ -1,5 +1,5 @@
 import { PageHeader } from '@/component/v2/page-header';
-import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
+import { DetailBack } from '@/component/v2/detail-back';
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
@@ -23,7 +23,8 @@ import {
     normalizeLatencyDNSUrl,
 } from "@/common/apiurl";
 import { allowNavigation } from "@/hooks/navigation-guard";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { navigation } from "@/hooks/navigation";
+import { parentLocation, useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
@@ -36,7 +37,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { nodeGroupName, type Node, type NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useDebounceValue, useLocalStorage } from "usehooks-ts";
@@ -185,7 +186,7 @@ const ResultChip: FC<{ label: string; value: NodeLatencyValue | undefined; loadi
     const failed = !loading && isLatencyError(value);
     return (
         <div title={failed ? value.error : undefined} className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-ui-border/80 bg-ui-bg px-3 py-1.5">
-            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" />
                 : <span className={clsx("truncate text-sm font-medium", !failed && "font-mono", latencyTextClass(value))}>{failed ? uiT('failedLabel') : latencyText(value)}</span>}
@@ -197,7 +198,7 @@ const ResultRow: FC<{ label: string; value: NodeLatencyValue | undefined; loadin
     if (!loading && isEmptyLatency(value)) return null;
     return (
         <div className="flex min-w-0 items-start gap-3 rounded-ui-md border border-ui-border/70 bg-ui-bg/80 px-3 py-2">
-            <span className="mt-0.5 w-16 shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            <span className="mt-0.5 w-16 shrink-0 text-xs font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" className="mt-0.5" />
                 : (
@@ -302,7 +303,7 @@ const GroupPicker: FC<{
                             >
                                 <span className="min-w-0 flex-1 truncate font-medium">{group}</span>
                                 <span className={clsx(
-                                    "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                                    "rounded-full px-1.5 py-0.5 text-xs font-semibold",
                                     active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
                                 )}>
                                     {count}
@@ -386,7 +387,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-xs leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
-                {runtime && <span className="shrink-0 font-mono text-[11px] tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
+                {runtime && <span className="shrink-0 font-mono text-xs tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
                     ↓ {formatNodeBytes(runtime.downloadBps)}/s
                 </span>}
                 {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && (isLatencyError(latency.tcp)
@@ -410,7 +411,7 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
     const hasStun = Boolean(busy?.stun || busy?.stun_tcp || latency?.stun || latency?.stun_tcp);
     return <>
         <header className="mb-5 border-b border-ui-border/60 pb-5">
-            <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent bg-transparent md:hidden" onClick={onBack}><ArrowLeft size={16} />{t('backToNodes')}</Button>
+            <DetailBack label={t('backToNodes')} onBack={onBack} />
             <p className="mb-1 text-xs text-ui-muted">{t('nodeDetails')}</p>
             <h2 className="break-words text-xl font-medium tracking-tight text-ui-heading">{item.name || item.id}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -451,14 +452,12 @@ export default function Group() {
     const { t: commonT } = useTranslation('common');
 
     const ctx = useContext(GlobalToastContext);
-    const desktop = useMediaQuery('(min-width: 768px)');
-    const initialized = useRef(false);
     const [editorState, setEditorState] = useState({ dirty: false, pending: false });
-    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
-    const search = useHashSearch();
-    const linkedId = new URLSearchParams(search).get('node');
-    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
-    const closeLink = () => { if (linkedId) clearHashSearch(); };
+    const [autoSelect, setAutoSelect] = useState<string>();
+    // The open node lives in the URL (`?node=`, `?new=node`): Back/Forward and reload restore it.
+    const workspace = useWorkspaceNavigation('node', { autoSelect });
+    const linkedId = workspace.id || null;
+    const showdata = { show: workspace.creating || Boolean(workspace.id), id: workspace.id, new: workspace.creating };
     const [importOpen, setImportOpen] = useState(false);
     const [preferredGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
@@ -537,32 +536,22 @@ export default function Group() {
     const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
     useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
 
-    useEffect(() => {
-        if (!initialized.current && desktop && groupItems.length && !showdata.show && debouncedQuery === query.trim()) {
-            initialized.current = true;
-            const first = !debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0];
-            setSelectedPreview(first);
-            setShowdata({ show: true, id: first.id, new: false });
-        }
-    }, [desktop, groupItems, showdata.show, debouncedQuery, query, defaults, selectedGroup]);
+    // Desktop fills the empty detail pane by replacing the entry; it adds no history.
+    const autoNode = groupItems.length && debouncedQuery === query.trim()
+        ? (!debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0]) : undefined;
+    if (autoNode?.id !== autoSelect) setAutoSelect(autoNode?.id);
 
     if (groupsError && !groupData && apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
     if (!groupData || inferringGroup) return <Loading />;
 
     const closeDetails = () => {
-        initialized.current = true;
-        setShowdata({ show: false, id: '', new: false });
         setSelectedPreview(undefined);
         setEditorState({ dirty: false, pending: false });
-        closeLink();
+        workspace.close();
     };
     const openNode = async (id: string) => {
-        if (showdata.show && !showdata.new && showdata.id === id) return;
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setSelectedPreview(items.find(item => item.id === id));
-        setShowdata({ show: true, id, new: false });
+        const preview = items.find(item => item.id === id);
+        if (await workspace.open(id)) setSelectedPreview(preview);
     };
     const deleteCurrentNode = async () => {
         await deleteNode(showdata.id);
@@ -570,23 +559,16 @@ export default function Group() {
         closeDetails();
         await Promise.all([mutate(), mutateGroups()]);
     };
-    const handleCreate = async () => {
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setShowdata({ show: true, id: '', new: true });
-    };
+    const handleCreate = async () => { await workspace.create(); };
     const changeGroup = async (group: string) => {
         if (group === selectedGroup || !await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
         setSelectedGroup(group);
         setPage(1);
         setQuery('');
         setSelectedPreview(undefined);
-        initialized.current = !desktop;
-        setShowdata({ show: false, id: '', new: false });
         setEditorState({ dirty: false, pending: false });
+        // A filter, not a step: drop the open node from this entry; desktop re-selects.
+        navigation.replace(parentLocation(navigation.current.location, 'node'));
     };
     const handleUse = (id: string) => {
         void runUse(async () => {
@@ -641,24 +623,26 @@ export default function Group() {
                     <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => { setPage(1); setQuery(e.target.value); }} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
                 </div>
                 {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : isLoading || !querySettled ? <Loading /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
-                    groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
+                    groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'var(--node-list-height)', width: '100%' }}
+                        // Phones get a list that fills the screen under the group picker instead of a short inner box.
+                        className="[--node-list-height:min(72vh,900px)] max-md:[--node-list-height:max(320px,calc(100dvh-var(--mobile-app-bar-height)-env(safe-area-inset-top)-var(--bottom-nav-space)-190px))]">
                         {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />}
-                    </VList> : <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />)}</div>}
+                    </VList> : <div className="md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />)}</div>}
                 {data && data.page.total > (data.page.pageSize || NODE_PAGE_SIZE) && <div className="flex items-center justify-center gap-3 border-t border-ui-border/60 pt-3">
-                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 max-md:h-11 max-md:w-11" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
                     <span className="text-xs tabular-nums text-ui-muted">{page} / {Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))}</span>
-                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 max-md:h-11 max-md:w-11" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
                 </div>}
             </WorkspaceDirectory>
             <WorkspaceDetail hiddenOnMobile={!showdata.show} transitionKey={showdata.new ? 'new-node' : showdata.id}>
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
                         runtime={nodeStatuses?.[selectedItem.id]} runtimeError={statusesError ? t("outboundStatusError") : undefined}
-                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
+                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><DetailBack label={t('backToNodes')} onBack={backToNodes} /><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}
-                        onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
+                        onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); workspace.saved(node.id); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
                 </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button permission="nodes:write" variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
             </WorkspaceDetail>

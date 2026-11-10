@@ -1,3 +1,4 @@
+import { beforeEach } from "vitest";
 const values = new Map<string, string>();
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -23,3 +24,10 @@ if (!HTMLElement.prototype.scrollIntoView) {
 
 // Radix form controls measure themselves; jsdom has no layout to observe.
 globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} };
+
+// Every test starts on `#/` with a fresh navigation stack. The event avoids
+// importing the store here, so test files can still mock its dependencies.
+beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+    window.dispatchEvent(new Event("yuhaiin:reset-navigation"));
+});

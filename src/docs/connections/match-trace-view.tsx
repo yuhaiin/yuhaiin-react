@@ -76,14 +76,14 @@ const Branch: FC<BranchProps> = ({
                         "border-ui-border bg-ui-surface-muted text-ui-heading",
                     )}>{groupLabel}</span>}
                     {(!group || hasExtraLabel) && <span className="min-w-0 break-words font-medium text-ui-heading [overflow-wrap:anywhere]">{label}</span>}
-                    {group && <span className="text-[10px] text-ui-muted">{children.length}</span>}
+                    {group && <span className="text-xs text-ui-muted">{children.length}</span>}
                 </span>
-                <span className={clsx("mt-0.5 inline-flex shrink-0 items-center gap-1 text-[11px] font-medium", tones[state])}>
+                <span className={clsx("mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-medium", tones[state])}>
                     {stateLabel(state)}
                 </span>
             </button>
             {!group && hasDetails && detailPath === path &&
-                <div className="mx-2 mb-2 ml-8 min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-1.5 text-[11px] text-ui-muted [overflow-wrap:anywhere]">
+                <div className="mx-2 mb-2 ml-8 min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-1.5 text-xs text-ui-muted [overflow-wrap:anywhere]">
                     {trace.kind && <div>{trace.kind}</div>}
                     {trace.id && <div className="notranslate">{trace.id}</div>}
                 </div>}
@@ -99,7 +99,7 @@ const Branch: FC<BranchProps> = ({
                             stateLabel={stateLabel} moreLabel={moreLabel} />
                     )}
                     {remaining > 0 && <button type="button"
-                        className="mb-1 ml-1 rounded-ui-sm px-2 py-1.5 text-left text-[11px] text-ui-primary hover:bg-ui-surface-muted"
+                        className="mb-1 ml-1 rounded-ui-sm px-2 py-1.5 text-left text-xs text-ui-primary hover:bg-ui-surface-muted"
                         onClick={() => onMore(path)}>{moreLabel(remaining)}</button>}
                 </div>
             )}
@@ -145,7 +145,7 @@ export const MatchTraceTree: FC<{ trace: MatchTrace }> = ({ trace }) => {
     };
     return (
         <div className="min-w-0 border-t border-ui-border bg-ui-surface px-2 pb-2">
-            {isTraceGroup(trace) && <div className="flex flex-wrap items-center justify-end gap-3 px-1 py-1.5 text-[11px] text-ui-muted">
+            {isTraceGroup(trace) && <div className="flex flex-wrap items-center justify-end gap-3 px-1 py-1.5 text-xs text-ui-muted">
                 <button type="button" className="hover:text-ui-heading" onClick={() => setExpanded(defaultTraceExpansion(trace))}>
                     {t("circuit.focusPath", { defaultValue: "Decisive path" })}
                 </button>
@@ -167,12 +167,12 @@ export const MatchTraceTree: FC<{ trace: MatchTrace }> = ({ trace }) => {
                             moreLabel={count => t("circuit.more", { count, defaultValue: "Show more (" + count + ")" })}/>
                     ))}
                 {expanded.has("0") && (trace.children?.length ?? 0) > (visibleCounts["0"] ?? PAGE_SIZE) &&
-                    <button type="button" className="rounded-ui-sm px-2 py-1.5 text-[11px] text-ui-primary hover:bg-ui-surface-muted"
+                    <button type="button" className="rounded-ui-sm px-2 py-1.5 text-xs text-ui-primary hover:bg-ui-surface-muted"
                         onClick={() => onMore("0")}>
                         {t("circuit.more", { count: trace.children!.length - (visibleCounts["0"] ?? PAGE_SIZE), defaultValue: "Show more" })}
                     </button>}
                 {!expanded.has("0") && (trace.children?.length ?? 0) > 0 &&
-                    <button type="button" className="px-2 py-1.5 text-[11px] text-ui-muted hover:text-ui-heading"
+                    <button type="button" className="px-2 py-1.5 text-xs text-ui-muted hover:text-ui-heading"
                         onClick={() => toggle("0")}>
                         {t("circuit.showConditions", { defaultValue: "Show conditions" })} ({trace.children!.length})
                     </button>}

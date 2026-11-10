@@ -1,4 +1,5 @@
 import { confirmAction } from '@/component/v2/confirmation';
+import { DetailBack } from '@/component/v2/detail-back';
 import { deleteSelector, saveSelector, selectorReferences } from '@/api/selectors';
 import { Button } from '@/component/v2/button';
 import { SettingInputVertical } from '@/component/v2/forms';
@@ -7,7 +8,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { GlobalToastContext } from '@/component/v2/toast';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import type { Selector } from '@/contract/node';
-import { ArrowLeft, Plus, Save, Trash } from 'lucide-react';
+import { Plus, Save, Trash } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
@@ -70,13 +71,13 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
         <NodeModal show={creatingNode} isNew editable groups={["manual"]} onHide={() => setCreatingNode(false)} onSave={node => { setValue(previous => ({ ...previous, nodeId: node.id })); }} />
         {presentation === 'inline' ? open && <section aria-label={t('selectorDetails')} className="min-w-0">
             <header className="mb-5 border-b border-ui-border/60 pb-5">
-                <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={close}><ArrowLeft size={16} aria-hidden="true" />{t('backToSelectors')}</Button>
+                <DetailBack label={t('backToSelectors')} onBack={close} />
                 <p className="mb-1 text-xs font-medium text-ui-muted">{t('selectorDetails')}</p>
                 <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="break-words text-xl font-medium tracking-tight text-ui-heading">{value.name || t('newSelector')}</h2>
                     {dirty && <span role="status" className="text-xs text-ui-warning">{t('unsavedChanges')}</span>}</div>
             </header>
             {body}
-            <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
+            <footer className="ui-sticky-actions mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
         </section> : <Modal open={open} onOpenChange={next => !next && close()}><ModalContent width={600}>
             <ModalHeader closeButton><ModalTitle>{item?.name ?? t('newSelector')}</ModalTitle></ModalHeader>
             <ModalBody>{body}</ModalBody>

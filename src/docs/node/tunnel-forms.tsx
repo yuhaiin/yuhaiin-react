@@ -103,7 +103,7 @@ const FixedForm: FC<{
     const { t: uiT } = useTranslation('ui');
     return (
     <div className="grid gap-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
             <StringField label={uiT("host")} value={config.host} disabled={!editable} onChange={(host) => onChange({ host })} />
             <NumberField label={uiT("port")} value={config.port} disabled={!editable} onChange={(port) => onChange({ port })} />
             <StringField label={uiT("networkInterface")} value={config.network_interface} disabled={!editable} onChange={(network_interface) => onChange({ network_interface })} />

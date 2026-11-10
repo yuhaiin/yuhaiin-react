@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { useState, useContext } from 'react';
 import useSWR from 'swr';
 import { Download, RefreshCw, RotateCcw, PanelsTopLeft } from 'lucide-react';
@@ -26,31 +27,34 @@ export function FrontendUpdatePanel() {
     shouldRetryOnError: false,
   });
   const [check, setCheck] = useState<FrontendCheck>();
-  const [busy, setBusy] = useState(false);
+  // Which action runs; its icon spins and its button reports aria-busy.
+  const [running, setRunning] = useState<'check' | 'apply' | 'rollback'>();
+  const busy = running !== undefined;
 
-  async function perform(task: () => Promise<unknown>, refresh = false, clearCheck = true) {
-    setBusy(true);
+  async function perform(action: 'check' | 'apply' | 'rollback', task: () => Promise<unknown>, refresh = false, clearCheck = true) {
+    setRunning(action);
     try {
       await task();
       if (clearCheck) setCheck(undefined);
       await mutate();
-      notice.Info(t('frontendUpdateComplete'));
+      // A check only shows its result below; nothing was switched yet.
+      if (action !== 'check') notice.Info(t('frontendUpdateComplete'));
       if (refresh) window.location.reload();
     } catch (error) {
       notice.Error(updateErrorMessage(error));
     } finally {
-      setBusy(false);
+      setRunning(undefined);
     }
   }
 
   // This page also runs against Core versions from before UI OTA existed.
   if (!status && error) return (
-    <Card className="order-2">
+    <Card className="order-1">
       <CardHeader><IconBox icon={PanelsTopLeft} title={t('frontendUpdate')} description={t('frontendRequiresNewCore')} tone="violet" /></CardHeader>
     </Card>
   );
 
-  return <Card className="order-2">
+  return <Card className="order-1">
     <CardHeader>
       <IconBox icon={PanelsTopLeft} title={t('frontendUpdate')}
         description={t('frontendUpdateDescription')} tone="violet" />
@@ -64,7 +68,8 @@ export function FrontendUpdatePanel() {
       {status?.reason === 'embedded_frontend_newer_or_equal' && (
         <p role="status" className="text-sm text-ui-muted">{t('frontendEmbeddedTakesPriority')}</p>
       )}
-      {check && <div className="rounded-ui-md border border-ui-border p-3 text-sm space-y-1">
+      {/* Keyed by the result, so each new answer settles in instead of swapping silently. */}
+      {check && <div key={`${check.release.version}:${check.available}:${check.reason ?? ''}`} role="status" className="animate-slideDownAndFadeIn rounded-ui-md border border-ui-border p-3 text-sm space-y-1">
         <div className="font-medium">{check.release.version}</div>
         <p className="text-ui-muted">{check.available ? t('frontendAvailable') :
           check.reason ? t('frontendUnavailable', { reason: check.reason }) : t('frontendUpToDate')}</p>
@@ -72,22 +77,22 @@ export function FrontendUpdatePanel() {
       </div>}
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="default" permission="update:manage"
-          disabled={busy || !canUpdate || !status || status.source === 'external'}
-          onClick={() => void perform(async () => setCheck(await frontendCheck()), false, false)}>
-          <RefreshCw size={16} className="mr-2" />{t('checkForUpdates')}
+          disabled={busy || !canUpdate || !status || status.source === 'external'} aria-busy={running === 'check' || undefined}
+          onClick={() => void perform('check', async () => setCheck(await frontendCheck()), false, false)}>
+          <RefreshCw size={16} className={running === 'check' ? 'mr-2 motion-safe:animate-spin' : 'mr-2'} />{t('checkForUpdates')}
         </Button>
         {check?.available && <Button variant="default" permission="update:manage"
-          disabled={busy || !canUpdate} onClick={() => {
-            if (!window.confirm(t('frontendApplyConfirmation'))) return;
-            void perform(() => frontendApply(check.release.version, check.release.sha256), true);
+          loading={running === 'apply'} disabled={busy || !canUpdate} onClick={async () => {
+            if (!await confirmAction(t('frontendApplyConfirmation'))) return;
+            void perform('apply', () => frontendApply(check.release.version, check.release.sha256), true);
           }}>
           <Download size={16} className="mr-2" />{t('frontendApply')}
         </Button>}
         {status?.installed && status.source === 'downloaded' && <Button variant="default"
-          permission="update:manage" disabled={busy || !canUpdate}
-          onClick={() => {
-            if (!window.confirm(t('frontendRollbackConfirmation'))) return;
-            void perform(frontendRollback, true);
+          permission="update:manage" loading={running === 'rollback'} disabled={busy || !canUpdate}
+          onClick={async () => {
+            if (!await confirmAction(t('frontendRollbackConfirmation'))) return;
+            void perform('rollback', frontendRollback, true);
           }}>
           <RotateCcw size={16} className="mr-2" />{t('frontendRollback')}
         </Button>}

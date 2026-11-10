@@ -72,9 +72,9 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
             >
               <motion.li data-ui-transition="toast"
                 layout
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 12, transition: { duration: reduced ? 0 : motionTiming.fast } }}
+                initial={{ opacity: 0, y: -12, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97, transition: { duration: reduced ? 0 : motionTiming.fast } }}
                 transition={{ duration: reduced ? 0 : motionTiming.normal, ease: "easeOut" }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 300 }}
@@ -84,35 +84,38 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                     handleOpenChange(toast.id, false);
                   }
                 }}
-                className={clsx(
-                  "bg-ui-surface-raised rounded-ui-lg border border-ui-border shadow-ui-elevated flex flex-col overflow-hidden",
-                  toast.type === 'info' && "border-l-4 border-l-ui-info",
-                  toast.type === 'error' && "border-l-4 border-l-ui-danger"
-                )}
+                className="pointer-events-auto flex items-start gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-raised py-1.5 pl-3 pr-1 shadow-ui-elevated"
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
-                <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
-                  <ToastPrimitive.Title className="text-sm flex items-center gap-2 font-medium text-ui-fg m-0">
-                    {toast.type === 'error' ? <CircleAlert size={16} className="text-ui-danger" aria-hidden /> : <Info size={16} className="text-ui-info" aria-hidden />}{toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
-                  </ToastPrimitive.Title>
+                <span aria-hidden className={clsx(
+                  "mt-2 flex size-7 shrink-0 items-center justify-center rounded-full",
+                  toast.type === 'error' ? "bg-ui-danger-soft text-ui-danger" : "bg-ui-info-soft text-ui-info",
+                )}>
+                  {toast.type === 'error' ? <CircleAlert size={16} /> : <Info size={16} />}
+                </span>
 
-                  <div className="flex items-center gap-2">
-                    <small className="text-ui-muted text-xs">{t('toast.justNow')}</small>
-                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer transition-opacity duration-200 min-h-11 min-w-11 rounded-ui-sm focus-visible:ring-2 focus-visible:ring-ui-focus text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
-                      <X size={16} aria-hidden />
-                    </ToastPrimitive.Close>
-                  </div>
+                {/* A notice is one line of text; only errors carry a visible heading. */}
+                <div className="min-w-0 flex-1 py-3">
+                  <ToastPrimitive.Title className={toast.type === 'error' ? "m-0 mb-0.5 text-sm font-semibold leading-5 text-ui-danger" : "sr-only"}>
+                    {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
+                  </ToastPrimitive.Title>
+                  <ToastPrimitive.Description className="m-0 max-h-40 overflow-y-auto break-words text-sm leading-5 text-ui-fg">
+                    {toast.text}
+                  </ToastPrimitive.Description>
                 </div>
 
-                <ToastPrimitive.Description className="py-[0.75rem] px-[1rem] text-ui-fg text-sm leading-relaxed">
-                  {toast.text}
-                </ToastPrimitive.Description>
+                <ToastPrimitive.Close className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-ui-md border-0 bg-transparent text-ui-muted transition-colors duration-200 hover:text-ui-fg focus-visible:ring-2 focus-visible:ring-ui-focus" aria-label={t('action.close')}>
+                  <X size={16} aria-hidden />
+                </ToastPrimitive.Close>
               </motion.li>
             </ToastPrimitive.Root>
           ))}
         </AnimatePresence>
 
-        <ToastPrimitive.Viewport className="fixed top-0 right-0 flex flex-col p-[20px] gap-[10px] w-[380px] max-w-[100vw] m-0 list-none z-[2147483647] outline-none" />
+        {/* The phone App Bar (below lg) owns the top edge, so notices sit just below it
+            and follow it up when it scrolls away; the bottom holds the tab bar and
+            sticky Save bars. The empty viewport must not swallow taps on the page. */}
+        <ToastPrimitive.Viewport className="pointer-events-none fixed inset-x-0 top-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)-var(--app-bar-collapse,0px))] z-[2147483647] m-0 flex list-none flex-col gap-2 px-[var(--page-gutter)] pt-2 outline-none transition-[top] duration-[var(--motion-slow)] ease-[var(--ease-standard)] sm:left-auto sm:w-[380px] lg:top-0 lg:p-5" />
       </ToastPrimitive.Provider>
     </GlobalToastContext.Provider>
   );

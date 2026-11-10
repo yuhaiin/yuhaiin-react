@@ -86,3 +86,19 @@ it('redirects backend settings to sign-in without rendering their controls', asy
     expect(host.querySelector('[data-management-navigation]')).toBeNull();
     expect(host.textContent).not.toContain('api.title');
 });
+
+it('connects to a loopback controller without identity before rendering, keeping the page', async () => {
+    const api = await import('@/auth/api');
+    vi.mocked(api.initializationStatus).mockResolvedValueOnce({ authentication: 'none', required: false, expiresAt: 0 });
+    setApiUrl('http://127.0.0.1:3500');
+    await mount('/docs/webui');
+    await waitFor(() => expect(host.querySelector('[data-management-navigation]')).not.toBeNull());
+    expect(window.location.hash).toBe('#/docs/webui');
+    expect(host.textContent).not.toContain('connectController');
+});
+
+it('shows sign-in for a loopback controller that has local users', async () => {
+    setApiUrl('http://127.0.0.1:3500');
+    await mount('/');
+    await waitFor(() => expect(window.location.hash).toBe('#/login'));
+});

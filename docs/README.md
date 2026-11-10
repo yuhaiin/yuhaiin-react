@@ -18,4 +18,6 @@ node scripts/check-connections.mjs
 node scripts/check-ui-interactions.mjs
 ```
 
-Chrome must be available as `google-chrome`; the visual, connection and interaction checks also accept `CHROME_PATH=/path/to/chrome`. Outputs remain under `/tmp/ux-shots`, `/tmp/visual-system-shots`, `/tmp/connections-shots` and `/tmp/ui-interactions-shots`. Captures use synthetic local MSW data and require no controller configuration.
+Chrome must be available as `google-chrome`; the visual, connection and interaction checks also accept `CHROME_PATH=/path/to/chrome`. Outputs remain under `/tmp/ux-shots`, `/tmp/visual-system-shots`, `/tmp/connections-shots` and `/tmp/ui-interactions-shots`. Captures use synthetic local MSW data and require no controller configuration. Add `?scenario=android` (or `android-off`) to preview the Android WebView session and `&lang=ja` / `&lang=ko` for translated layouts.
+
+The current design tokens, shell and shared-component rules are described in [Design System 3](design-system-3/README.md).

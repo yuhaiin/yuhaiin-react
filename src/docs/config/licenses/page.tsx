@@ -27,7 +27,7 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
                     <div className="flex flex-col overflow-hidden min-w-0">
                         <div className="mb-1 flex min-w-0 items-center gap-2">
                             <span className="min-w-0 truncate font-bold">{item.name}</span>
-                            <Badge variant="secondary" className="shrink-0 px-2 py-1 text-[0.65rem]">
+                            <Badge variant="secondary" className="shrink-0 px-2 py-1 text-xs">
                                 {item.license}
                             </Badge>
                         </div>

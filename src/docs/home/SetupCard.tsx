@@ -52,7 +52,12 @@ export default function SetupCard() {
     return <>
         <DefaultSelectionEditor open={editingDefault} onClose={() => setEditingDefault(false)} />
         <Card className="mb-4" density="compact">
-            {configured ? <details key="configured" className="group">
+            {/* Until both answers arrive, a placeholder the size of the collapsed card
+                avoids flashing the unconfigured steps on every load. */}
+            {!selection || !inbounds ? <div className="flex min-h-[52px] items-center gap-2 px-4 py-3 text-sm" aria-busy="true">
+                <span className="font-medium text-ui-heading">{t('setupTitle')}</span>
+                <span aria-hidden="true" className="h-3 min-w-0 flex-1 animate-pulse rounded bg-ui-surface-muted motion-reduce:animate-none" />
+            </div> : configured ? <details key="configured" className="group">
                 <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm text-ui-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus [&::-webkit-details-marker]:hidden">
                     <CheckCircle2 size={16} className="shrink-0 text-ui-success" aria-hidden="true" />
                     <span className="font-medium text-ui-heading">{t('setupTitle')}</span>

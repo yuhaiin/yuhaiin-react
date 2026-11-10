@@ -97,7 +97,9 @@ it('shows the mobile directory first and protects returning from the editor', as
     const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToRules'); expect(editor()).not.toBeNull();
     confirm.mockResolvedValue(true);
-    await click('backToRules'); expect(editor()).toBeNull();
+    await click('backToRules');
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+    expect(editor()).toBeNull(); expect(window.location.hash).not.toContain('rule=');
     await click('Second'); expect(editor()?.querySelector('output')?.textContent).toBe('Second');
 });
 
