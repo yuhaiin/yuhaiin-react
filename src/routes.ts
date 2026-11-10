@@ -39,7 +39,6 @@ const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { load
 const AndroidPage = dynamic(() => import('@/docs/android/page'), { loading });
 const AndroidRoutesPage = dynamic(() => import('@/docs/android/routes/page'), { loading });
 const AndroidBackupPage = dynamic(() => import('@/docs/android/backup/page'), { loading });
-const AndroidUpdatePage = dynamic(() => import('@/docs/android/update/page'), { loading });
 const AndroidPrivacyPage = dynamic(() => import('@/docs/android/privacy/page'), { loading });
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
@@ -78,6 +77,5 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/android", component: AndroidPage },
     { path: "/docs/android/routes", component: AndroidRoutesPage },
     { path: "/docs/android/backup", component: AndroidBackupPage },
-    { path: "/docs/android/update", component: AndroidUpdatePage },
     { path: "/docs/android/privacy", component: AndroidPrivacyPage },
 ];
