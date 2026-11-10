@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { PageHeader } from '@/component/v2/page-header';
 import { usePageVisible } from "@/common/hooks";
 import { LogDetailModal } from "./log-detail";
@@ -298,7 +299,7 @@ export default function LogComponent() {
 
     const downloadAndroidLogs = useCallback(async () => {
         // Logs can contain destinations, addresses and credentials.
-        if (!window.confirm(androidT('logs.exportWarning'))) return
+        if (!await confirmAction(androidT('logs.exportWarning'))) return
         setExporting(true)
         setActionError(undefined)
         try { startDownload(await exportAndroidLogs()) }

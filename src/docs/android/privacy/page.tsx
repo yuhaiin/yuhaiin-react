@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { getAndroidPrivacy, withdrawAndroidConsent } from '@/api/android';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
@@ -22,7 +23,7 @@ const Privacy: FC = () => {
     if (error) return <p className="text-sm text-ui-danger">{errorText(error)}</p>;
     if (!data) return <Loading />;
     const withdraw = async () => {
-        if (!window.confirm(data.withdrawBody)) return;
+        if (!await confirmAction(data.withdrawBody)) return;
         setWithdrawError(undefined);
         try { await mutate(await withdrawAndroidConsent(), { revalidate: false }); setWithdrawn(true); }
         catch (e) { setWithdrawError(errorText(e)); }

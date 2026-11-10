@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { exportAndroidBackup, previewAndroidBackup, restoreAndroidBackup, startDownload, type BackupPreview } from '@/api/android';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
@@ -52,7 +53,7 @@ const RestoreCard: FC = () => {
         finally { setState('idle'); }
     };
     const restore = async () => {
-        if (!backup || !window.confirm(t('backup.restoreConfirm'))) return;
+        if (!backup || !await confirmAction(t('backup.restoreConfirm'))) return;
         setState('restoring'); setError(undefined);
         try { await restoreAndroidBackup(backup); setState('done'); }
         catch (e) { setError(errorText(e)); setState('idle'); }

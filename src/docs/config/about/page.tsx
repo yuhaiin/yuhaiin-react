@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
 import { FrontendUpdatePanel } from './frontend-update';
 import { AndroidAppUpdate } from '@/docs/android/update/app-update';
@@ -299,9 +300,9 @@ export default function About() {
                         )}
 
                         {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} compatibility={update.compatibility} assetUrl={update.assetUrl} releaseUrl={update.releaseUrl} assetSha256={update.assetSha256} /></>}
-                        <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={() => {
+                        <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={async () => {
                             const id = updateStatus?.operation?.id;
-                            if (!id || !window.confirm(uiT('protectedUpdate.cancelWarning'))) return;
+                            if (!id || !await confirmAction(uiT('protectedUpdate.cancelWarning'))) return;
                             setCancelling(true);
                             void cancelUpdate(id).then(() => recovery.retry()).catch(failure => ctx.Error(updateErrorMessage(failure))).finally(() => setCancelling(false));
                         }} />
