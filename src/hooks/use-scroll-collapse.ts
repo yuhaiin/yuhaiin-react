@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
+/** Scrollers whose next scroll event comes from code, such as a restored list offset. */
+const restored = new WeakSet<Element>();
+/** Call before setting a scroller's offset from code, so the bars do not react to it. */
+export function expectScrollRestore(scroller: Element) { restored.add(scroller); }
+
 /** Scroll distance in one direction before the bars move, so small jitters do not toggle them. */
 const THRESHOLD = 24;
 
@@ -45,7 +50,7 @@ export function useScrollCollapse(resetKey: unknown, enabled: boolean) {
             // (Nodes: page plus a virtual list), shrinking its padding would move it.
             const page = target.closest('main')?.querySelector<HTMLElement>('[data-ui-transition="page"]');
             const inner = !target.matches('[data-ui-transition="page"]') && Boolean(page) && page!.scrollHeight - page!.clientHeight <= 1;
-            const previous = last.get(target) ?? top;
+            const previous = restored.delete(target) ? top : last.get(target) ?? top;
             last.set(target, top);
             const height = target.clientHeight;
             const resized = heights.has(target) && heights.get(target) !== height;
