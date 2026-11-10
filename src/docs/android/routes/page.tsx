@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { createRouteProfile, deleteRouteProfile, getRouteProfiles, saveRouteProfile, type RouteProfile } from '@/api/android';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
@@ -56,7 +57,7 @@ const RouteEditor: FC<{ profile: RouteProfile; onChanged: () => void }> = ({ pro
         catch (e) { setStatus({ error: errorText(e) }); }
     };
     const remove = async () => {
-        if (!window.confirm(t('routes.deleteConfirm', { name: profile.name }))) return;
+        if (!await confirmAction(t('routes.deleteConfirm', { name: profile.name }))) return;
         try { await deleteRouteProfile(profile.name); onChanged(); }
         catch (e) { setStatus({ error: errorText(e) }); }
     };

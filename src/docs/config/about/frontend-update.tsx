@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { useState, useContext } from 'react';
 import useSWR from 'swr';
 import { Download, RefreshCw, RotateCcw, PanelsTopLeft } from 'lucide-react';
@@ -81,16 +82,16 @@ export function FrontendUpdatePanel() {
           <RefreshCw size={16} className={running === 'check' ? 'mr-2 motion-safe:animate-spin' : 'mr-2'} />{t('checkForUpdates')}
         </Button>
         {check?.available && <Button variant="default" permission="update:manage"
-          loading={running === 'apply'} disabled={busy || !canUpdate} onClick={() => {
-            if (!window.confirm(t('frontendApplyConfirmation'))) return;
+          loading={running === 'apply'} disabled={busy || !canUpdate} onClick={async () => {
+            if (!await confirmAction(t('frontendApplyConfirmation'))) return;
             void perform('apply', () => frontendApply(check.release.version, check.release.sha256), true);
           }}>
           <Download size={16} className="mr-2" />{t('frontendApply')}
         </Button>}
         {status?.installed && status.source === 'downloaded' && <Button variant="default"
           permission="update:manage" loading={running === 'rollback'} disabled={busy || !canUpdate}
-          onClick={() => {
-            if (!window.confirm(t('frontendRollbackConfirmation'))) return;
+          onClick={async () => {
+            if (!await confirmAction(t('frontendRollbackConfirmation'))) return;
             void perform('rollback', frontendRollback, true);
           }}>
           <RotateCcw size={16} className="mr-2" />{t('frontendRollback')}
