@@ -59,11 +59,17 @@ const overlayVariants = {
     visible: { opacity: 1 },
 };
 
-// A small settle reads as "this opened" without the zoom of a large scale change.
+// The dialog grows out of the click with a spring that overshoots by about 1%
+// and settles. Opacity finishes first, so the movement is seen instead of
+// happening behind a fade. A spring also turns around smoothly when the dialog
+// is closed mid-entrance.
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.96, y: "-50%", x: "-50%" },
-    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: { duration: motionTiming.normal, ease: motionEase.standard } },
-    exit: { opacity: 0, scale: 0.98, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
+    hidden: { opacity: 0, scale: 0.88, y: "-50%", x: "-50%" },
+    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
+        type: 'spring', stiffness: 500, damping: 27,
+        opacity: { duration: motionTiming.fast, ease: 'easeOut' },
+    } },
+    exit: { opacity: 0, scale: 0.94, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
 };
 
 const sheetVariants = {
@@ -124,7 +130,7 @@ const ModalDialog = ({ className, children, style, width = 500, sheet, ...props 
                                 "fixed min-w-0 z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border shadow-ui-elevated",
                                 sheet
                                     ? "inset-x-0 bottom-0 w-full max-h-[calc(100dvh-env(safe-area-inset-top)-24px)] rounded-t-[16px] border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
-                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] rounded-ui-lg",
+                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] rounded-ui-lg",
                                 className
                             )}
                             variants={sheet ? (reducedMotion ? reducedSheetVariants : sheetVariants) : reducedMotion ? {

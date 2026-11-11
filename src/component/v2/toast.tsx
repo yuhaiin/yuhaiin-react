@@ -115,7 +115,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
         {/* The phone App Bar (below lg) owns the top edge, so notices sit just below it
             and follow it up when it scrolls away; the bottom holds the tab bar and
             sticky Save bars. The empty viewport must not swallow taps on the page. */}
-        <ToastPrimitive.Viewport className="pointer-events-none fixed inset-x-0 top-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)-var(--app-bar-collapse,0px))] z-[2147483647] m-0 flex list-none flex-col gap-2 px-[var(--page-gutter)] pt-2 outline-none transition-[top] duration-[var(--motion-slow)] ease-[var(--ease-standard)] sm:left-auto sm:w-[380px] lg:top-0 lg:p-5" />
+        <ToastPrimitive.Viewport className="pointer-events-none fixed inset-x-0 top-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)-var(--app-bar-collapse,0px))] z-[2147483647] m-0 flex list-none flex-col gap-2 px-[var(--page-gutter)] pt-2 outline-none transition-[top] duration-[var(--motion-slow)] ease-[var(--ease-standard)] sm:left-auto sm:w-[380px] lg:top-[env(safe-area-inset-top)] lg:p-5" />
       </ToastPrimitive.Provider>
     </GlobalToastContext.Provider>
   );
