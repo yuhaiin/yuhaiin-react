@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { Smartphone } from 'lucide-react';
 import { errorText } from '../AndroidOnly';
+import { formatBytes } from '@/common/format';
 
 const busyStages = new Set(['CHECKING', 'DOWNLOADING', 'VERIFYING', 'INSTALLING']);
 export const updateBusy = (u: AndroidUpdate) => u.checking || busyStages.has(u.stage);
@@ -29,6 +30,8 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
     };
     const busy = updateBusy(data);
     const percent = data.totalBytes > 0 ? Math.round(data.downloadedBytes * 100 / data.totalBytes) : data.progress;
+    const showBar = data.stage === 'DOWNLOADING' || data.stage === 'VERIFYING' || data.stage === 'INSTALLING';
+    const barPercent = data.stage === 'DOWNLOADING' ? Math.min(100, Math.max(0, percent)) : 100;
     return <Card className={className}>
         <CardHeader className="py-3">
             <IconBox icon={Smartphone} tone="success" title={t('update.software')} description={t('update.description')} />
@@ -54,7 +57,15 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
                     {data.release.notes && <pre className="m-0 max-h-60 overflow-auto whitespace-pre-wrap rounded-ui-md bg-ui-surface-muted p-2 text-xs">{data.release.notes}</pre>}
                 </div>
                 : data.stage === 'IDLE' && !data.checking && <span>{t('update.none')}</span>}
-            {busy && <p className="m-0 text-ui-info">{t(`update.stages.${data.stage}`)}{data.stage === 'DOWNLOADING' ? ` ${percent}%` : ''}</p>}
+            {busy && <div className="flex flex-col gap-1.5">
+                <p className="m-0 text-ui-info">{t(`update.stages.${data.stage}`)}{data.stage === 'DOWNLOADING' ? ` ${percent}%` : ''}</p>
+                {showBar && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={barPercent}
+                    className="h-2 w-full overflow-hidden rounded-full bg-ui-surface-muted">
+                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${barPercent}%` }} />
+                </div>}
+                {data.stage === 'DOWNLOADING' && data.totalBytes > 0 &&
+                    <span className="text-xs text-ui-muted">{formatBytes(data.downloadedBytes)} / {formatBytes(data.totalBytes)}</span>}
+            </div>}
             {data.stage === 'WAITING_PERMISSION' && <p className="m-0 text-ui-warning">{data.reason ?? t('update.permission')}</p>}
             {data.stage === 'COMPLETED' && <p className="m-0 text-ui-success">{data.reason ?? t('update.stages.COMPLETED')}</p>}
             {(data.error || actionError) && <p className="m-0 break-all text-ui-danger">{actionError ?? data.error}</p>}
