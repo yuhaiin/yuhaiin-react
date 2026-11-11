@@ -1,6 +1,6 @@
 import { getApiUrl } from '@/common/apiurl';
 import { directJSON, requireSecureController } from './transport';
-import { authScope, getSession, establishSession, clearSession, type Principal } from './session';
+import { authScope, getSession, establishSession, clearSession, allowsAnonymousController, type Principal } from './session';
 
 export interface PasswordParameters { algorithm: string; salt: string; iterations: number; digest: string; bytes: number; normalization: string; encoding: string }
 export interface User { id: string; login: string; role: 'admin' | 'read-only' | 'none'; disabled: boolean; enrolled: boolean; createdAt: number; updatedAt: number }
@@ -9,16 +9,23 @@ export interface Issued extends Token { secret: string }
 export const authAPI = <T>(method: string, path: string, body?: unknown, signal?: AbortSignal) => directJSON<T>(method, `/api/v2/auth${path}`, body, undefined, signal);
 
 // Check an edited controller without persisting it or attaching any session.
-export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ authentication: 'none' | 'local-users'; required: boolean; expiresAt: number }> {
+export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ authentication: 'none' | 'local-users'; required: boolean; expiresAt: number; lanManagement?: boolean }> {
     requireSecureController(controller);
     const base = new URL(controller || window.location.href).origin;
     const options: RequestInit = { signal, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer' };
     const capabilities = await fetch(new URL('/api/v2/management', base), options);
     if (!capabilities.ok) throw { code: capabilities.status };
-    const mode = (await capabilities.json()).authentication;
+    const metadata = await capabilities.json();
+    const mode = metadata.authentication;
     if (mode === 'none') {
-        if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(base).hostname)) throw new Error('Local management requires a loopback controller');
-        return { authentication: 'none', required: false, expiresAt: 0 };
+        // Android explicitly opts into anonymous LAN management when Allow LAN is on.
+        // Never infer this from the remote address or disable the loopback check for
+        // other native cores; the remote controller must also be this page's HTTPS origin.
+        const lanManagement = metadata.lanManagement === true;
+        if (!allowsAnonymousController(controller, lanManagement)) throw new Error('Anonymous management requires loopback or an opted-in same-origin HTTPS Android controller');
+        return lanManagement
+            ? { authentication: 'none', required: false, expiresAt: 0, lanManagement: true }
+            : { authentication: 'none', required: false, expiresAt: 0 };
     }
     if (mode !== 'local-users') throw new Error('Unsupported management authentication');
     const response = await fetch(new URL('/api/v2/auth/setup', base), options);

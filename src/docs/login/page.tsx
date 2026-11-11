@@ -37,7 +37,7 @@ export default function LoginPage() {
                 if (request.signal.aborted) return;
                 if (status.authentication === 'none') {
                     setApiUrl(controller);
-                    establishLocalConnection(getApiUrl());
+                    establishLocalConnection(getApiUrl(), status.lanManagement === true);
                     navigation.replace('/');
                     return;
                 }
