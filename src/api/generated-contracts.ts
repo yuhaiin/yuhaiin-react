@@ -614,7 +614,12 @@ export namespace Go {
       | { type: "ssh"; ssh: SSHProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
-      | { type: "none"; none: NoneProtocol };
+      | { type: "none"; none: NoneProtocol }
+      | { type: "peer_discovery"; peer_discovery: PeerDiscoveryProtocol }
+      | { type: "peer_tunnel"; peer_tunnel: Go.transport.PeerTunnel };
+    export interface PeerDiscoveryProtocol {
+      tokens: string[];
+    }
     export interface Hysteria2Protocol {
       auth: string;
       uploadBps?: number;
@@ -1175,6 +1180,7 @@ export namespace Go {
       | { type: "anyconnect"; credentialRef?: string; anyconnect: AnyConnect }
       | { type: "sstp"; credentialRef?: string; sstp: SSTP }
       | { type: "fortinet"; credentialRef?: string; fortinet: Fortinet }
+      | { type: "peer_tunnel"; credentialRef?: string; peer_tunnel: Go.transport.PeerTunnel }
       | { type: "wireguard"; credentialRef?: string; wireguard: Wireguard }
       | { type: "openvpn"; credentialRef?: string; openvpn: OpenVPN }
       | { type: "l2tp"; credentialRef?: string; l2tp: L2TP }
@@ -2449,6 +2455,15 @@ export namespace Go {
     }
   }
   export namespace transport {
+    export interface PeerTunnel {
+      coordinator: string;
+      token: string;
+      privateKey: string;
+      peerPublicKey: string;
+      localIp: string;
+      peerIp: string;
+      routes: string[];
+    }
     export interface TCPSettings {
       congestionControl?: string;
       lossRecovery?: string;

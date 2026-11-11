@@ -1136,6 +1136,8 @@
       "tproxy": "TProxy",
       "redir": "Redirect",
       "tun": "TUN",
+      "peer_discovery": "피어 검색",
+      "peer_tunnel": "피어 터널 게시자",
       "wireguard": "WireGuard",
       "sstp": "SSTP",
       "ssh": "SSH",
@@ -1154,6 +1156,8 @@
       "tproxy": "Linux TPROXY 투명 프록시.",
       "redir": "NAT 리다이렉트 투명 프록시.",
       "tun": "가상 네트워크 장치로 시스템 트래픽을 받습니다.",
+      "peer_discovery": "WireGuard 직접 연결에 필요한 UDP 엔드포인트를 교환합니다.",
+      "peer_tunnel": "인증된 직접 터널을 통해 지정한 LAN에 접근할 수 있게 합니다.",
       "wireguard": "WireGuard VPN 서버.",
       "sstp": "Windows 클라이언트용 SSTP VPN 서버.",
       "ssh": "포트 포워딩을 지원하는 SSH 서버.",
@@ -1183,6 +1187,19 @@
       "tcp_only": "TCP만",
       "udp_only": "UDP만"
     }
+  },
+  "peerTunnel": {
+    "coordinator": "검색 서버",
+    "token": "페어링 토큰",
+    "tokens": "페어링 토큰 목록",
+    "generateToken": "토큰 생성",
+    "generateKey": "WireGuard 키 생성",
+    "keyError": "wg genkey로 생성한 개인 키를 붙여넣거나 X25519를 지원하는 브라우저에서 HTTPS로 웹 UI를 열어 주세요.",
+    "sharePublicKey": "공유할 로컬 공개 키",
+    "peerPublicKey": "피어 공개 키",
+    "localIp": "로컬 터널 IP",
+    "peerIp": "피어 터널 IP",
+    "routes": "LAN 경로"
   },
   "nodeProtocol": {
     "addStep": "단계 추가",
@@ -1233,6 +1250,7 @@
       "aead": "AEAD 암호화",
       "tls_termination": "TLS 종료",
       "proxy": "PROXY 프로토콜",
+      "peer_tunnel": "피어 터널",
       "wireguard": "WireGuard",
       "amneziawg": "AmneziaWG",
       "openvpn": "OpenVPN",
@@ -1283,6 +1301,7 @@
       "aead": "공유 키로 스트림을 암호화합니다.",
       "tls_termination": "이 단계에서 TLS를 복호화합니다.",
       "proxy": "PROXY 헤더로 클라이언트 주소를 보냅니다.",
+      "peer_tunnel": "WireGuard 직접 터널로 LAN에 연결합니다. 페어링 토큰과 게시자의 공개 키를 입력하세요.",
       "wireguard": "WireGuard VPN.",
       "amneziawg": "트래픽을 난독화한 WireGuard.",
       "openvpn": "OpenVPN 클라이언트.",

@@ -1136,6 +1136,8 @@
       "tproxy": "TProxy",
       "redir": "Redirect",
       "tun": "TUN",
+      "peer_discovery": "ピア検出",
+      "peer_tunnel": "ピアトンネル公開側",
       "wireguard": "WireGuard",
       "sstp": "SSTP",
       "ssh": "SSH",
@@ -1154,6 +1156,8 @@
       "tproxy": "Linux TPROXY による透過プロキシ。",
       "redir": "NAT リダイレクトによる透過プロキシ。",
       "tun": "仮想ネットワークデバイスでシステムの通信を取り込みます。",
+      "peer_discovery": "WireGuard の直接接続に使う UDP エンドポイントを交換します。",
+      "peer_tunnel": "認証済みの直接トンネルから指定した LAN にアクセスできるようにします。",
       "wireguard": "WireGuard VPN サーバー。",
       "sstp": "Windows クライアント向けの SSTP VPN サーバー。",
       "ssh": "ポート転送対応の SSH サーバー。",
@@ -1183,6 +1187,19 @@
       "tcp_only": "TCP のみ",
       "udp_only": "UDP のみ"
     }
+  },
+  "peerTunnel": {
+    "coordinator": "検出サーバー",
+    "token": "ペアリングトークン",
+    "tokens": "ペアリングトークン一覧",
+    "generateToken": "トークンを生成",
+    "generateKey": "WireGuard 鍵を生成",
+    "keyError": "wg genkey で生成した秘密鍵を貼り付けるか、X25519 対応ブラウザーで HTTPS の Web UI を開いてください。",
+    "sharePublicKey": "共有するローカル公開鍵",
+    "peerPublicKey": "ピアの公開鍵",
+    "localIp": "ローカルトンネル IP",
+    "peerIp": "ピアのトンネル IP",
+    "routes": "LAN ルート"
   },
   "nodeProtocol": {
     "addStep": "ステップを追加",
@@ -1233,6 +1250,7 @@
       "aead": "AEAD 暗号化",
       "tls_termination": "TLS 終端",
       "proxy": "PROXY プロトコル",
+      "peer_tunnel": "ピアトンネル",
       "wireguard": "WireGuard",
       "amneziawg": "AmneziaWG",
       "openvpn": "OpenVPN",
@@ -1283,6 +1301,7 @@
       "aead": "共有鍵でストリームを暗号化します。",
       "tls_termination": "このステップで TLS を復号します。",
       "proxy": "PROXY ヘッダーでクライアントのアドレスを送ります。",
+      "peer_tunnel": "WireGuard の直接トンネルで LAN に接続します。ペアリングトークンと公開側の公開鍵を指定してください。",
       "wireguard": "WireGuard VPN。",
       "amneziawg": "通信を難読化した WireGuard。",
       "openvpn": "OpenVPN クライアント。",

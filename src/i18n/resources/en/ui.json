@@ -1136,6 +1136,8 @@
       "tproxy": "TProxy",
       "redir": "Redirect",
       "tun": "TUN",
+      "peer_discovery": "Peer Discovery",
+      "peer_tunnel": "Peer Tunnel Publisher",
       "wireguard": "WireGuard",
       "sstp": "SSTP",
       "ssh": "SSH",
@@ -1154,6 +1156,8 @@
       "tproxy": "Transparent proxy using Linux TPROXY.",
       "redir": "Transparent proxy using NAT redirect.",
       "tun": "Captures system traffic through a virtual network device.",
+      "peer_discovery": "Exchanges UDP endpoints for direct WireGuard tunnels.",
+      "peer_tunnel": "Make selected LAN networks reachable through an authenticated direct tunnel.",
       "wireguard": "WireGuard VPN server.",
       "sstp": "SSTP VPN server for Windows clients.",
       "ssh": "SSH server with port forwarding.",
@@ -1183,6 +1187,19 @@
       "tcp_only": "TCP only",
       "udp_only": "UDP only"
     }
+  },
+  "peerTunnel": {
+    "coordinator": "Discovery server",
+    "token": "Pairing token",
+    "tokens": "Pairing tokens",
+    "generateToken": "Generate token",
+    "generateKey": "Generate WireGuard key",
+    "keyError": "Copy the private key from wg genkey, or open the Web UI over HTTPS in a browser with X25519 support.",
+    "sharePublicKey": "Local public key to share",
+    "peerPublicKey": "Peer public key",
+    "localIp": "Local tunnel IP",
+    "peerIp": "Peer tunnel IP",
+    "routes": "LAN routes"
   },
   "nodeProtocol": {
     "addStep": "Add step",
@@ -1233,6 +1250,7 @@
       "aead": "AEAD encryption",
       "tls_termination": "TLS termination",
       "proxy": "PROXY protocol",
+      "peer_tunnel": "Peer Tunnel",
       "wireguard": "WireGuard",
       "amneziawg": "AmneziaWG",
       "openvpn": "OpenVPN",
@@ -1283,6 +1301,7 @@
       "aead": "Encrypt the stream with a shared key.",
       "tls_termination": "Decrypt TLS at this step.",
       "proxy": "Send the client address with a PROXY header.",
+      "peer_tunnel": "Route LAN traffic through a direct WireGuard tunnel. Use the token and public key from the paired deployment.",
       "wireguard": "WireGuard VPN.",
       "amneziawg": "WireGuard with traffic obfuscation.",
       "openvpn": "OpenVPN client.",

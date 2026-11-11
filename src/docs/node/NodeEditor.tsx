@@ -1,3 +1,4 @@
+import { PeerTunnelForm } from "@/component/peer-tunnel-form";
 import { OutboundTCPSettings } from './tcp-settings';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
@@ -498,6 +499,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <NebulaForm config={protocol.nebula} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "zerotier":
             return <ZeroTierForm config={protocol.zerotier} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "peer_tunnel":
+            return <PeerTunnelForm value={protocol.peer_tunnel} disabled={!editable} onChange={patchValue => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
