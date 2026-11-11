@@ -103,7 +103,7 @@ top and bottom insets are applied once, in CSS, by the app bar and the tab bar.
 | --- | --- |
 | `WorkspaceLayout` / `WorkspaceDirectory` / `WorkspaceDetail` | Below md: full-bleed directory and detail, list scroll saved per history entry and restored on Back, detail opens at the top and slides in from the right, the directory slides back from the left. The 72vh list cap applies from md up only. The detail pane is a `@container` and caps its content at 1120px. |
 | `ResourceEditorFrame`, rule, selector and node editors, Gateway save bar | Footer uses `.ui-sticky-actions`: on phones Save/Cancel stay pinned at the bottom of long forms. |
-| `Modal` | Desktop dialogs settle from 0.96 → 1 (was a spring from 0.2). Below md every dialog is a bottom sheet by default (`mobileSheet={false}` opts out); drag the handle or header down to close. `ModalBody` is a `@container`. |
+| `Modal` | Desktop dialogs spring from 0.88 → 1 out of the click, overshooting by about 1% (stiffness 500, damping 27); opacity finishes in 120ms so the movement stays visible. The first version of this page used a 0.96 → 1 ease, which read as a plain fade; the original was a spring from 0.2. Below md every dialog is a bottom sheet by default (`mobileSheet={false}` opts out); drag the handle or header down to close. `ModalBody` is a `@container`. |
 | `Card` | Carries `.ui-card`; its default bottom margin is dropped when a flex/grid `gap` already spaces it or when it is the last child. |
 | Toasts | Phones show notices full width just below the App Bar, so they never cover the tab bar, sticky Save bars or actions at the end of a page; desktop keeps the top-right stack. |
 | `PageHeader` sticky actions | Use `--page-gutter`. |
