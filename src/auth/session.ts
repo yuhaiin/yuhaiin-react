@@ -22,11 +22,22 @@ export function establishSession(secret: string, principal: Principal, expiresAt
     expiry = setTimeout(clearSession, expiresAt * 1000 - Date.now());
     changed();
 }
-/** A local controller explicitly advertises that no identity module is installed.
- * This is a connection state, with no fabricated account, secret or expiry. */
-export function establishLocalConnection(controller: string) {
-    const url = new URL(controller || window.location.href);
-    if (controller !== getApiUrl() || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !['http:', 'https:'].includes(url.protocol)) throw new Error('Local management requires a loopback controller');
+/** Anonymous mode is local-only, except for Android's explicit HTTPS Allow LAN opt-in.
+ * The candidate must be the page's own origin; a remote controller supplied by a
+ * different page must not become an anonymous session. The backend independently
+ * enforces the peer, TLS and Origin policy.
+ */
+export function allowsAnonymousController(controller: string, lanManagement = false, documentOrigin = window.location.origin): boolean {
+    try {
+        const url = new URL(controller || window.location.href);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+        if (['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) return true;
+        return lanManagement && url.protocol === 'https:' && url.origin === documentOrigin;
+    } catch { return false; }
+}
+/** An identity-free controller creates a client-side connection state, never credentials. */
+export function establishLocalConnection(controller: string, lanManagement = false) {
+    if (controller !== getApiUrl() || !allowsAnonymousController(controller, lanManagement)) throw new Error('Anonymous management requires loopback or opted-in same-origin HTTPS Android');
     clearTimeout(expiry);
     session = { authorization: '', controller, expiresAt: 0, principal: { userId: '', credentialType: 'local', permissions: [...new Set(Object.values(operationPermissions))] } };
     enrollment = null;
