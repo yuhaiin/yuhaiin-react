@@ -40,12 +40,12 @@ try {
     return point;
   }
   async function key(key,code){await send('Input.dispatchKeyEvent',{type:'keyDown',key,code:key,windowsVirtualKeyCode:code,...(key==='Enter'?{text:'\r'}:{})});await send('Input.dispatchKeyEvent',{type:'keyUp',key,windowsVirtualKeyCode:code});}
-  // Phones slide a bottom sheet up; wider screens settle a dialog from 0.96 without overshoot.
+  // Phones slide a bottom sheet up; wider screens spring a dialog from 0.88 with a slight overshoot.
   async function assertDialogBounce() {
   const frames=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e){const m=new DOMMatrix(getComputedStyle(e).transform);values.push({scale:m.a,y:m.f,bottom:e.getBoundingClientRect().bottom>=innerHeight-1});}if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
   assert(frames.length>0,'Dialog did not open');
   if(frames[frames.length-1].bottom) assert(frames.every(f=>f.scale===1)&&frames.some(f=>f.y>1),'Bottom sheet did not slide up: '+JSON.stringify(frames));
-  else assert(frames.every(f=>f.scale>=0.95&&f.scale<=1.001)&&frames.some(f=>f.scale<0.995),'Dialog entrance is not the subtle 0.96 → 1 settle: '+JSON.stringify(frames));
+  else assert(frames.every(f=>f.scale>=0.87&&f.scale<=1.03)&&frames.some(f=>f.scale<0.97)&&frames.some(f=>f.scale>1.002),'Dialog entrance is not the 0.88 → 1 spring with a slight overshoot: '+JSON.stringify(frames));
   }
   const firstId=()=>evaluate(`document.querySelector('[data-connection-id]')?.dataset.connectionId`);
   const table='[role="table"]', row='[data-connection-id]';
