@@ -130,7 +130,7 @@ const ModalDialog = ({ className, children, style, width = 500, sheet, ...props 
                                 "fixed min-w-0 z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border shadow-ui-elevated",
                                 sheet
                                     ? "inset-x-0 bottom-0 w-full max-h-[calc(100dvh-env(safe-area-inset-top)-24px)] rounded-t-[16px] border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
-                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] rounded-ui-lg",
+                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] rounded-ui-lg",
                                 className
                             )}
                             variants={sheet ? (reducedMotion ? reducedSheetVariants : sheetVariants) : reducedMotion ? {

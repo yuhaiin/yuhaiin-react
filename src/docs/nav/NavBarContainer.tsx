@@ -99,6 +99,10 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
                 "transition-opacity duration-[var(--motion-slow)] ease-[var(--ease-standard)]",
                 collapsed && "opacity-0",
             )} style={{ backgroundColor: 'var(--sidebar-bg)' }} />
+            {/* Wide screens have no App Bar or tab bar, so the page itself pads past the system
+                bars (a tablet in the Android app); these keep scrolled content from showing under them. */}
+            <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-[1031] hidden h-[env(safe-area-inset-top)] bg-ui-bg lg:block" />
+            <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-[1031] hidden h-[env(safe-area-inset-bottom)] bg-ui-bg lg:block" />
             <header inert={collapsed} data-app-chrome className={clsx(
                 "fixed inset-x-0 top-0 z-[1030] flex h-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top))] flex-col border-b border-ui-border pt-[env(safe-area-inset-top)] lg:hidden",
                 "transition-transform duration-[var(--motion-slow)] ease-[var(--ease-standard)] will-change-transform",
