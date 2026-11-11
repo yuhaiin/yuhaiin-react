@@ -7,41 +7,33 @@ Android APK. CI creates:
 - frontend.tar.gz: compressed UI archive, including ui-build.json
 - frontend-update.json: feed manifest containing the bundle SHA-256 and size
 
-The v2 branch publishes the Web UI in two places:
+The publish job copies the archive to /frontend.tar.gz and the feed to
+/ui-update.json on yuhaiin.github.io. It also generates a Go module with
+//go:embed index.html assets docs ui-build.json so binary releases carry the
+same buildNumber as the static frontend. The Go Core reads exactly
+`https://yuhaiin.github.io/ui-update.json` and rejects any feed whose archive
+URL is not `https://yuhaiin.github.io/frontend.tar.gz`. The URL is a constant in
+scripts/ui-ota.mjs and must stay equal to the Core's `ArchiveURL`.
 
-- The yuhaiin.github.io `v2` branch (embedded build): the publish job copies the
-  build there, including ui-build.json, and generates a Go module with
-  //go:embed index.html assets docs ui-build.json so v2 binary releases carry the
-  same buildNumber as the hosted frontend. The public site and stable Cores keep
-  using `main`, which this workflow never touches.
-- The rolling `ui-v2` GitHub prerelease of this repository (OTA channel): CI
-  replaces `frontend.tar.gz` and `ui-update.json` in place. The Go Core of v2
-  reads exactly
-  `https://github.com/yuhaiin/yuhaiin-react/releases/download/ui-v2/ui-update.json`
-  and rejects any feed whose archive URL is not
-  `.../ui-v2/frontend.tar.gz`. The URL is a constant in scripts/ui-ota.mjs and
-  must stay equal to the Core's `ArchiveURL`.
-
-The archive is uploaded before the feed. A client that sees the old feed keeps
-the old archive's SHA-256; one that sees the new feed before the new archive is
-visible fails the size/SHA-256 check and retries later. A build is published only
-when its buildNumber is greater than the published feed's
-(`node scripts/ui-ota.mjs newer <feed>`), so two overlapping builds cannot
-downgrade the channel.
-
-buildNumber is a deterministic, monotonically increasing v2 revision:
-`2_000_000_000_000 + git rev-list --first-parent --count HEAD`. CI must fetch
+buildNumber is a deterministic, monotonically increasing mainline revision:
+`2_000_000_001_000 + git rev-list --first-parent --count HEAD`. CI must fetch
 the complete Git history. Rerunning a workflow for the same commit never
-increases its buildNumber, and an older ancestor on v2 always has a smaller
-number than its descendants. The range is deliberately above the stable
-channel's `1_000_000_000_000 + n` and the legacy timestamp-based numbers, so a
-stable bundle can never outrank a v2 build. A Core whose embedded UI has a
-greater or equal buildNumber MUST prefer its embedded version over any older
-downloaded release.
+increases its buildNumber, and an older ancestor on main always has a smaller
+number than its descendants. A Core whose embedded UI has a greater or equal
+buildNumber MUST prefer its embedded version over any older downloaded release.
 
-Before publishing, the job verifies that its GITHUB_SHA is still the current v2
-branch tip. Reruns of stale revisions must not overwrite the latest hosted
-frontend or OTA channel.
+The base is above every number published before:
+
+- legacy timestamp-based numbers and the first mainline range
+  (`1_000_000_000_000 + n`);
+- the former v2 branch (`2_000_000_000_000 + n`, up to 556), which published
+  through the rolling `ui-v2` prerelease of this repository. Cores built while
+  that channel was pinned still read it; it is no longer updated, and they move
+  on by upgrading the Core, whose embedded UI outranks the last v2 bundle.
+
+Before deploying, the publish job verifies that its GITHUB_SHA is still the
+current main branch tip. Reruns of stale revisions must not overwrite the
+latest hosted frontend, OTA feed, or archive.
 
 Backend/Android compatibility is negotiated through the Core's frontend.status
 RPC. Declare requiredCapabilities only for genuinely essential operations.
