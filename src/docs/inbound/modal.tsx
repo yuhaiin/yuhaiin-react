@@ -1,6 +1,7 @@
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
+import { PeerDiscoveryPairs } from "./peer-discovery-pairs";
 import { InboundRuntimePanel } from "./runtime";
 import { InboundTaskEditor } from "./task-editor";
 import { initialInbound, presetInbound, type InboundPreset } from "./presets";
@@ -126,6 +127,7 @@ const InboundModal: FC<{
                                     retrying={retrying}
                                 />
                             )}
+                            {!isNew && data?.protocol.type === "peer_discovery" && <PeerDiscoveryPairs key={id} id={id} />}
                             {isNew && <SettingSelectVertical label={t('entryPreset')} value={preset}
                                 values={[[t('presetLocal'), 'local'], [t('presetLAN'), 'lan'], ...(capabilities?.protocols.includes('tun') ? [[t('presetTun'), 'tun'] as [string, string]] : []), [t('presetCustom'), 'custom']]}
                                 onChange={async next => {

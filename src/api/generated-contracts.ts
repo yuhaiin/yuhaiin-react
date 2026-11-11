@@ -534,6 +534,22 @@ export namespace Go {
     }
   }
   export namespace inbound {
+    export interface PeerDiscoveryPair {
+      id: string;
+      blocked: boolean;
+      retryAt?: number;
+      dialerEndpoint?: string;
+      publisherEndpoint?: string;
+    }
+    export interface PeerDiscoveryPairs {
+      running: boolean;
+      items: PeerDiscoveryPair[];
+    }
+    export interface PeerDiscoveryAction {
+      id: string;
+      pairId: string;
+      action: string;
+    }
     export interface RuntimeStatus {
       id: string;
       name: string;
@@ -619,6 +635,7 @@ export namespace Go {
       | { type: "peer_tunnel"; peer_tunnel: Go.transport.PeerTunnel };
     export interface PeerDiscoveryProtocol {
       tokens: string[];
+      blockedPairIds?: string[];
     }
     export interface Hysteria2Protocol {
       auth: string;
@@ -1019,6 +1036,18 @@ export namespace Go {
       samples: number;
       failures: number;
       failureRate: number;
+    }
+    export interface PeerTunnelPeer {
+      nodeId: string;
+      name: string;
+      state: string;
+      endpoint?: string;
+      tunnelIp: string;
+      routes: string[];
+    }
+    export interface PeerTunnelPeers {
+      items: PeerTunnelPeer[];
+      page: Go.route.Page;
     }
     export interface SelectorPolicy {
       circuit?: CircuitConfig;

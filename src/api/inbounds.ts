@@ -81,3 +81,12 @@ export async function saveInboundConfig(config: InboundConfig): Promise<InboundC
     const value = await requestJSON<InboundConfig>("PUT", "/api/v2/inbounds/config", normalizeInboundConfig(config));
     return normalizeInboundConfig(value);
 }
+
+
+export async function listPeerDiscoveryPairs(id: string): Promise<Go.inbound.PeerDiscoveryPairs> {
+    return requestJSON("GET", `/api/v2/inbounds/${encodeURIComponent(id)}/peer-discovery/pairs`);
+}
+
+export async function updatePeerDiscoveryPair(id: string, pairId: string, action: "kick" | "block" | "unblock"): Promise<void> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/peer-discovery/action`, { pairId, action });
+}

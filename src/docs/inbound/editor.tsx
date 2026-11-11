@@ -321,7 +321,7 @@ const ProtocolConfigEditor: FC<{
         case "sstp":
             return <SSTPServerEditor value={value.sstp} onChange={(sstp) => onChange({ ...value, sstp })} />;
         case "peer_discovery":
-            return <PeerDiscoveryForm tokens={value.peer_discovery.tokens} onChange={tokens => onChange({ ...value, peer_discovery: { tokens } })} />;
+            return <PeerDiscoveryForm tokens={value.peer_discovery.tokens} onChange={tokens => onChange({ ...value, peer_discovery: { ...value.peer_discovery, tokens } })} />;
         case "peer_tunnel":
             return <PeerTunnelForm value={value.peer_tunnel} onChange={patch => onChange({ ...value, peer_tunnel: { ...value.peer_tunnel, ...patch } })} />;
         case "wireguard":

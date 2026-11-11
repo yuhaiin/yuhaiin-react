@@ -46,6 +46,8 @@ export type RPCOperation =
   | "inbound.delete"
   | "inbound.events"
   | "inbound.get"
+  | "inbound.peer_discovery.action"
+  | "inbound.peer_discovery.pairs"
   | "inbound.put"
   | "inbound.retry"
   | "inbounds.config.get"
@@ -70,6 +72,7 @@ export type RPCOperation =
   | "nodes.groups"
   | "nodes.import.commit"
   | "nodes.import.preview"
+  | "nodes.peer_tunnel_peers"
   | "nodes.post"
   | "nodes.select"
   | "nodes.selected"
@@ -243,6 +246,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
+  { method: "GET", pattern: "/api/v2/inbounds/{id}/peer-discovery/pairs", operation: "inbound.peer_discovery.pairs" },
+  { method: "POST", pattern: "/api/v2/inbounds/{id}/peer-discovery/action", operation: "inbound.peer_discovery.action" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}/events", operation: "inbound.events" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/retry", operation: "inbound.retry" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
@@ -255,6 +260,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/nodes/import/commit", operation: "nodes.import.commit" },
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
   { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
+  { method: "GET", pattern: "/api/v2/nodes/peer-tunnel-peers", operation: "nodes.peer_tunnel_peers" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },
   { method: "GET", pattern: "/api/v2/nodes/{id}", operation: "node.get" },
   { method: "PUT", pattern: "/api/v2/nodes/{id}", operation: "node.put" },
