@@ -22,8 +22,6 @@ export function establishSession(secret: string, principal: Principal, expiresAt
     expiry = setTimeout(clearSession, expiresAt * 1000 - Date.now());
     changed();
 }
-/** A local controller explicitly advertises that no identity module is installed.
- * This is a connection state, with no fabricated account, secret or expiry. */
 /** Anonymous mode is local-only, except for Android's explicit HTTPS Allow LAN opt-in.
  * The candidate must be the page's own origin; a remote controller supplied by a
  * different page must not become an anonymous session. The backend independently
@@ -37,6 +35,7 @@ export function allowsAnonymousController(controller: string, lanManagement = fa
         return lanManagement && url.protocol === 'https:' && url.origin === documentOrigin;
     } catch { return false; }
 }
+/** An identity-free controller creates a client-side connection state, never credentials. */
 export function establishLocalConnection(controller: string, lanManagement = false) {
     if (controller !== getApiUrl() || !allowsAnonymousController(controller, lanManagement)) throw new Error('Anonymous management requires loopback or opted-in same-origin HTTPS Android');
     clearTimeout(expiry);

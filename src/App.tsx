@@ -25,7 +25,7 @@ import { appRoutes } from './routes';
 // WebUI preferences are local to this browser and need no controller session.
 const publicPaths = ['/login', '/docs/webui'];
 
- /**
+/**
  * Sessions live in memory, so every load starts without one. A loopback
  * controller or an opted-in same-origin HTTPS Android LAN controller
  * needs no sign-in: connect before rendering, so a reload neither flashes the
