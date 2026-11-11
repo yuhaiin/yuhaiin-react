@@ -10,7 +10,7 @@
                 "@types/react-dom": "^19.2.3",
                 "chart.js": "^4.5.1",
                 "clsx": "^2.1.1",
-                "i18next": "^26.4.3",
+                "i18next": "^27.0.0",
                 "lucide-react": "^1.55.0",
                 "motion": "^14.1.0",
                 "radix-ui": "^1.7.0",
