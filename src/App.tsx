@@ -91,7 +91,7 @@ function AppContent() {
                     // --chrome-*-reclaim give a full-height page the space of scrolled-away bars (global.css).
                     !isStandalone && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)+12px-var(--chrome-top-reclaim,0px))] px-[var(--page-gutter)] pb-[calc(20px+var(--bottom-nav-space)-var(--chrome-bottom-reclaim,0px))]',
                     // Past --content-max the page centers in the area beside the sidebar instead of stretching.
-                    !isStandalone && 'lg:pt-[20px] lg:pl-[calc(292px+max(0px,(100%-312px-var(--content-max))/2))] lg:pr-[calc(20px+max(0px,(100%-312px-var(--content-max))/2))]'
+                    !isStandalone && 'lg:pt-[calc(20px+env(safe-area-inset-top))] lg:pl-[calc(292px+max(0px,(100%-312px-var(--content-max))/2))] lg:pr-[calc(20px+max(0px,(100%-312px-var(--content-max))/2))]'
                 )}
                 transition={{ duration: reducedMotion ? 0 : motionTiming.slow, ease: motionEase.standard }}
             >

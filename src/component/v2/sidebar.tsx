@@ -31,7 +31,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
         className
     );
     if (desktop) return (
-        <div ref={ref} data-app-chrome className={clsx(panelClass, "top-sidebar-gap left-sidebar-gap h-[calc(100dvh-2*var(--sidebar-gap))] w-[260px] rounded-sidebar-radius")} {...props}>
+        <div ref={ref} data-app-chrome className={clsx(panelClass, "top-[calc(var(--sidebar-gap)+env(safe-area-inset-top))] left-sidebar-gap h-[calc(100dvh-2*var(--sidebar-gap)-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-[260px] rounded-sidebar-radius")} {...props}>
             {children}
         </div>
     );
