@@ -59,11 +59,17 @@ const overlayVariants = {
     visible: { opacity: 1 },
 };
 
-// A small settle reads as "this opened" without the zoom of a large scale change.
+// The dialog grows out of the click with a spring that overshoots by about 1%
+// and settles. Opacity finishes first, so the movement is seen instead of
+// happening behind a fade. A spring also turns around smoothly when the dialog
+// is closed mid-entrance.
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.96, y: "-50%", x: "-50%" },
-    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: { duration: motionTiming.normal, ease: motionEase.standard } },
-    exit: { opacity: 0, scale: 0.98, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
+    hidden: { opacity: 0, scale: 0.88, y: "-50%", x: "-50%" },
+    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
+        type: 'spring', stiffness: 500, damping: 27,
+        opacity: { duration: motionTiming.fast, ease: 'easeOut' },
+    } },
+    exit: { opacity: 0, scale: 0.94, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
 };
 
 const sheetVariants = {
