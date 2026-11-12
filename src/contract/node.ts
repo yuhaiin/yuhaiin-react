@@ -1,4 +1,3 @@
-import { defaultPeerTunnel } from "./peer-tunnel";
 import type { Go } from "@/api/generated-contracts";
 
 export type NodeOrigin = "reserve" | "remote" | "manual";
@@ -84,7 +83,6 @@ export type NodeProtocolConfigByType = {
   nebula: NebulaConfig;
   zerotier: ZeroTierConfig;
   wireguard: WireguardConfig;
-  peer_tunnel: Partial<Go.transport.PeerTunnel>;
   lan_link: Partial<Go.transport.LANLink>;
   openvpn: OpenVPNConfig;
   l2tp: L2TPConfig;
@@ -235,8 +233,6 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { network_id: "", identity: "", listen: "", moons: [], low_bandwidth: false } as NodeProtocolConfig<T>;
     case "lan_link":
       return { invitation: "" } as NodeProtocolConfig<T>;
-    case "peer_tunnel":
-      return defaultPeerTunnel() as NodeProtocolConfig<T>;
     case "wireguard":
       return { endpoint: [], peers: [] } as unknown as NodeProtocolConfig<T>;
     case "globalprotect":
@@ -346,7 +342,6 @@ export const protocolTypes: NodeProtocolType[] = [
   "nebula",
   "zerotier",
   "wireguard",
-  "peer_tunnel",
   "lan_link",
   "openvpn",
   "l2tp",

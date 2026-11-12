@@ -593,22 +593,6 @@ export namespace Go {
       reason?: string;
       items: LANLinkNetwork[];
     }
-    export interface PeerDiscoveryPair {
-      id: string;
-      blocked: boolean;
-      retryAt?: number;
-      dialerEndpoint?: string;
-      publisherEndpoint?: string;
-    }
-    export interface PeerDiscoveryPairs {
-      running: boolean;
-      items: PeerDiscoveryPair[];
-    }
-    export interface PeerDiscoveryAction {
-      id: string;
-      pairId: string;
-      action: string;
-    }
     export interface RuntimeStatus {
       id: string;
       name: string;
@@ -690,13 +674,7 @@ export namespace Go {
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol }
-      | { type: "peer_discovery"; peer_discovery: PeerDiscoveryProtocol }
-      | { type: "peer_tunnel"; peer_tunnel: Go.transport.PeerTunnel }
       | { type: "lan_link"; lan_link: LANLinkGateway };
-    export interface PeerDiscoveryProtocol {
-      tokens: string[];
-      blockedPairIds?: string[];
-    }
     export interface Hysteria2Protocol {
       auth: string;
       uploadBps?: number;
@@ -1269,7 +1247,6 @@ export namespace Go {
       | { type: "anyconnect"; credentialRef?: string; anyconnect: AnyConnect }
       | { type: "sstp"; credentialRef?: string; sstp: SSTP }
       | { type: "fortinet"; credentialRef?: string; fortinet: Fortinet }
-      | { type: "peer_tunnel"; credentialRef?: string; peer_tunnel: Go.transport.PeerTunnel }
       | { type: "lan_link"; credentialRef?: string; lan_link: Go.transport.LANLink }
       | { type: "wireguard"; credentialRef?: string; wireguard: Wireguard }
       | { type: "openvpn"; credentialRef?: string; openvpn: OpenVPN }
@@ -2553,15 +2530,6 @@ export namespace Go {
       coordinator: string;
       registration: string;
       token: string;
-      routes: string[];
-    }
-    export interface PeerTunnel {
-      coordinator: string;
-      token: string;
-      privateKey: string;
-      peerPublicKey: string;
-      localIp: string;
-      peerIp: string;
       routes: string[];
     }
     export interface TCPSettings {
