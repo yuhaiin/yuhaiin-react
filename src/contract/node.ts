@@ -96,6 +96,7 @@ export type NodeProtocolConfigByType = {
   vless: VlessConfig;
   bootstrap_dns_warp: EmptyNodeProtocolConfig;
   tailscale: TailscaleConfig;
+  "tailscale-lite": Partial<Go.node.TailscaleLite>;
   set: SetConfig;
   tls_termination: TLSTerminationConfig;
   http_mock: HTTPMockConfig;
@@ -358,6 +359,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "vless",
   "bootstrap_dns_warp",
   "tailscale",
+  "tailscale-lite",
   "set",
   "tls_termination",
   "http_mock",

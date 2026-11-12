@@ -525,6 +525,15 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <BoolField label={uiT("debug")} value={protocol.tailscale.debug} disabled={!editable} onChange={(debug) => patch(protocol, { debug })} />
                 </div>
             );
+        case "tailscale-lite":
+            return (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <StringField label={uiT("hostname")} value={protocol["tailscale-lite"].hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
+                    <StringField secret label={uiT("authKey")} value={protocol["tailscale-lite"].auth_key} disabled={!editable} onChange={(auth_key) => patch(protocol, { auth_key })} />
+                    <StringField label={uiT("controlUrl")} value={protocol["tailscale-lite"].control_url} disabled={!editable} onChange={(control_url) => patch(protocol, { control_url })} />
+                    <BoolField label={uiT("debug")} value={protocol["tailscale-lite"].debug} disabled={!editable} onChange={(debug) => patch(protocol, { debug })} />
+                </div>
+            );
         case "http_mock":
             return (
                 <SettingInputBytes
