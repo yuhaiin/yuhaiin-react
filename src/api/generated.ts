@@ -56,8 +56,6 @@ export type RPCOperation =
   | "inbound.lan_link.invite"
   | "inbound.lan_link.networks"
   | "inbound.lan_link.revoke"
-  | "inbound.peer_discovery.action"
-  | "inbound.peer_discovery.pairs"
   | "inbound.put"
   | "inbound.retry"
   | "inbounds.config.get"
@@ -261,8 +259,6 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
-  { method: "GET", pattern: "/api/v2/inbounds/{id}/peer-discovery/pairs", operation: "inbound.peer_discovery.pairs" },
-  { method: "POST", pattern: "/api/v2/inbounds/{id}/peer-discovery/action", operation: "inbound.peer_discovery.action" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/revoke", operation: "inbound.lan_link.revoke" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}/lan-link/clients", operation: "inbound.lan_link.clients" },

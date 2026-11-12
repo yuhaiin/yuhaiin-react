@@ -1,5 +1,4 @@
 import { LANLinkInboundForm } from "@/component/lan-link-form";
-import { PeerDiscoveryForm, PeerTunnelForm } from "@/component/peer-tunnel-form";
 import { TCPSettingsEditor } from '@/component/tcp-settings';
 import { FormSection } from '@/component/v2/form-section';
 import { timezoneOptions } from '@/common/timezones';
@@ -27,7 +26,7 @@ import { UserAuthentication } from "./authentication";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "peer_discovery", "lan_link", "peer_tunnel", "sstp", "ssh", "krunlet", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "lan_link", "sstp", "ssh", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -66,7 +65,7 @@ const InboundEditor: FC<{
                 <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
             </FormSection>
 
-            {!["peer_tunnel", "lan_link"].includes(inbound.protocol.type) && <FormSection title={uiT("inboundEditor.listener")}>
+            {inbound.protocol.type !== "lan_link" && <FormSection title={uiT("inboundEditor.listener")}>
                 <NetworkSection inbound={inbound} onChange={onChange} />
             </FormSection>}
 
@@ -117,7 +116,7 @@ const NetworkSection: FC<{
         return <NetworkEditor value={inbound.network} tcpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
 
-    if (inbound.protocol.type === "hysteria2" || inbound.protocol.type === "peer_discovery") {
+    if (inbound.protocol.type === "hysteria2") {
         return <NetworkEditor value={inbound.network} udpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
 
@@ -321,12 +320,8 @@ const ProtocolConfigEditor: FC<{
             return <SSHServerEditor value={value.ssh} onChange={(ssh) => onChange({ ...value, ssh })} />;
         case "sstp":
             return <SSTPServerEditor value={value.sstp} onChange={(sstp) => onChange({ ...value, sstp })} />;
-        case "peer_discovery":
-            return <PeerDiscoveryForm value={value.peer_discovery} onChange={patch => onChange({ ...value, peer_discovery: { ...value.peer_discovery, ...patch } })} />;
         case "lan_link":
             return <LANLinkInboundForm value={value.lan_link} onChange={patch => onChange({ ...value, lan_link: { ...value.lan_link, ...patch } })} />;
-        case "peer_tunnel":
-            return <PeerTunnelForm value={value.peer_tunnel} onChange={patch => onChange({ ...value, peer_tunnel: { ...value.peer_tunnel, ...patch } })} />;
         case "wireguard":
             return <WireguardServerEditor value={value.wireguard} onChange={(wireguard) => onChange({ ...value, wireguard })} />;
         case "tun":
@@ -780,7 +775,7 @@ const TransportSection: FC<{
 
     const title = uiT("transport");
     const fixed = (message: string) => <FormSection title={title}><p className="text-sm text-ui-muted">{message}</p></FormSection>;
-    if (["peer_discovery", "peer_tunnel", "lan_link"].includes(inbound.protocol.type)) return null;
+    if (inbound.protocol.type === "lan_link") return null;
     if (inbound.protocol.type === "ssh") return fixed(uiT("sshNoExtraTransports"));
     if (inbound.protocol.type === "sstp") return fixed(uiT("sstpNoExtraTransports"));
     if (inbound.protocol.type === "wireguard") return fixed(uiT("wgNoExtraTransports"));

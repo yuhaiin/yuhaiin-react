@@ -1,5 +1,4 @@
 import { LANLinkOutboundForm } from "@/component/lan-link-form";
-import { PeerTunnelForm } from "@/component/peer-tunnel-form";
 import { OutboundTCPSettings } from './tcp-settings';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
@@ -502,8 +501,6 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <ZeroTierForm config={protocol.zerotier} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "lan_link":
             return <LANLinkOutboundForm value={protocol.lan_link} disabled={!editable} onChange={invitation => patch(protocol, { invitation })} />;
-        case "peer_tunnel":
-            return <PeerTunnelForm value={protocol.peer_tunnel} disabled={!editable} onChange={patchValue => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
