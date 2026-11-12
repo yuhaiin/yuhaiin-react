@@ -136,6 +136,9 @@ function pruneUnusedPools(config: Config): Config {
 
 export function GatewayWorkspace({ config, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
+  // Adapt i18next's overloaded TFunction to the simple summary helpers.
+  const summaryT = (key: string, options?: Record<string, unknown>): string =>
+    options ? t(key, options) : t(key);
   // The open gateway lives in the URL (`?gateway=`). The desktop detail pane opens
   // the first one (replacing the entry, so no history). Phones start on the list
   // of gateways instead of being sent straight into the first one.
@@ -251,7 +254,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
       : activeSelection.kind === "defaultAction"
         ? t("defaultAction")
         : activeSelection.kind === "rule"
-          ? selectedRule?.name || (selectedRule ? ruleSummary(selectedRule, pools, t) : t("newRule"))
+          ? selectedRule?.name || (selectedRule ? ruleSummary(selectedRule, pools, summaryT) : t("newRule"))
           : activeSelection.kind === "filter"
             ? selectedFilter?.name || t("newFilter")
             : selectedPool?.name || t("newUpstream");
@@ -451,7 +454,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
               <nav aria-label={t("gateway")} className={`min-w-0 xl:max-h-[min(68vh,760px)] xl:overflow-y-auto xl:pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
                 <p className="mb-3 text-xs text-ui-muted">{t("pipelineHelp")}</p>
                 <PipelineStep index={1} title={t("entry")}>
-                  <NavigationItem label={t("entry")} description={entrySummary(gateway, interception, t)}
+                  <NavigationItem label={t("entry")} description={entrySummary(gateway, interception, summaryT)}
                     selected={activeSelection.kind === "interception"}
                     onSelect={() => selectEditor({ kind: "interception" })} />
                 </PipelineStep>
@@ -476,7 +479,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                 <PipelineStep index={3} title={t("rules")} count={rules.length}
                   action={<AddNavigationItemButton label={t("addRule")} onClick={addGatewayRule} />}>
                   {rules.flatMap((rule) => {
-                    const summary = ruleSummary(rule, pools, t);
+                    const summary = ruleSummary(rule, pools, summaryT);
                     return [
                       <NavigationItem key={rule.id} label={rule.name || summary}
                         muted={!rule.enabled}
@@ -495,7 +498,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                 </PipelineStep>
                 <PipelineStep index={4} title={t("fallthrough")} last>
                   <NavigationItem label={t("defaultAction")}
-                    description={actionSummary(gateway.default, pools, t)}
+                    description={actionSummary(gateway.default, pools, summaryT)}
                     warning={needsPool(gateway.default)}
                     selected={activeSelection.kind === "defaultAction"}
                     onSelect={() => selectEditor({ kind: "defaultAction" })} />
