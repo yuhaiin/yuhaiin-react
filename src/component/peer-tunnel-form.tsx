@@ -54,14 +54,9 @@ export function PeerDiscoveryForm({ value, onChange }: {
 }) {
     const { t: uiT } = useTranslation("ui");
     const access = useSecretField(undefined, true);
-    const { tokens, registrationKeys = [] } = value;
+    const { tokens } = value;
     const newKey = () => bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
     return <div className="grid min-w-0 gap-4">
-        <div className="grid gap-2">
-            <InputList secret title={uiT("lanLink.registrationKeys")} data={registrationKeys} onChange={registrationKeys => onChange({ registrationKeys })} />
-            <Button className="justify-self-start" disabled={access.disabled || registrationKeys.length >= 64}
-                onClick={() => onChange({ registrationKeys: [...registrationKeys, newKey()] })}>{uiT("lanLink.generateRegistration")}</Button>
-        </div>
         <details>
             <summary>{uiT("peerTunnel.tokens")}</summary>
             <InputList secret title={uiT("peerTunnel.tokens")} data={tokens} onChange={tokens => onChange({ tokens })} />

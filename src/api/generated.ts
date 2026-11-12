@@ -33,6 +33,11 @@ export type RPCOperation =
   | "connections.total"
   | "connections.trace"
   | "connections.traffic"
+  | "frontend.apply"
+  | "frontend.check"
+  | "frontend.reset"
+  | "frontend.rollback"
+  | "frontend.status"
   | "gateway.ca.generate"
   | "gateway.ca.import"
   | "gateway.ca.status"
@@ -46,7 +51,10 @@ export type RPCOperation =
   | "inbound.delete"
   | "inbound.events"
   | "inbound.get"
+  | "inbound.lan_link.action"
+  | "inbound.lan_link.clients"
   | "inbound.lan_link.invite"
+  | "inbound.lan_link.networks"
   | "inbound.lan_link.revoke"
   | "inbound.peer_discovery.action"
   | "inbound.peer_discovery.pairs"
@@ -180,6 +188,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/gateway/ca/generate", operation: "gateway.ca.generate" },
   { method: "POST", pattern: "/api/v2/gateway/ca/import", operation: "gateway.ca.import" },
   { method: "GET", pattern: "/api/v2/info", operation: "info" },
+  { method: "GET", pattern: "/api/v2/frontend/status", operation: "frontend.status" },
+  { method: "POST", pattern: "/api/v2/frontend/check", operation: "frontend.check" },
+  { method: "POST", pattern: "/api/v2/frontend/apply", operation: "frontend.apply" },
+  { method: "POST", pattern: "/api/v2/frontend/rollback", operation: "frontend.rollback" },
+  { method: "POST", pattern: "/api/v2/frontend/reset", operation: "frontend.reset" },
   { method: "POST", pattern: "/api/v2/update/check", operation: "update.check" },
   { method: "POST", pattern: "/api/v2/update/apply", operation: "update.apply" },
   { method: "GET", pattern: "/api/v2/update/status", operation: "update.status" },
@@ -252,6 +265,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/inbounds/{id}/peer-discovery/action", operation: "inbound.peer_discovery.action" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/revoke", operation: "inbound.lan_link.revoke" },
+  { method: "GET", pattern: "/api/v2/inbounds/{id}/lan-link/clients", operation: "inbound.lan_link.clients" },
+  { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/action", operation: "inbound.lan_link.action" },
+  { method: "GET", pattern: "/api/v2/inbounds/lan-link/networks", operation: "inbound.lan_link.networks" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}/events", operation: "inbound.events" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/retry", operation: "inbound.retry" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
