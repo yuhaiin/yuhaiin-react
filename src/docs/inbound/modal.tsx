@@ -1,6 +1,7 @@
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
+import { LANLinkClients } from "./lan-link-clients";
 import { PeerDiscoveryPairs } from "./peer-discovery-pairs";
 import { InboundRuntimePanel } from "./runtime";
 import { InboundTaskEditor } from "./task-editor";
@@ -128,6 +129,7 @@ const InboundModal: FC<{
                                 />
                             )}
                             {!isNew && data?.protocol.type === "peer_discovery" && <PeerDiscoveryPairs key={id} id={id} />}
+                            {!isNew && data?.protocol.type === "lan_link" && <LANLinkClients key={id} id={id} clients={data.protocol.lan_link.clients ?? []} refresh={() => mutate()} />}
                             {isNew && <SettingSelectVertical label={t('entryPreset')} value={preset}
                                 values={[[t('presetLocal'), 'local'], [t('presetLAN'), 'lan'], ...(capabilities?.protocols.includes('tun') ? [[t('presetTun'), 'tun'] as [string, string]] : []), [t('presetCustom'), 'custom']]}
                                 onChange={async next => {

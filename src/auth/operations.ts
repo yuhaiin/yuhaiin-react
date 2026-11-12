@@ -93,6 +93,8 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "inbounds.status": "inbounds:read",
     "inbound.peer_discovery.pairs": "inbounds:read",
     "inbound.peer_discovery.action": "inbounds:write",
+    "inbound.lan_link.invite": "inbounds:write",
+    "inbound.lan_link.revoke": "inbounds:write",
     "inbound.events": "inbounds:read",
     "inbound.capabilities": "inbounds:read",
     "inbounds.config.get": "inbounds:read",

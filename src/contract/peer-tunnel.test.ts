@@ -25,4 +25,16 @@ describe("Peer tunnel configuration", () => {
         expect(normalizeProtocol(JSON.parse(JSON.stringify(outbound)))).toEqual(outbound);
         expect(selectInboundProtocol(publisher, "mixed").network.type).toBe("tcp_udp");
     });
+    it("uses one invitation for a LAN Link outbound and preserves a gateway subnet edit", () => {
+        const gateway = selectInboundProtocol(createDefaultInbound("gateway"), "lan_link");
+        const outbound = createDefaultProtocol("lan_link");
+        expect(gateway.network.type).toBe("empty");
+        expect(gateway.transports).toEqual([]);
+        expect(outbound.lan_link).toEqual({ invitation: "" });
+        outbound.lan_link.invitation = "lan-link:v1:invitation";
+        expect(normalizeProtocol(JSON.parse(JSON.stringify(outbound)))).toEqual(outbound);
+        if (gateway.protocol.type !== "lan_link") throw new Error("Expected LAN Link gateway");
+        gateway.protocol.lan_link.subnet = "10.42.17.0/24";
+        expect(selectInboundProtocol(gateway, "lan_link").protocol).toEqual(gateway.protocol);
+    });
 });

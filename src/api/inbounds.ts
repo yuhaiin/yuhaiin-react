@@ -90,3 +90,11 @@ export async function listPeerDiscoveryPairs(id: string): Promise<Go.inbound.Pee
 export async function updatePeerDiscoveryPair(id: string, pairId: string, action: "kick" | "block" | "unblock"): Promise<void> {
     return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/peer-discovery/action`, { pairId, action });
 }
+
+export function createLANLinkInvitation(id: string): Promise<Go.inbound.LANLinkInvitationResponse> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/invite`, undefined, undefined, undefined, { revealSecrets: true });
+}
+
+export function revokeLANLinkClient(id: string, clientId: string): Promise<void> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/revoke`, { clientId });
+}

@@ -9,7 +9,7 @@ const groups: Record<ProtocolGroup, NodeProtocolType[]> = {
     endpoint: ["direct", "fixed", "fixedv2", "simple", "network_split", "set", "point_as_endpoint"],
     proxy: ["shadowsocks", "shadowsocksr", "vmess", "vless", "trojan", "socks5", "http", "ssh", "hysteria2", "yuubinsya", "masque", "cloudflare_warp_masque", "bootstrap_dns_warp"],
     transport: ["tls", "reality", "websocket", "http2", "quic", "mux", "obfs_http", "http_mock", "aead", "tls_termination", "proxy"],
-    vpn: ["wireguard", "peer_tunnel", "amneziawg", "openvpn", "ikev2", "anyconnect", "sstp", "fortinet", "globalprotect", "softether", "l2tp", "l2tpv3", "nebula", "zerotier", "tailscale"],
+    vpn: ["wireguard", "lan_link", "peer_tunnel", "amneziawg", "openvpn", "ikev2", "anyconnect", "sstp", "fortinet", "globalprotect", "softether", "l2tp", "l2tpv3", "nebula", "zerotier", "tailscale"],
     other: ["reject", "drop", "none"],
 };
 

@@ -96,6 +96,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
             return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
         case "peer_discovery":
             return { type, peer_discovery: { tokens: [] } };
+        case "lan_link":
+            return { type, lan_link: { coordinator: "", registration: "", routes: [] } };
         case "peer_tunnel":
             return { type, peer_tunnel: defaultPeerTunnel(true) };
         case "wireguard":
@@ -173,7 +175,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
         return normalizeInbound({ ...inbound, protocol, network: { type: "tcp_udp", tcp_udp: { host, udp: "udp_only" } }, transports: [] });
     }
     if (inbound.protocol.type === "peer_discovery") inbound = { ...inbound, network: createDefaultNetwork() };
-    if (["tun", "tproxy", "redir", "krunlet", "wireguard", "peer_tunnel"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (["tun", "tproxy", "redir", "krunlet", "wireguard", "peer_tunnel", "lan_link"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
     if (type === "ssh") {
         return normalizeInbound({
             ...inbound, protocol, authentication: undefined,
@@ -198,7 +200,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     if (type !== "hysteria2" && type !== "masque") {
         // A virtual inbound has no network listener; restore a normal listener
         // when switching back to a stream protocol.
-        if ((inbound.protocol.type === "wireguard" || inbound.protocol.type === "peer_tunnel") && inbound.network.type === "empty") {
+        if (["wireguard", "peer_tunnel", "lan_link"].includes(inbound.protocol.type) && inbound.network.type === "empty") {
             return normalizeInbound({ ...inbound, protocol, network: createDefaultNetwork(), transports: [] });
         }
         return normalizeInbound({ ...inbound, protocol });

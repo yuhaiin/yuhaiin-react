@@ -48,14 +48,25 @@ export function PeerTunnelForm({ value, onChange, disabled }: {
     </div>;
 }
 
-export function PeerDiscoveryForm({ tokens, onChange }: { tokens: string[]; onChange: (tokens: string[]) => void }) {
+export function PeerDiscoveryForm({ value, onChange }: {
+    value: Go.inbound.PeerDiscoveryProtocol;
+    onChange: (patch: Partial<Go.inbound.PeerDiscoveryProtocol>) => void;
+}) {
     const { t: uiT } = useTranslation("ui");
     const access = useSecretField(undefined, true);
-    return <div className="grid min-w-0 gap-2">
-        <InputList secret title={uiT("peerTunnel.tokens")} data={tokens} onChange={onChange} />
-        <Button className="justify-self-start" disabled={access.disabled || tokens.length >= 1024}
-            onClick={() => onChange([...tokens, bytesToBase64(crypto.getRandomValues(new Uint8Array(32)))])}>
-            {uiT("peerTunnel.generateToken")}
-        </Button>
+    const { tokens, registrationKeys = [] } = value;
+    const newKey = () => bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+    return <div className="grid min-w-0 gap-4">
+        <div className="grid gap-2">
+            <InputList secret title={uiT("lanLink.registrationKeys")} data={registrationKeys} onChange={registrationKeys => onChange({ registrationKeys })} />
+            <Button className="justify-self-start" disabled={access.disabled || registrationKeys.length >= 64}
+                onClick={() => onChange({ registrationKeys: [...registrationKeys, newKey()] })}>{uiT("lanLink.generateRegistration")}</Button>
+        </div>
+        <details>
+            <summary>{uiT("peerTunnel.tokens")}</summary>
+            <InputList secret title={uiT("peerTunnel.tokens")} data={tokens} onChange={tokens => onChange({ tokens })} />
+            <Button disabled={access.disabled || tokens.length >= 1024}
+                onClick={() => onChange({ tokens: [...tokens, newKey()] })}>{uiT("peerTunnel.generateToken")}</Button>
+        </details>
     </div>;
 }
