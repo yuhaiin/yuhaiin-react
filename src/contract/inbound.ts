@@ -97,7 +97,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
         case "peer_discovery":
             return { type, peer_discovery: { tokens: [] } };
         case "lan_link":
-            return { type, lan_link: { coordinator: "", registration: "", routes: [] } };
+            return { type, lan_link: { networks: [] } };
         case "peer_tunnel":
             return { type, peer_tunnel: defaultPeerTunnel(true) };
         case "wireguard":

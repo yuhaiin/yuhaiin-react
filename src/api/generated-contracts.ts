@@ -534,11 +534,12 @@ export namespace Go {
     }
   }
   export namespace inbound {
-    export interface LANLinkPublisher {
-      coordinator: string;
-      registration: string;
+    export interface LANLinkGateway {
+      networks: string[];
       subnet?: string;
-      routes: string[];
+      listen?: string;
+      publicEndpoint?: string;
+      stunServer?: string;
       privateKey?: string;
       clients?: LANLinkClient[];
     }
@@ -546,6 +547,9 @@ export namespace Go {
       id: string;
       slot: number;
       token: string;
+      registration: string;
+      blocked?: boolean;
+      createdAt?: number;
     }
     export interface LANLinkInvitationResponse {
       invitation: string;
@@ -555,6 +559,39 @@ export namespace Go {
     export interface LANLinkClientRequest {
       id: string;
       clientId: string;
+    }
+    export interface LANLinkClientAction {
+      id: string;
+      clientId: string;
+      action: string;
+    }
+    export interface LANLinkClientStatus {
+      id: string;
+      address: string;
+      pairingId: string;
+      online: boolean;
+      blocked: boolean;
+      retryAt?: number;
+      dialerEndpoint?: string;
+      publisherEndpoint?: string;
+      createdAt?: number;
+    }
+    export interface LANLinkClients {
+      running: boolean;
+      subnet?: string;
+      publicEndpoint?: string;
+      publicError?: string;
+      items: LANLinkClientStatus[];
+    }
+    export interface LANLinkNetwork {
+      cidr: string;
+      interface: string;
+      family: string;
+    }
+    export interface LANLinkNetworks {
+      supported: boolean;
+      reason?: string;
+      items: LANLinkNetwork[];
     }
     export interface PeerDiscoveryPair {
       id: string;
@@ -655,10 +692,9 @@ export namespace Go {
       | { type: "none"; none: NoneProtocol }
       | { type: "peer_discovery"; peer_discovery: PeerDiscoveryProtocol }
       | { type: "peer_tunnel"; peer_tunnel: Go.transport.PeerTunnel }
-      | { type: "lan_link"; lan_link: LANLinkPublisher };
+      | { type: "lan_link"; lan_link: LANLinkGateway };
     export interface PeerDiscoveryProtocol {
       tokens: string[];
-      registrationKeys?: string[];
       blockedPairIds?: string[];
     }
     export interface Hysteria2Protocol {

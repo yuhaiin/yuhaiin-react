@@ -98,3 +98,15 @@ export function createLANLinkInvitation(id: string): Promise<Go.inbound.LANLinkI
 export function revokeLANLinkClient(id: string, clientId: string): Promise<void> {
     return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/revoke`, { clientId });
 }
+
+export function listLANLinkClients(id: string): Promise<Go.inbound.LANLinkClients> {
+    return requestJSON("GET", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/clients`);
+}
+
+export function updateLANLinkClient(id: string, clientId: string, action: "kick" | "block" | "unblock"): Promise<void> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/action`, { clientId, action });
+}
+
+export function listLANLinkNetworks(): Promise<Go.inbound.LANLinkNetworks> {
+    return requestJSON("GET", "/api/v2/inbounds/lan-link/networks");
+}
