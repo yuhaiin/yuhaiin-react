@@ -1,4 +1,3 @@
-import { defaultPeerTunnel } from "./peer-tunnel";
 import type { Go } from "@/api/generated-contracts";
 
 export type UDPMode = "enabled" | "disabled" | "tcp_only" | "udp_only";
@@ -94,12 +93,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
             } };
         case "sstp":
             return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
-        case "peer_discovery":
-            return { type, peer_discovery: { tokens: [] } };
         case "lan_link":
             return { type, lan_link: { networks: [] } };
-        case "peer_tunnel":
-            return { type, peer_tunnel: defaultPeerTunnel(true) };
         case "wireguard":
             return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
@@ -170,12 +165,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     if (!["http", "socks5", "mixed", "yuubinsya", "hysteria2", "sstp"].includes(type)) inbound = { ...inbound, authentication: undefined };
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
-    if (type === "peer_discovery") {
-        const host = inbound.protocol.type === type && inbound.network.type === "tcp_udp" ? inbound.network.tcp_udp.host : ":51821";
-        return normalizeInbound({ ...inbound, protocol, network: { type: "tcp_udp", tcp_udp: { host, udp: "udp_only" } }, transports: [] });
-    }
-    if (inbound.protocol.type === "peer_discovery") inbound = { ...inbound, network: createDefaultNetwork() };
-    if (["tun", "tproxy", "redir", "krunlet", "wireguard", "peer_tunnel", "lan_link"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (["tun", "tproxy", "redir", "krunlet", "wireguard", "lan_link"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
     if (type === "ssh") {
         return normalizeInbound({
             ...inbound, protocol, authentication: undefined,
@@ -200,7 +190,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     if (type !== "hysteria2" && type !== "masque") {
         // A virtual inbound has no network listener; restore a normal listener
         // when switching back to a stream protocol.
-        if (["wireguard", "peer_tunnel", "lan_link"].includes(inbound.protocol.type) && inbound.network.type === "empty") {
+        if (["wireguard", "lan_link"].includes(inbound.protocol.type) && inbound.network.type === "empty") {
             return normalizeInbound({ ...inbound, protocol, network: createDefaultNetwork(), transports: [] });
         }
         return normalizeInbound({ ...inbound, protocol });

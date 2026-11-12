@@ -83,14 +83,6 @@ export async function saveInboundConfig(config: InboundConfig): Promise<InboundC
 }
 
 
-export async function listPeerDiscoveryPairs(id: string): Promise<Go.inbound.PeerDiscoveryPairs> {
-    return requestJSON("GET", `/api/v2/inbounds/${encodeURIComponent(id)}/peer-discovery/pairs`);
-}
-
-export async function updatePeerDiscoveryPair(id: string, pairId: string, action: "kick" | "block" | "unblock"): Promise<void> {
-    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/peer-discovery/action`, { pairId, action });
-}
-
 export function createLANLinkInvitation(id: string): Promise<Go.inbound.LANLinkInvitationResponse> {
     return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/invite`, undefined, undefined, undefined, { revealSecrets: true });
 }
