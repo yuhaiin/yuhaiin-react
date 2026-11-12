@@ -10,6 +10,8 @@ import { confirmAction } from '@/component/v2/confirmation';
 import { Input } from '@/component/v2/input';
 import { DateTimeField } from '@/component/v2/date-time-field';
 import { Select } from '@/component/v2/select';
+import { ChevronDown } from 'lucide-react';
+import { Badge } from '@/component/v2/badge';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -27,6 +29,39 @@ function filterQuery(filters: Filters, cursor: string) {
     return query.toString();
 }
 function formatMetadata(value: string) { try { return JSON.stringify(JSON.parse(value), null, 2); } catch { return value; } }
+function AuditEventRow({ event }: { event: AuditRecord }) {
+    const { t } = useTranslation('auth');
+    const failed = event.result === 'failed';
+    const fields: [string, string][] = [
+        [t('audit.eventId'), event.id],
+        [t('audit.authMethod'), event.authMethod],
+        [t('usage.source'), event.source],
+        ['HTTP', event.method ? `${event.method} ${event.path}` : ''],
+        [t('usage.credential'), event.credentialId],
+        [t('audit.revision'), event.policyRevision],
+        [t('audit.reason'), event.reason],
+    ];
+    return <li><details className="group/event">
+        <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2.5 text-sm hover:bg-ui-surface-muted [&::-webkit-details-marker]:hidden">
+            <ChevronDown size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-ui-muted transition-transform -rotate-90 group-open/event:rotate-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="font-mono font-medium">{event.event}</span>
+                    {event.result && <Badge variant={failed ? 'danger' : event.result === 'succeeded' ? 'success' : 'muted'} pill>{failed ? t('audit.failed') : event.result === 'succeeded' ? t('audit.succeeded') : event.result}</Badge>}
+                    <time className="ml-auto shrink-0 text-xs tabular-nums text-ui-muted" dateTime={new Date(event.occurredAt * 1000).toISOString()}>{new Date(event.occurredAt * 1000).toLocaleString()}</time>
+                </div>
+                <p className="truncate font-mono text-xs text-ui-muted" title={`${event.actorId} → ${event.subjectId}`}>{event.actorId} → {event.subjectId}</p>
+            </div>
+        </summary>
+        <div className="space-y-3 border-t border-ui-border/70 bg-ui-surface-muted/30 px-3 py-3 pl-9 text-xs">
+            <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-[max-content_1fr]">
+                <dt className="text-ui-muted">{t('usage.result')}</dt><dd className="break-all font-mono">{event.result}</dd>
+                {fields.filter(([, value]) => value).map(([label, value]) => <div key={label} className="contents"><dt className="text-ui-muted">{label}</dt><dd className="break-all font-mono">{value}</dd></div>)}
+            </dl>
+            {event.changes && <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-ui-sm border border-ui-border/70 bg-ui-surface p-2 font-mono">{formatMetadata(event.changes)}</pre>}
+        </div>
+    </details></li>;
+}
 export function SecurityEvents() {
     const session = useSession(); const scope = authScope();
     if (!session?.principal.permissions.includes('security:read')) return null;
@@ -68,7 +103,7 @@ function AuditWorkspace({ scope, permissions }: { scope: string; permissions: st
         </form>
         {data && <p className="break-all text-xs text-ui-muted">{t('audit.instance')}: {data.instanceId}</p>}
         {data?.items.length === 0 && <p className="text-sm text-ui-muted">{t('audit.empty')}</p>}
-        <ul className="space-y-3">{data?.items.map(event => <li key={event.id} className="break-all text-sm"><details><summary className="cursor-pointer"><span>{event.event}</span><span className="ml-3 text-xs text-ui-muted">{new Date(event.occurredAt * 1000).toLocaleString()}</span><p className="text-xs text-ui-muted">{event.actorId} → {event.subjectId}</p></summary><div className="mt-2 space-y-2 text-xs text-ui-muted"><p>{t('audit.eventId')}: {event.id}</p><p>{t('usage.result')}: {event.result}</p><p>{t('audit.authMethod')}: {event.authMethod}</p>{event.source && <p>{t('usage.source')}: {event.source}</p>}{event.method && <p>{event.method} {event.path}</p>}{event.credentialId && <p>{t('usage.credential')}: {event.credentialId}</p>}{event.policyRevision && <p>{t('audit.revision')}: {event.policyRevision}</p>}{event.reason && <p>{t('audit.reason')}: {event.reason}</p>}{event.changes && <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all">{formatMetadata(event.changes)}</pre>}</div></details></li>)}</ul>
+        {!!data?.items.length && <ul className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-lg border border-ui-border">{data.items.map(event => <AuditEventRow key={event.id} event={event} />)}</ul>}
         <div className="flex flex-wrap gap-2"><Button disabled={!previous.length} onClick={() => { setCursor(previous[previous.length - 1]); setPrevious(previous.slice(0, -1)); }}>{t('audit.previous')}</Button><Button disabled={!data?.nextCursor} onClick={() => { if (data?.nextCursor) { setPrevious([...previous, cursor]); setCursor(data.nextCursor); } }}>{t('audit.next')}</Button></div>
         {status && <section className="space-y-2 border-t border-ui-border pt-4"><h3 className="font-medium">{t('audit.delivery')}</h3><p className="text-sm">{t('audit.worker')}: {t(status.running ? 'audit.running' : 'audit.stopped')}</p><dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">{(['backlog', 'delivered', 'dropped', 'deliveryFailures', 'localWriteFailures'] as const).map(key => <div key={key}><dt className="text-ui-muted">{t(`audit.${key}`)}</dt><dd>{status[key]}</dd></div>)}</dl>{status.oldestQueuedAt > 0 && <p className="text-xs">{t('audit.oldest')}: {new Date(status.oldestQueuedAt * 1000).toLocaleString()}</p>}{status.lastSuccess > 0 && <p className="text-xs">{t('audit.lastSuccess')}: {new Date(status.lastSuccess * 1000).toLocaleString()}</p>}{status.lastFailure > 0 && <p className="text-xs">{t('audit.lastFailure')}: {new Date(status.lastFailure * 1000).toLocaleString()} · {status.lastError}</p>}<p className="text-xs text-ui-muted">{t('audit.deliveryHelp')}</p></section>}
         {settings && <AuditSettingsEditor key={`${scope}:${settings.revision}:${settingsEpoch}`} scope={scope} settings={settings} permissions={permissions} onReload={async () => { await reloadSettings(); if (scope === authScope()) setSettingsEpoch(value => value + 1); }} onSaved={async () => { await reloadSettings(); await reloadStatus(); }} />}

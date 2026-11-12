@@ -5,8 +5,8 @@
   "bypass": "BYPASS",
   "connections": "Connections",
   "setting": "Settings",
-  "toggle": "Toggle navigation",
   "close": "Close navigation",
+  "reload": "Reload page",
   "monitoring": "Overview & monitoring",
   "trafficConfiguration": "Traffic configuration",
   "system": "System",
@@ -20,5 +20,20 @@
   "account": "Account",
   "credentials": "Credentials",
   "usageAudit": "Usage & audit",
-  "administration": "Administration"
+  "administration": "Administration",
+  "android": "Android",
+  "tabs": {
+    "home": "Home",
+    "nodes": "Nodes",
+    "routing": "Routing",
+    "connections": "Connections",
+    "more": "More"
+  },
+  "primary": "Primary navigation",
+  "more": "More pages",
+  "menu": "Navigation",
+  "openMenu": "Open navigation",
+  "refresh": "Refresh",
+  "refreshing": "Refreshing…",
+  "sections": "Pages in this section"
 }

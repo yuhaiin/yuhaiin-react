@@ -3,7 +3,6 @@ import { SecretValues } from "@/component/secret-values";
 import { hasSecretPlaceholder, isSecretPlaceholder, useProtectedSetting } from "@/auth/secret-fields";
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
-import { useHashSearch } from '@/hooks/useHashLocation';
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useTranslation } from 'react-i18next';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
@@ -52,7 +51,6 @@ function Lists() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState('');
-    const search = useHashSearch();
     const [creatingDraft, setCreatingDraft] = useState<RouteListDetail | undefined>();
     const [registryOpen, setRegistryOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -63,7 +61,7 @@ function Lists() {
     const { data, error, isLoading, mutate } = useSWR(['/api/v2/route/lists', page, query], () => listRouteLists({ page, pageSize: PAGE_SIZE, query }), { revalidateOnFocus: false, keepPreviousData: true });
     useServerPageClamp(data?.page, page, setPage);
     const items = data?.items ?? [];
-    const selection = useResourceSelection(items.map(item => item.id), new URLSearchParams(search).get('list'));
+    const selection = useResourceSelection(items.map(item => item.id), 'list');
     const refresh = async () => {
         if (isRefreshing) return;
         setIsRefreshing(true);

@@ -9,9 +9,11 @@ on:
   pull_request:
     branches: ["main"]
 
-# Cancel superseded workflow runs on the same ref.
+# Only cancel runs of the identical commit. Rerunning an old main SHA must not
+# cancel a newer build before it publishes. The publication check rejects
+# stale commits independently.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -25,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v7
@@ -53,6 +57,15 @@ jobs:
         env:
           CI: false
 
+      - name: Stamp versioned frontend metadata
+        run: node scripts/ui-ota.mjs prepare
+
+      - name: Verify deterministic build metadata
+        run: |
+          cp dist/ui-build.json /tmp/ui-build-before.json
+          node scripts/ui-ota.mjs prepare
+          cmp /tmp/ui-build-before.json dist/ui-build.json
+
       - run: |
           cat <<EOF > dist/go.mod
           module github.com/yuhaiin/yuhaiin.github.io
@@ -66,7 +79,7 @@ jobs:
 
           import "embed"
 
-          //go:embed index.html assets docs
+          //go:embed index.html assets docs ui-build.json
           var Content embed.FS
           EOF
 
@@ -85,11 +98,34 @@ jobs:
           rm -rf publish/assets
           rm -rf publish/docs
           rm -rf publish/index.html
+          rm -f publish/frontend.tar.gz publish/ui-update.json
           cp -rf dist/* publish/
+
+      - name: Package frontend OTA release
+        run: |
+          tar -czf frontend.tar.gz -C dist .
+          node scripts/ui-ota.mjs release
+          cp frontend.tar.gz publish/frontend.tar.gz
+          cp frontend-update.json publish/ui-update.json
+
+      - name: Confirm latest main before publishing
+        id: publication
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          current="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [[ -z "$current" ]]; then
+            echo "::error::Unable to verify current main; refusing to publish"
+            exit 1
+          fi
+          if [[ "$current" == "$GITHUB_SHA" ]]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Not publishing an old workflow rerun: main is $current, build is $GITHUB_SHA"
+          fi
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
-        if: github.event_name != 'pull_request'
+        if: steps.publication.outputs.eligible == 'true'
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./publish
@@ -103,3 +139,5 @@ jobs:
           name: statics
           path: |
             dist
+            frontend.tar.gz
+            frontend-update.json

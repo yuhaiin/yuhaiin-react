@@ -12,6 +12,7 @@ import Loading from "@/component/v2/loading";
 import type { Config } from "@/contract/gateway";
 import { errorMessage } from "@/contract/gateway";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { GatewayWorkspace } from "./workspace";
 import { AuthorityPanel, RuleTester } from "./tools";
 
@@ -25,6 +26,7 @@ export default function GatewayPage() {
   const { data: status, error: statusError, mutate: mutateStatus } = useSWR(
     "/api/v2/gateway/status", gatewayStatus, { refreshInterval: 5000 },
   );
+  const phone = useMediaQuery("(max-width: 639px)");
   const [draft, setDraft] = useState<Config>();
   const [tool, setTool] = useState<Tool>(null);
   const [pending, setPending] = useState(false);
@@ -94,7 +96,9 @@ export default function GatewayPage() {
   return (
     <MainContainer className="max-w-[1440px]">
       <div className="space-y-6">
-        <PageHeader title={t("title")} description={t("unifiedDescription")} actions={<>
+        {/* Desktop keeps the actions in the header; phones show them only while there is
+            something to save, in a bar pinned to the bottom (see the end of this block). */}
+        <PageHeader title={t("title")} description={t("unifiedDescription")} actions={phone ? undefined : <>
             <Button variant="primary" loading={pending} disabled={!dirty}
               onClick={() => void save()}>{t("saveActivate")}</Button>
             <Button variant="outline-secondary" disabled={!dirty || pending}
@@ -177,6 +181,16 @@ export default function GatewayPage() {
             </div>
           )}
         </div>
+        {phone && (dirty || pending) && (
+          <div className="ui-sticky-actions flex gap-2">
+            <Button className="flex-1" variant="primary" loading={pending} disabled={!dirty}
+              onClick={() => void save()}>{t("saveActivate")}</Button>
+            <Button className="flex-1" variant="outline-secondary" disabled={!dirty || pending}
+              onClick={() => { setDraft(structuredClone(data)); setFailure(""); }}>
+              {t("discard")}
+            </Button>
+          </div>
+        )}
       </div>
     </MainContainer>
   );

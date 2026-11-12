@@ -13,6 +13,15 @@ it('fetches viewer assets with auth and emits an isolated document without expos
     const html = await profileDocument('/debug/profiler/id/top', new AbortController().signal);
     expect(fetch).toHaveBeenCalledTimes(3); expect(html).toContain('connect-src'); expect(html).not.toContain('never-in-html'); expect(html).not.toContain('spy.js'); expect(html).toContain('window.ready = true'); expect(html).toContain('yuhaiin:pprof-navigate');
 });
+it('restores scripts rewritten by Cloudflare Rocket Loader so the viewer runs', async () => {
+    setApiUrl('https://controller.example');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html><head></head><body><script type="933e44bc636a7bcc19cc25e0-text/javascript">stackViewer({}, []);</script><script type="application/json">{}</script></body></html>')));
+    const html = await profileDocument('/debug/profiler/id/flamegraph', new AbortController().signal);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const scripts = [...doc.querySelectorAll('script')];
+    expect(scripts.find(s => s.textContent?.includes('stackViewer'))?.hasAttribute('type')).toBe(false);
+    expect(scripts.find(s => s.textContent === '{}')?.getAttribute('type')).toBe('application/json');
+});
 it('preserves pprof URL state and sends focus navigation to the parent without navigating srcdoc', async () => {
     setApiUrl('https://controller.example');
     vi.stubGlobal('fetch', vi.fn(async () => new Response('<html><head><script>window.initial = window.location.href; history.pushState(null, "", "?f=zoom"); window.updated = window.location.search; window.location.href = "?f=focus";</script></head><body></body></html>')));

@@ -1,4 +1,4 @@
-type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "FATAL" | "TRACE" | "LOG";
+export type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "FATAL" | "TRACE" | "LOG";
 
 type ParsedLogLine = {
     time?: string;
@@ -12,6 +12,19 @@ type ParsedLogLine = {
 export type LogEntry = {
     id: number;
     line: string;
+    /** Lazily cached `line.toLowerCase()` so repeated searches don't re-lowercase every retained line. */
+    lowerLine?: string;
+    /** Lazily cached parsed level, used by the minimum-level filter. */
+    level?: LogLevel;
+}
+
+/** Ascending severity; unparsed lines (`LOG`) are never filtered out. */
+export const LEVEL_ORDER: readonly LogLevel[] = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"];
+
+export const passesMinLevel = (entry: LogEntry, min: LogLevel): boolean => {
+    if (min === "TRACE") return true;
+    const level = (entry.level ??= parseLogLine(entry.line).level);
+    return level === "LOG" || LEVEL_ORDER.indexOf(level) >= LEVEL_ORDER.indexOf(min);
 }
 
 export const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
@@ -63,18 +76,20 @@ const readSlogValue = (line: string, key: string): string | undefined => {
     }
 
     i += 1;
+    // Copy unescaped runs as slices instead of concatenating one character at a time.
     let value = "";
+    let runStart = i;
     for (; i < line.length; i++) {
-        const char = line[i];
-        if (char === "\\" && i + 1 < line.length) {
-            value += line[i + 1];
+        const char = line.charCodeAt(i);
+        if (char === 92 /* \\ */ && i + 1 < line.length) {
+            value += line.slice(runStart, i) + line[i + 1];
             i += 1;
+            runStart = i + 1;
             continue;
         }
-        if (char === '"') break;
-        value += char;
+        if (char === 34 /* " */) break;
     }
-    return value;
+    return value + line.slice(runStart, i);
 }
 
 const trimSlogFields = (line: string) => {
@@ -86,20 +101,72 @@ const trimSlogFields = (line: string) => {
         .trim();
 }
 
+// toLocaleTimeString with options builds a new formatter on every call; reuse one per locale.
+let timeFormatter: Intl.DateTimeFormat | undefined;
+let timeFormatterLocale: string | undefined;
+const getTimeFormatter = () => {
+    const locale = typeof navigator === "undefined" ? undefined : navigator.language;
+    if (!timeFormatter || timeFormatterLocale !== locale) {
+        timeFormatter = new Intl.DateTimeFormat(undefined, {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+        timeFormatterLocale = locale;
+    }
+    return timeFormatter;
+}
+
 const formatLogTime = (value?: string) => {
     if (!value) return undefined;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    const time = date.toLocaleTimeString(undefined, {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
+    const time = getTimeFormatter().format(date);
     return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
 }
 
+/** Splits slog-style `key=value key="quoted value"` text into ordered pairs. */
+export const parseLogFields = (details?: string): Array<{ key: string; value: string }> => {
+    if (!details) return [];
+    const fields: Array<{ key: string; value: string }> = [];
+    const pattern = /([A-Za-z_][\w.-]*)=("(?:\\.|[^"\\])*"?|\S*)/g;
+    for (let match = pattern.exec(details); match; match = pattern.exec(details)) {
+        let value = match[2];
+        if (value.startsWith('"')) {
+            const closed = value.length > 1 && value.endsWith('"');
+            const body = closed ? value.slice(1, -1) : value.slice(1);
+            // Quoted values are slog-escaped; undo the escapes, tolerating odd input.
+            try { value = JSON.parse(`"${body}"`) as string; } catch { value = body; }
+        }
+        fields.push({ key: match[1], value });
+    }
+    return fields;
+}
+
+// `logcat -v threadtime`: "MM-DD HH:MM:SS.mmm PID TID L TAG: message"
+const LOGCAT_LINE = /^\d{2}-\d{2} (\d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+\s+([VDIWEFA])\s+(\S[^:]*?)\s*: ?(.*)$/;
+const LOGCAT_LEVELS: Record<string, LogLevel> = { V: "TRACE", D: "DEBUG", I: "INFO", W: "WARN", E: "ERROR", F: "FATAL", A: "FATAL" };
+
+const parseLogcatLine = (line: string): ParsedLogLine | undefined => {
+    const match = LOGCAT_LINE.exec(line);
+    if (!match) return undefined;
+    const [, displayTime, letter, tag, rest] = match;
+    // The core's own slog lines are forwarded to logcat; prefer their level and fields.
+    const inner = parseLogLine(rest);
+    const structured = inner.level !== "LOG" || inner.message !== rest;
+    return {
+        displayTime,
+        level: inner.level !== "LOG" ? inner.level : LOGCAT_LEVELS[letter],
+        message: structured ? inner.message : rest,
+        source: inner.source ?? tag,
+        details: structured ? inner.details : undefined,
+    };
+}
+
 export const parseLogLine = (line: string): ParsedLogLine => {
+    const logcat = parseLogcatLine(line);
+    if (logcat) return logcat;
     const rawLevel = readSlogValue(line, "level")?.toUpperCase();
     const level = rawLevel && rawLevel in levelStyles ? rawLevel as LogLevel : "LOG";
     const message = readSlogValue(line, "msg") ?? line;
@@ -128,6 +195,11 @@ export class LogRingBuffer {
 
     get currentVersion() {
         return this.version
+    }
+
+    /** Id of the newest retained entry, or the last assigned id when empty. */
+    get latestId() {
+        return this.count > 0 ? this.entries[this.head]!.id : this.nextId
     }
 
     get(index: number) {

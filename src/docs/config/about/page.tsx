@@ -1,4 +1,8 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
+import { FrontendUpdatePanel } from './frontend-update';
+import { AndroidAppUpdate } from '@/docs/android/update/app-update';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
 import { createID } from '@/common/id';
 import { UpdateCompatibilityDetails } from './update-compatibility';
 import { PageHeader } from '@/component/v2/page-header';
@@ -62,7 +66,7 @@ const InfoRow: FC<{
                         tone="primary"
                         className="flex-shrink-0 w-8 h-8 text-[0.9rem] border-none"
                     />
-                    <span className="text-ui-muted text-xs font-bold uppercase opacity-75 min-w-[90px] text-[0.7rem] tracking-[0.5px]">
+                    <span className="text-ui-muted text-xs font-medium min-w-[90px]">
                         {label}
                     </span>
                 </div>
@@ -103,6 +107,8 @@ export default function About() {
     const [confirmation, setConfirmation] = useState<'apply' | UpdateHistoryEntry>();
     const [cancelling, setCancelling] = useState(false);
     const canManageUpdates = usePermission('update:manage');
+    // Inside the Android app the Core ships with the APK, so the app update replaces the desktop self-update.
+    const android = useAndroidPlatform();
     const { data: history, error: historyError, mutate: refreshHistory } = useSWR(
         canManageUpdates ? "/api/v2/update/history" : null,
         getUpdateHistory,
@@ -239,7 +245,7 @@ export default function About() {
                 )}
             </Card>
 
-            <Card className="order-1">
+            {android ? <AndroidAppUpdate className="order-1" /> : <Card className="order-1">
                 <CardHeader className="py-3">
                     <IconBox icon={Rocket} tone="success" title={uiT("softwareUpdate")} description={uiT("checkGithubReleasesForANewerDesktopBuild")} />
                 </CardHeader>
@@ -273,10 +279,30 @@ export default function About() {
                             )}
                         </div>
 
-                        {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} /></>}
-                        <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={() => {
+                        {update && (
+                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                                {update.updateAvailable ? (
+                                    <>
+                                        <div className="flex items-center gap-2 font-semibold text-ui-heading">
+                                            <Check size={16} className="text-ui-success" />
+                                            <span className="min-w-0 break-all">{update.targetVersion} {uiT("isAvailable")}</span></div>
+                                        <div className="mt-2 space-y-1 text-ui-muted">
+                                            <div>{uiT("currentVersion")}<span className="break-all font-mono">{update.currentVersion || "Unknown"}</span></div>
+                                            <div>{uiT("asset")}<span className="break-all font-mono">{update.assetName}</span></div>
+                                            {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
+                                        </div>
+                                        {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
+                                    </>
+                                ) : (
+                                    <div className="text-ui-muted">{update.reason || "You are using the latest available version."}</div>
+                                )}
+                            </div>
+                        )}
+
+                        {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} compatibility={update.compatibility} assetUrl={update.assetUrl} releaseUrl={update.releaseUrl} assetSha256={update.assetSha256} /></>}
+                        <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={async () => {
                             const id = updateStatus?.operation?.id;
-                            if (!id || !window.confirm(uiT('protectedUpdate.cancelWarning'))) return;
+                            if (!id || !await confirmAction(uiT('protectedUpdate.cancelWarning'))) return;
                             setCancelling(true);
                             void cancelUpdate(id).then(() => recovery.retry()).catch(failure => ctx.Error(updateErrorMessage(failure))).finally(() => setCancelling(false));
                         }} />
@@ -350,30 +376,11 @@ export default function About() {
                             </div>
                             {history?.items.length ? <p className="mt-3 text-xs text-ui-muted">{uiT("rollbackBinaryOnly")}</p> : null}
                         </section>}
-
-                        {update && (
-                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
-                                {update.updateAvailable ? (
-                                    <>
-                                        <div className="flex items-center gap-2 font-semibold text-ui-heading">
-                                            <Check size={16} className="text-ui-success" />
-                                            <span className="min-w-0 break-all">{update.targetVersion} {uiT("isAvailable")}</span></div>
-                                        <div className="mt-2 space-y-1 text-ui-muted">
-                                            <div>{uiT("currentVersion")}<span className="break-all font-mono">{update.currentVersion || "Unknown"}</span></div>
-                                            <div>{uiT("asset")}<span className="break-all font-mono">{update.assetName}</span></div>
-                                            {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
-                                        </div>
-                                        {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
-                                    </>
-                                ) : (
-                                    <div className="text-ui-muted">{update.reason || "You are using the latest available version."}</div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </CardBody>
-            </Card>
+            </Card>}
 
+            <FrontendUpdatePanel />
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-ui-muted">
                     {uiT("copy")} {COPYRIGHT_YEAR} {uiT("yuhaiinProjectDistributedUnderMitLicense")}</small>

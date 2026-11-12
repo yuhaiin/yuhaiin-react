@@ -15,6 +15,26 @@ const status: OutboundRuntimeStatus = {
 };
 beforeEach(() => { host = document.createElement('div'); document.body.append(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); });
+it('moves a recovered connection error into collapsed history and alerts on a new failure', () => {
+    const failure = { ...status, state: 'degraded' as const, lastError: 'write on closed stream 1148', lastFailureAt: 100 };
+    act(() => root.render(<NodeRuntimeOverview status={failure} />));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain(failure.lastError);
+    for (const state of ['healthy', 'unknown', 'disabled'] as const) {
+        act(() => root.render(<NodeRuntimeOverview status={{ ...failure, state, lastSuccessAt: 200 }} />));
+        expect(host.querySelector('[role="alert"]')).toBeNull();
+        const history = host.querySelector<HTMLDetailsElement>('[data-testid="outbound-error-history"]');
+        expect(history?.open).toBe(false);
+        expect(history?.textContent).toContain(failure.lastError);
+        expect(history?.textContent).toContain(new Date(100000).toLocaleString());
+    }
+    act(() => root.render(<NodeRuntimeOverview status={{ ...failure, lastError: 'new failure' }} />));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('new failure');
+});
+it('still alerts on a native protocol failure while passive connections are healthy', () => {
+    act(() => root.render(<NodeRuntimeOverview status={{ ...status, lastError: 'old reset', protocol: { state: 'failed', lastError: 'native tunnel session failed', updatedAt: 123 } }} />));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('native tunnel session failed');
+    expect(host.querySelector('[role="alert"]')?.textContent).not.toContain('old reset');
+});
 it('keeps control configuration distinct from passive channel health and shows observation time', () => {
     act(() => root.render(<NodeRuntimeOverview status={{ ...status, protocol: { state: 'configured', updatedAt: 123 } }} />));
     expect(host.textContent).toContain('outboundState_healthy');

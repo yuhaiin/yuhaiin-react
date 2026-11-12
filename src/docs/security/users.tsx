@@ -12,6 +12,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { IssuedSecret } from './secret';
+import { LOGIN_NAME_PATTERN } from '@/auth/login-name';
 export function Users() {
     const { t } = useTranslation('auth');
     const { data: users, error: loadError, mutate } = useSWR('auth-users', () => authAPI<User[]>('GET', '/users'));
@@ -39,7 +40,7 @@ export function Users() {
     return <Card><CardHeader><h2 className="m-0 font-medium">{t('users')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
         <CardBody className="space-y-5">
             <form onSubmit={create} className="flex flex-wrap items-end gap-3">
-                <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required maxLength={64} disabled={busy} /></label>
+                <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern={LOGIN_NAME_PATTERN} required maxLength={64} disabled={busy} /></label>
                 <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={setRole} items={[{ value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }, { value: 'admin', label: t('admin') }]} disabled={busy} /></div>
                 <Button type="submit" variant="primary" disabled={busy}>{t('createUser')}</Button>
             </form>
@@ -65,7 +66,7 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
         <p className="mt-1 break-all text-xs text-ui-muted">{user.id}</p>
         <form className="mt-4" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
             <div className="grid gap-3 sm:grid-cols-2">
-                <label className="min-w-0 space-y-2"><span className="block text-sm">{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
+                <label className="min-w-0 space-y-2"><span className="block text-sm">{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern={LOGIN_NAME_PATTERN} required disabled={busy} /></label>
                 <div className="min-w-0 space-y-2"><span className="block text-sm">{t('role')}</span>
                     {lastAdmin
                         ? <p className="m-0 flex min-h-field items-center gap-2 text-sm"><Lock size={14} aria-hidden="true" className="shrink-0 text-ui-muted" />{t('admin')}</p>

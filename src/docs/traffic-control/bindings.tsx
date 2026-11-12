@@ -14,6 +14,7 @@ export function BindingTable({
     kind,
     values,
     profiles,
+    defaultProfile,
     onChange,
     disabled,
 }: {
@@ -21,10 +22,12 @@ export function BindingTable({
     kind: 'inbound' | 'route';
     values: Record<string, string>;
     profiles: string[];
+    defaultProfile?: string;
     onChange: (v: Record<string, string>) => void;
     disabled: boolean;
 }) {
     const [page, onPageChange] = useState(1);
+    const [assignedOnly, setAssignedOnly] = useState(false);
     const query =
         kind === 'inbound'
             ? '/api/v2/inbounds?qos-bindings'
@@ -51,7 +54,8 @@ export function BindingTable({
     const optionsError = Boolean(error),
         optionsLoading = isLoading;
     const { t } = useTranslation('trafficControl');
-    const rows = options;
+    const assignedCount = Object.keys(values).length;
+    const rows = assignedOnly ? options.filter((item) => values[item.id]) : options;
     const known = new Set(rows.map((x) => x.id));
     const extra = Object.keys(values)
         .filter((id) => !known.has(id))
@@ -73,8 +77,8 @@ export function BindingTable({
                 disabled={disabled}
                 value={values[item.id] ?? ''}
                 items={[
-                    { value: '', label: t('inherit') },
-                    ...profiles.map((name) => ({ value: name, label: name })),
+                    { value: '', label: defaultProfile ? t('inheritDefault', { name: defaultProfile }) : t('inherit') },
+                    ...profiles.map((name) => ({ value: name, label: name === defaultProfile ? `${name} (${t('defaultBadge')})` : name })),
                 ]}
                 onValueChange={(value) => {
                     const next = { ...values };
@@ -87,7 +91,21 @@ export function BindingTable({
     );
     return (
         <section className="space-y-2">
-            <h3 className="text-sm font-semibold">{title}</h3>
+            <header className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">
+                    {title}
+                    <span className="ml-2 text-xs font-normal text-ui-muted">
+                        {t('assignedCount', { count: assignedCount })}
+                    </span>
+                </h3>
+                {assignedCount > 0 && (
+                    <button type="button" aria-pressed={assignedOnly}
+                        className="text-xs text-ui-primary hover:underline"
+                        onClick={() => setAssignedOnly((value) => !value)}>
+                        {assignedOnly ? t('showAll') : t('showAssigned')}
+                    </button>
+                )}
+            </header>
             <div className="max-h-72 overflow-auto rounded-ui-sm border border-ui-border divide-y divide-ui-border">
                 {rows.map(renderRow)}
                 {!rows.length && !extra.length && (

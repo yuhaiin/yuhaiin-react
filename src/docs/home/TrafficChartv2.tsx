@@ -9,15 +9,22 @@ import { Tooltip, type ChartTooltipHandle } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
 
-const TOOLTIP_WIDTH = 176;
+const TOOLTIP_WIDTH = 208;
 const TOOLTIP_HEIGHT = 72;
 const TOOLTIP_GAP = 12;
 
-function niceMax(value: number) {
-    if (value <= 0) return 1;
-    const exp = Math.floor(Math.log10(value));
-    const base = Math.pow(10, exp);
-    return Math.ceil(value / base) * base;
+const Y_SPLITS = 4;
+const AXIS_WIDTH = 64;
+const PLOT_PADDING_X = 7;
+
+/** Round up to a 1024-unit value that divides into Y_SPLITS round steps, e.g. 300 KB/s -> 400 KB/s. */
+export function niceMax(value: number) {
+    if (value <= 0) return 1024;
+    const unit = 1024 ** Math.max(0, Math.floor(Math.log(value) / Math.log(1024)));
+    const minStep = value / unit / Y_SPLITS;
+    const exp = 10 ** Math.floor(Math.log10(minStep));
+    const step = [1, 2, 2.5, 5, 10].map(base => base * exp).find(candidate => candidate >= minStep)!;
+    return step * Y_SPLITS * unit;
 }
 
 interface TrafficChartProps {
@@ -218,10 +225,10 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             height: height,
             mode: 1,
             padding: [
-                10, // top
-                7,  // right
-                10, // bottom
-                7  // left
+                12, // top
+                PLOT_PADDING_X, // right
+                4, // bottom
+                PLOT_PADDING_X // left
             ],
             series: [
                 { value: (_, rawValue) => latestLabelsRef.current[rawValue] || "" },
@@ -231,7 +238,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     fill: palette.uploadFill,
                     width: 2,
                     points: { show: false },
-                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
+                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 1, " ") + '/s',
                     paths: makeSmoothPath
                 },
                 {
@@ -240,7 +247,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     fill: palette.downloadFill,
                     width: 2,
                     points: { show: false },
-                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
+                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 1, " ") + '/s',
                     paths: makeSmoothPath
                 }
             ],
@@ -249,16 +256,18 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 {
                     show: true,
                     stroke: palette.axis,
-                    font: '10px sans-serif',
-                    grid: { show: true, stroke: palette.grid, width: 1 },
-                    ticks: { show: true, stroke: palette.grid },
+                    font: `11px ${getComputedStyle(chartRef.current).fontFamily}`,
+                    grid: { show: true, stroke: palette.grid, width: 1, dash: [3, 4] },
+                    ticks: { show: false },
+                    splits: (u) => Array.from({ length: Y_SPLITS + 1 }, (_, i) => (u.scales.y.max ?? 0) * i / Y_SPLITS),
                     values: (_, ticks) => formatTrafficTicks(ticks, '/s'),
-                    size: 80,
-                    gap: 0,
+                    size: AXIS_WIDTH,
+                    gap: 6,
                 }
             ],
             legend: { show: false },
             cursor: {
+                y: false,
                 drag: { setScale: false },
                 points: {
                     size: 9, width: 2,
@@ -363,17 +372,17 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     }, []);
 
     return (
-        <div
-            ref={wrapperRef}
-            className="relative w-full h-full flex-auto flex flex-col min-w-0"
-            style={{
-                minHeight: minHeight,
-            }}
-        >
-            <div
-                ref={chartRef}
-                className="absolute top-0 left-0 w-full h-full overflow-hidden"
-            />
+        <div className="flex w-full flex-auto flex-col min-w-0" style={{ minHeight }}>
+            <div ref={wrapperRef} className="relative min-h-0 w-full flex-auto">
+                <div
+                    ref={chartRef}
+                    className="absolute top-0 left-0 w-full h-full overflow-hidden"
+                />
+            </div>
+            <div className="flex justify-between pb-2 text-xs tabular-nums text-ui-muted" style={{ paddingLeft: AXIS_WIDTH + PLOT_PADDING_X, paddingRight: PLOT_PADDING_X }}>
+                <span>{data.labels[0] ?? ""}</span>
+                <span>{data.labels.length > 0 ? t('now') : ""}</span>
+            </div>
             <Tooltip ref={tooltipRef} />
         </div>
     );

@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { clearBusyLatency, pruneBusyLatency, pruneLatencyMap } from "./page";
+import { clearBusyLatency, isLatencyError, latencyResultValue, pruneBusyLatency, pruneLatencyMap } from "./page";
 
 describe("group latency state", () => {
+    it("keeps failed latency results as errors instead of display text", () => {
+        const failed = latencyResultValue({ ok: false, error: 'Get "https://clients3.google.com/generate_204": context deadline exceeded' } as never);
+
+        expect(isLatencyError(failed)).toBe(true);
+        expect(isLatencyError(latencyResultValue({ ok: true, latencyMs: 42 } as never))).toBe(false);
+    });
+
     it("removes latency entries for nodes that disappeared even when the list size is unchanged", () => {
         const current = { old: { tcp: "42ms" } };
 

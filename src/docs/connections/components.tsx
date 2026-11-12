@@ -548,7 +548,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
                     {label("MatchHistory")}
                 </div>
                 <div className="min-w-0 w-full grow overflow-hidden rounded-ui-lg border border-sidebar-border">
-                    <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-[11px] text-ui-muted">
+                    <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-xs text-ui-muted">
                         <span>{t("circuit.rulesChecked", { count: value.length })}</span>
                         <div className="flex gap-2">
                             <button type="button" className="hover:text-ui-heading" onClick={collapseAll}>
@@ -580,26 +580,26 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
                                         aria-label={entry.ruleName || label("Rule")}>
                                         {expanded ? <ChevronDown size={15} className="shrink-0 text-ui-muted"/> : <ChevronRight size={15} className="shrink-0 text-ui-muted"/>}
                                         <span className="notranslate min-w-0 break-words text-xs font-semibold text-sidebar-header [overflow-wrap:anywhere]">{entry.ruleName || label("Rule")}</span>
-                                        {trace && <span className="shrink-0 rounded-ui-xs border border-ui-border bg-ui-surface px-1.5 py-0.5 text-[10px] font-semibold text-ui-muted">{trace.type.toUpperCase()}</span>}
+                                        {trace && <span className="shrink-0 rounded-ui-xs border border-ui-border bg-ui-surface px-1.5 py-0.5 text-xs font-semibold text-ui-muted">{trace.type.toUpperCase()}</span>}
                                     </button>
-                                    <span className={clsx("shrink-0 text-[11px] font-medium", positive ? "text-ui-success" : "text-ui-muted")}>
+                                    <span className={clsx("shrink-0 text-xs font-medium", positive ? "text-ui-success" : "text-ui-muted")}>
                                         {state ? stateLabel(state) : `${entry.history?.length ?? 0} ${t("circuit.checks", { defaultValue: "checks" })}`}
                                     </span>
                                     {entry.ruleId && <a href={resourceLink("/docs/bypass", "rule", entry.ruleId)}
-                                        className="shrink-0 text-[11px] text-ui-primary underline underline-offset-2">{label("Rule")}</a>}
+                                        className="shrink-0 text-xs text-ui-primary underline underline-offset-2">{label("Rule")}</a>}
                                 </div>
                                 {expanded && (trace
                                     ? <MatchTraceTree key={`${entry.ruleId || index}-tree`} trace={trace}/>
                                     : <div className="min-w-0 border-t border-sidebar-border/50 bg-ui-surface px-2 py-2">
                                         {loading.has(index) ? <p className="text-xs text-ui-muted">{t("common:state.loading")}</p> :
                                             <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
-                                                <p className="pb-1 text-[11px] text-ui-muted">
+                                                <p className="pb-1 text-xs text-ui-muted">
                                                     {t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}
                                                 </p>
                                                 {(entry.history ?? []).map((item, itemIndex) => (
                                                     <div key={`${item.id || item.listName}-${itemIndex}`} className="flex min-w-0 items-center justify-between gap-3 rounded-ui-sm px-2 py-1">
                                                         <span className="notranslate min-w-0 break-words text-xs text-sidebar-color [overflow-wrap:anywhere]">{item.listName || "-"}</span>
-                                                        <span className={clsx("inline-flex shrink-0 items-center gap-1.5 text-[11px]", item.matched ? "text-ui-success" : "text-ui-muted")}>
+                                                        <span className={clsx("inline-flex shrink-0 items-center gap-1.5 text-xs", item.matched ? "text-ui-success" : "text-ui-muted")}>
                                                             {item.matched ? <Check size={13}/> : <X size={13}/>}
                                                             {item.matched ? label("Hit") : label("Miss")}
                                                         </span>

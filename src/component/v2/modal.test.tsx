@@ -4,7 +4,7 @@ import { expect, it, vi } from 'vitest';
 import { Modal, ModalContent, ModalTitle } from './modal';
 
 it('renders an uncontrolled default-open dialog with the requested width', async () => {
-    vi.stubGlobal('matchMedia', () => ({ matches: true, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('max-width'), addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
     const host = document.createElement('div');
     document.body.append(host);
     const root = createRoot(host);
@@ -19,7 +19,7 @@ it('renders an uncontrolled default-open dialog with the requested width', async
 });
 
 it('uses the trigger click position on the first opened render', async () => {
-    vi.stubGlobal('matchMedia', () => ({ matches: true, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('max-width'), addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
     const host = document.createElement('div');
     document.body.append(host);
     const root = createRoot(host);
@@ -28,7 +28,11 @@ it('uses the trigger click position on the first opened render', async () => {
         act(() => document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 120, clientY: 80 })));
         await act(async () => root.render(<Modal open><ModalContent>Dialog content</ModalContent></Modal>));
         const content = document.querySelector<HTMLElement>('[role="dialog"]');
-        expect(content?.style.transformOrigin).toBe('calc(120px - 50vw + 50%) calc(80px - 50dvh + 50%)');
+        // CSSOM may normalize equivalent calc() expressions differently across jsdom versions.
+        // Parse the expected coordinates through the same CSSOM before comparing.
+        const expectedStyle = document.createElement('div').style;
+        expectedStyle.transformOrigin = 'calc(120px - 50vw + 50%) calc(80px - 50dvh + 50%)';
+        expect(content?.style.transformOrigin).toBe(expectedStyle.transformOrigin);
     } finally {
         act(() => root.unmount());
         host.remove();
@@ -36,17 +40,17 @@ it('uses the trigger click position on the first opened render', async () => {
     }
 });
 
-it('renders as a bottom sheet only when asked to on a narrow viewport', async () => {
+it('renders as a bottom sheet on a narrow viewport unless opted out', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('max-width'), addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
     const host = document.createElement('div');
     document.body.append(host);
     const root = createRoot(host);
     try {
-        await act(async () => root.render(<Modal defaultOpen><ModalContent mobileSheet><ModalTitle>Details</ModalTitle></ModalContent></Modal>));
+        await act(async () => root.render(<Modal defaultOpen><ModalContent><ModalTitle>Details</ModalTitle></ModalContent></Modal>));
         let dialog = document.querySelector<HTMLElement>('[role="dialog"]');
         expect(dialog?.className).toContain('bottom-0');
         expect(dialog?.querySelector('[data-sheet-handle]')).not.toBeNull();
-        await act(async () => root.render(<Modal defaultOpen><ModalContent><ModalTitle>Details</ModalTitle></ModalContent></Modal>));
+        await act(async () => root.render(<Modal defaultOpen><ModalContent mobileSheet={false}><ModalTitle>Details</ModalTitle></ModalContent></Modal>));
         dialog = document.querySelector<HTMLElement>('[role="dialog"]');
         expect(dialog?.className).toContain('top-1/2');
         expect(dialog?.querySelector('[data-sheet-handle]')).toBeNull();

@@ -74,25 +74,37 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                     maintainAspectRatio: false,
                     interaction: { mode: "index", intersect: false },
                     plugins: {
-                        legend: { position: "top", align: "end", labels: { color: textColor, boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+                        legend: { display: false },
                         tooltip: {
-                            displayColors: false,
-                            backgroundColor: "rgba(10, 14, 21, 0.94)",
+                            backgroundColor: palette.tooltipBg,
+                            borderColor: palette.tooltipBorder,
+                            borderWidth: 1,
+                            titleColor: textColor,
+                            bodyColor: palette.tooltipText,
+                            footerColor: textColor,
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            boxPadding: 4,
                             padding: 10,
                             cornerRadius: 8,
-                            titleFont: { size: 12, weight: 600 },
+                            titleFont: { size: 12, weight: 400 },
                             bodyFont: { size: 12, weight: 500 },
                             footerFont: { size: 11, weight: 400 },
                             titleMarginBottom: 6,
                             footerMarginTop: 6,
                             callbacks: {
+                                labelColor: (context: TooltipItem<"line">) => {
+                                    const color = context.dataset.borderColor as string;
+                                    return { borderColor: color, backgroundColor: color };
+                                },
                                 label: (context: TooltipItem<"line">) => {
                                     const total = Number(context.parsed.y);
-                                    return `${context.dataset.label}: ${formatBytes(total, 2, " ")}`;
+                                    return `${context.dataset.label}: ${formatBytes(total, 1, " ")}`;
                                 },
                                 footer: (contexts: TooltipItem<"line">[]) => {
                                     const item = data.items[contexts[0]?.dataIndex ?? 0];
-                                    const rates = contexts.map(context => `${context.dataset.label} ${formatBytes(Number(context.parsed.y) / bucketSeconds(item.start, data.interval), 2, " ")}/s`);
+                                    const rates = contexts.map(context => `${context.dataset.label} ${formatBytes(Number(context.parsed.y) / bucketSeconds(item.start, data.interval), 1, " ")}/s`);
                                     return `${uiT("average")}: ${rates.join(" · ")}`;
                                 },
                             },

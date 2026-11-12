@@ -16,7 +16,7 @@ const GlobalProtectForm: FC<{
     const { t: uiT } = useTranslation("ui");
     return (
         <div className="grid gap-3">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
                 <SettingInputVertical
                     label={uiT("globalProtectGateway")}
                     value={config.gateway ?? ""}
@@ -140,7 +140,7 @@ const GlobalProtectRuntimeInfo: FC<{ nodeId: string }> = ({ nodeId }) => {
             <p className="mb-0 mt-2 text-sm text-ui-muted">{uiT("globalProtectGatewayInfoHelp")}</p>
             {unavailable && <p role="status" className="mb-0 mt-3 text-sm text-ui-danger">{uiT("globalProtectGatewayInfoUnavailable")}</p>}
             {info && (
-                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-3 @xl:grid-cols-2">
                     <RuntimeInfoList label={uiT("globalProtectTunnelPrefix")} value={info.tunnel_prefix} />
                     <RuntimeInfoList label={uiT("vpnDataTransport")} value={info.data_transport} />
                     <RuntimeInfoList label={uiT("globalProtectAccessRoutesIPv4")} values={info.access_routes_ipv4} />

@@ -1,12 +1,13 @@
-import { Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Lock, Route, Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
 
-type Label = { namespace: 'nav' | 'ui' | 'routing'; key: string };
-export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean }
-interface NavigationGroup { label: Label; icon: LucideIcon; items: NavigationLink[] }
+type Label = { namespace: 'nav' | 'ui' | 'routing' | 'android'; key: string };
+export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean; platform?: 'android' }
+interface NavigationGroup { label: Label; icon: LucideIcon; items: NavigationLink[]; platform?: 'android' }
 interface NavigationSection { label: Label; items: (NavigationLink | NavigationGroup)[] }
 const nav = (key: string): Label => ({ namespace: 'nav', key });
 const ui = (key: string): Label => ({ namespace: 'ui', key });
 const routing = (key: string): Label => ({ namespace: 'routing', key });
+const android = (key: string): Label => ({ namespace: 'android', key });
 
 /** The sidebar and page transitions share this visible order. */
 export const navigationSections: NavigationSection[] = [
@@ -38,6 +39,13 @@ export const navigationSections: NavigationSection[] = [
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Globe },
     ] },
     { label: nav('system'), items: [
+        // Shown only inside the Android app, detected through the platform API.
+        { label: nav('android'), icon: Smartphone, platform: 'android', items: [
+            { path: '/docs/android', label: android('vpnSettings'), icon: ShieldCheck },
+            { path: '/docs/android/routes', label: android('routes.title'), icon: Route },
+            { path: '/docs/android/backup', label: android('backup.title'), icon: DatabaseBackup },
+            { path: '/docs/android/privacy', label: android('privacy.title'), icon: Lock },
+        ] },
         { label: nav('accountSecurity'), icon: UserCog, items: [
             { path: '/docs/security', label: nav('account'), icon: UserRound },
             { path: '/docs/security/credentials', label: nav('credentials'), icon: KeyRound },

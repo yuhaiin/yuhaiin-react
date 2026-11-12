@@ -58,13 +58,13 @@ function mountEditor(protocol: NodeProtocol) {
 it("edits IKEv2 credentials and transport options without dropping the other fields", () => {
     const editor = mountEditor(createDefaultProtocol("ikev2"));
     try {
-        editor.edit("IKEv2 Gateway", "vpn.example.test:500");
-        editor.edit("Local ID", "alice@example.test");
-        editor.edit("Server ID (optional)", "vpn.example.test");
-        editor.edit("IPsec PSK", "shared-secret");
-        editor.edit("EAP username", "alice");
-        editor.edit("EAP password", "eap-secret");
-        editor.toggle("TCP encapsulation (RFC 8229)");
+        editor.edit("nodeForm.ikev2Gateway", "vpn.example.test:500");
+        editor.edit("nodeForm.localId", "alice@example.test");
+        editor.edit("nodeForm.serverIdOptional", "vpn.example.test");
+        editor.edit("nodeForm.ipsecPsk", "shared-secret");
+        editor.edit("nodeForm.eapUsername", "alice");
+        editor.edit("nodeForm.eapPassword", "eap-secret");
+        editor.toggle("nodeForm.tcpEncapsulation");
         editor.edit("MTU", "1370");
         expect(editor.saved.chain[0]).toMatchObject({ type: "ikev2", ikev2: {
             gateway: "vpn.example.test:500", local_id: "alice@example.test", server_id: "vpn.example.test",
@@ -78,12 +78,12 @@ it("edits IKEv2 credentials and transport options without dropping the other fie
 it("edits AnyConnect TLS and DTLS options", () => {
     const editor = mountEditor(createDefaultProtocol("anyconnect"));
     try {
-        editor.edit("AnyConnect / ocserv gateway", "vpn.example.test:8443");
-        editor.edit("Username", "alice");
-        editor.edit("Password", "secret");
+        editor.edit("nodeForm.anyconnectGateway", "vpn.example.test:8443");
+        editor.edit("username", "alice");
+        editor.edit("password", "secret");
         editor.edit("MTU", "1300");
-        editor.toggle("Skip TLS certificate verification");
-        editor.toggle("Disable DTLS (TLS data channel only)");
+        editor.toggle("nodeForm.skipTlsVerify");
+        editor.toggle("nodeForm.disableDtlsDataChannel");
         expect(editor.saved.chain[0]).toMatchObject({ type: "anyconnect", anyconnect: {
             gateway: "vpn.example.test:8443", username: "alice", password: "secret", mtu: 1300,
             insecure_skip_verify: true, disable_dtls: true,
@@ -96,11 +96,11 @@ it("edits AnyConnect TLS and DTLS options", () => {
 it("edits SSTP authentication, certificate verification and MTU", () => {
     const editor = mountEditor(createDefaultProtocol("sstp"));
     try {
-        editor.edit("SSTP gateway (TLS/443)", "vpn.example.test:5443");
-        editor.edit("Username", "alice");
-        editor.edit("Password", "secret");
+        editor.edit("nodeForm.sstpGateway", "vpn.example.test:5443");
+        editor.edit("username", "alice");
+        editor.edit("password", "secret");
         editor.edit("MTU", "1420");
-        editor.toggle("Skip TLS certificate verification");
+        editor.toggle("nodeForm.skipTlsVerify");
         expect(editor.saved.chain[0]).toMatchObject({ type: "sstp", sstp: {
             gateway: "vpn.example.test:5443", username: "alice", password: "secret", mtu: 1420,
             insecure_skip_verify: true,
@@ -113,16 +113,16 @@ it("edits SSTP authentication, certificate verification and MTU", () => {
 it("edits Fortinet MFA, CA and data-channel settings", () => {
     const editor = mountEditor(createDefaultProtocol("fortinet"));
     try {
-        editor.edit("Fortinet SSL VPN gateway", "vpn.example.test:10443");
-        editor.edit("Username", "alice");
-        editor.edit("Password", "secret");
-        editor.edit("Realm (optional)", "employees");
-        editor.edit("One-time token", "123456");
-        editor.edit("TOTP secret", "JBSWY3DPEHPK3PXP");
-        editor.edit("Trusted CA certificate (PEM)", "-----BEGIN CERTIFICATE-----\nbase64\n-----END CERTIFICATE-----");
+        editor.edit("nodeForm.fortinetGateway", "vpn.example.test:10443");
+        editor.edit("username", "alice");
+        editor.edit("password", "secret");
+        editor.edit("nodeForm.realmOptional", "employees");
+        editor.edit("nodeForm.oneTimeToken", "123456");
+        editor.edit("nodeForm.totpSecret", "JBSWY3DPEHPK3PXP");
+        editor.edit("nodeForm.trustedCaPem", "-----BEGIN CERTIFICATE-----\nbase64\n-----END CERTIFICATE-----");
         editor.edit("MTU", "1300");
-        editor.toggle("Skip TLS certificate verification");
-        editor.toggle("Disable DTLS");
+        editor.toggle("nodeForm.skipTlsVerify");
+        editor.toggle("nodeForm.disableDtls");
         expect(editor.saved.chain[0]).toMatchObject({ type: "fortinet", fortinet: {
             gateway: "vpn.example.test:10443", username: "alice", password: "secret", realm: "employees",
             token: "123456", totp_secret: "JBSWY3DPEHPK3PXP",

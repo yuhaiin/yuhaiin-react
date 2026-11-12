@@ -8,7 +8,7 @@ const DropdownTrigger = DropdownMenuPrimitive.Trigger;
 const DropdownGroup = DropdownMenuPrimitive.Group;
 const DropdownRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
-const DropdownContent = ({ className, sideOffset = 5, children, style, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) => (
+const DropdownContent = ({ className, viewportClassName, sideOffset = 5, children, style, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Content> & { viewportClassName?: string }) => (
     <DropdownMenuPrimitive.Portal>
         <DropdownMenuPrimitive.Content
             data-ui-transition="popover"
@@ -22,7 +22,7 @@ const DropdownContent = ({ className, sideOffset = 5, children, style, ...props 
             )}
             {...props}
         >
-            <div className="max-h-[min(320px,calc(var(--radix-dropdown-menu-content-available-height)-1rem))] overflow-y-auto overscroll-contain w-full">
+            <div className={cn("max-h-[min(320px,calc(var(--radix-dropdown-menu-content-available-height)-1rem))] overflow-y-auto overscroll-contain w-full", viewportClassName)}>
                 {children}
             </div>
         </DropdownMenuPrimitive.Content>

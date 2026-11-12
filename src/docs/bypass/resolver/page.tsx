@@ -48,7 +48,7 @@ function ResolverList() {
     const { data, error, isLoading, mutate } = useSWR(['/api/v2/resolvers/directory', page, query], () => listResolvers({ page, pageSize: PAGE_SIZE, query }), { keepPreviousData: true });
     useServerPageClamp(data?.page, page, setPage);
     const items = data?.items ?? [];
-    const selection = useResourceSelection(items.map(item => item.id));
+    const selection = useResourceSelection(items.map(item => item.id), 'resolver');
     const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(false, pending, () => undefined);
     if (error && !data) return <Loading onRetry={() => void mutate()}>{error.msg}</Loading>;

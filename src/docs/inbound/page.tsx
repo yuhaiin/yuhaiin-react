@@ -1,6 +1,5 @@
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
-import { useHashSearch } from '@/hooks/useHashLocation';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useServerPageClamp } from '@/hooks/use-pagination';
 import { deleteInbound, getInboundConfig, listInboundStatuses, listInbounds, retryInbound, saveInboundConfig } from '@/api/inbounds';
@@ -99,11 +98,10 @@ export default function InboundComponent() {
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState('');
     const [newId, setNewId] = useState('');
-    const search = useHashSearch();
     const { data, error, isLoading, mutate } = useSWR(['/api/v2/inbounds', page, query], () => listInbounds({ page, pageSize: PAGE_SIZE, query }), { keepPreviousData: true });
     useServerPageClamp(data?.page, page, setPage);
     const items = data?.items ?? [];
-    const selection = useResourceSelection(items.map(item => item.id), new URLSearchParams(search).get('inbound'));
+    const selection = useResourceSelection(items.map(item => item.id), 'inbound');
     const { data: statuses = [], error: statusError, mutate: refreshStatuses } = useSWR('/api/v2/inbounds/status', listInboundStatuses, { refreshInterval: 3000 });
     const statusById = useMemo(() => new Map(statuses.map(item => [item.id, item])), [statuses]);
     const { pending, run } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? 'Operation failed'));

@@ -534,6 +534,44 @@ export namespace Go {
     }
   }
   export namespace inbound {
+    export interface LANLinkPublisher {
+      coordinator: string;
+      registration: string;
+      subnet?: string;
+      routes: string[];
+      privateKey?: string;
+      clients?: LANLinkClient[];
+    }
+    export interface LANLinkClient {
+      id: string;
+      slot: number;
+      token: string;
+    }
+    export interface LANLinkInvitationResponse {
+      invitation: string;
+      clientId: string;
+      address: string;
+    }
+    export interface LANLinkClientRequest {
+      id: string;
+      clientId: string;
+    }
+    export interface PeerDiscoveryPair {
+      id: string;
+      blocked: boolean;
+      retryAt?: number;
+      dialerEndpoint?: string;
+      publisherEndpoint?: string;
+    }
+    export interface PeerDiscoveryPairs {
+      running: boolean;
+      items: PeerDiscoveryPair[];
+    }
+    export interface PeerDiscoveryAction {
+      id: string;
+      pairId: string;
+      action: string;
+    }
     export interface RuntimeStatus {
       id: string;
       name: string;
@@ -614,7 +652,15 @@ export namespace Go {
       | { type: "ssh"; ssh: SSHProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
-      | { type: "none"; none: NoneProtocol };
+      | { type: "none"; none: NoneProtocol }
+      | { type: "peer_discovery"; peer_discovery: PeerDiscoveryProtocol }
+      | { type: "peer_tunnel"; peer_tunnel: Go.transport.PeerTunnel }
+      | { type: "lan_link"; lan_link: LANLinkPublisher };
+    export interface PeerDiscoveryProtocol {
+      tokens: string[];
+      registrationKeys?: string[];
+      blockedPairIds?: string[];
+    }
     export interface Hysteria2Protocol {
       auth: string;
       uploadBps?: number;
@@ -661,6 +707,7 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      lossRecovery?: string;
       outputScheduler?: string;
       darwin?: DarwinTunOptions;
       stack?: string;
@@ -1014,6 +1061,18 @@ export namespace Go {
       failures: number;
       failureRate: number;
     }
+    export interface PeerTunnelPeer {
+      nodeId: string;
+      name: string;
+      state: string;
+      endpoint?: string;
+      tunnelIp: string;
+      routes: string[];
+    }
+    export interface PeerTunnelPeers {
+      items: PeerTunnelPeer[];
+      page: Go.route.Page;
+    }
     export interface SelectorPolicy {
       circuit?: CircuitConfig;
       probe?: ProbeSchedule;
@@ -1174,6 +1233,8 @@ export namespace Go {
       | { type: "anyconnect"; credentialRef?: string; anyconnect: AnyConnect }
       | { type: "sstp"; credentialRef?: string; sstp: SSTP }
       | { type: "fortinet"; credentialRef?: string; fortinet: Fortinet }
+      | { type: "peer_tunnel"; credentialRef?: string; peer_tunnel: Go.transport.PeerTunnel }
+      | { type: "lan_link"; credentialRef?: string; lan_link: Go.transport.LANLink }
       | { type: "wireguard"; credentialRef?: string; wireguard: Wireguard }
       | { type: "openvpn"; credentialRef?: string; openvpn: OpenVPN }
       | { type: "l2tp"; credentialRef?: string; l2tp: L2TP }
@@ -1197,6 +1258,7 @@ export namespace Go {
       | { type: "fixedv2"; credentialRef?: string; fixedv2: FixedV2 }
       | { type: "point_as_endpoint"; credentialRef?: string; point_as_endpoint: PointAsEndpoint };
     export interface L2TP {
+      tcpSettings?: Go.transport.TCPSettings;
       auth_type?: string;
       gateway: string;
       username?: string;
@@ -1209,6 +1271,7 @@ export namespace Go {
       auto_reconnect?: boolean;
     }
     export interface L2TPv3 {
+      tcpSettings?: Go.transport.TCPSettings;
       local_address?: string;
       gateway: string;
       hostname?: string;
@@ -1239,6 +1302,7 @@ export namespace Go {
       peer_session_id?: number;
     }
     export interface OpenVPN {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       network?: string;
       ca_cert_pem?: string;
@@ -1266,6 +1330,7 @@ export namespace Go {
       mtu?: number;
     }
     export interface GlobalProtect {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       username: string;
       password: string;
@@ -1276,6 +1341,7 @@ export namespace Go {
       use_esp?: boolean;
     }
     export interface SoftEther {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       username: string;
       password: string;
@@ -1362,6 +1428,7 @@ export namespace Go {
       download_bps?: number;
       salamander_password?: string;
       hop_addresses?: string[];
+      happy_eyeballs?: boolean;
       hop_interval_seconds?: number;
       min_hop_interval_seconds?: number;
       max_hop_interval_seconds?: number;
@@ -1445,6 +1512,7 @@ export namespace Go {
       tls: ServerTLS;
     }
     export interface IKEv2 {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       psk?: string;
       local_id: string;
@@ -1455,6 +1523,7 @@ export namespace Go {
       mtu?: number;
     }
     export interface AnyConnect {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       username: string;
       password: string;
@@ -1463,6 +1532,7 @@ export namespace Go {
       mtu?: number;
     }
     export interface SSTP {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       username: string;
       password: string;
@@ -1470,6 +1540,7 @@ export namespace Go {
       mtu?: number;
     }
     export interface Fortinet {
+      tcpSettings?: Go.transport.TCPSettings;
       gateway: string;
       username: string;
       password: string;
@@ -1482,9 +1553,11 @@ export namespace Go {
       mtu?: number;
     }
     export interface Nebula {
+      tcpSettings?: Go.transport.TCPSettings;
       config_yaml: string;
     }
     export interface ZeroTier {
+      tcpSettings?: Go.transport.TCPSettings;
       network_id: string;
       identity?: string;
       listen?: string;
@@ -1497,6 +1570,7 @@ export namespace Go {
       seed: string;
     }
     export interface Wireguard {
+      tcpSettings?: Go.transport.TCPSettings;
       secretKey: string;
       endpoint?: string[];
       peers?: WireguardPeer[];
@@ -1504,6 +1578,7 @@ export namespace Go {
       reserved?: string;
     }
     export interface AmneziaWG {
+      tcpSettings?: Go.transport.TCPSettings;
       secretKey: string;
       endpoint?: string[];
       peers?: WireguardPeer[];
@@ -1537,6 +1612,7 @@ export namespace Go {
       allowedIps?: string[];
     }
     export interface Tailscale {
+      tcpSettings?: Go.transport.TCPSettings;
       auth_key: string;
       hostname: string;
       control_url: string;
@@ -1558,6 +1634,7 @@ export namespace Go {
       udp?: Protocol;
     }
     export interface CloudflareWarpMasque {
+      tcpSettings?: Go.transport.TCPSettings;
       private_key: string;
       endpoint: string;
       endpoint_public_key: string;
@@ -1566,6 +1643,7 @@ export namespace Go {
       transport?: string;
     }
     export interface Masque {
+      tcpSettings?: Go.transport.TCPSettings;
       endpoint: string;
       url: string;
       server_name?: string;
@@ -1653,6 +1731,10 @@ export namespace Go {
       objectKey?: string;
       verification?: string;
       errorCode?: string;
+      failureStage?: string;
+      failureCode?: string;
+      warnings?: string[];
+      requirementCount?: number;
       includesHistory: boolean;
       uploadAttempts: number;
       archiveCheck?: string;
@@ -2254,6 +2336,16 @@ export namespace Go {
       advanced: AdvancedConfig;
       backup: BackupReference;
       trustedOrigins: string[];
+      wrap: WrapSettings;
+    }
+    export interface WrapSettings {
+      enabled: boolean;
+      socket: string;
+      uid: number;
+      gid: number;
+      cgroupRoot: string;
+      timezone: string;
+      maxSessions: number;
     }
     export interface SystemProxy {
       http: boolean;
@@ -2332,23 +2424,26 @@ export namespace Go {
       durationMs: number;
       evidence: string[];
     }
-    export interface TCPFlowDiagnostic {
-      state: string;
-      local: string;
-      remote: string;
-      cwndBytes: number;
-      bytesInFlight: number;
-      srttMs: number;
-      rtoMs: number;
-      pacingBytesPerSecond: number;
-      lostBytes: number;
-      retransmissions: number;
-      duplicateAcks: number;
-      pathMss: number;
-      retries: number;
-      recovering: boolean;
-      bbrMode?: string;
-      bbrPhase?: string;
+    export interface DiagnosticReport {
+      schemaVersion: number;
+      startedAt: string;
+      durationMs: number;
+      host: string;
+      platform: string;
+      version: string;
+      ipv6Enabled: boolean;
+      checks: DiagnosticCheck[];
+      findings: string[];
+      tcpStacks?: TCPStackDiagnostic[];
+      report: string;
+    }
+    export interface TCPStackDiagnostic {
+      scope: string;
+      nodeId?: string;
+      inboundId: string;
+      mtu: number;
+      statistics: TCPStackStatistics;
+      flows: TCPFlowDiagnostic[];
     }
     export interface TCPStackStatistics {
       connections: number;
@@ -2367,26 +2462,30 @@ export namespace Go {
       outputQueuedPackets: number;
       outputQueuedBytes: number;
     }
-    export interface TCPStackDiagnostic {
-      scope: string;
-      inboundId?: string;
-      nodeId?: string;
-      mtu: number;
-      statistics: TCPStackStatistics;
-      flows: TCPFlowDiagnostic[];
-    }
-    export interface DiagnosticReport {
-      schemaVersion: number;
-      startedAt: string;
-      durationMs: number;
-      host: string;
-      platform: string;
-      version: string;
-      ipv6Enabled: boolean;
-      checks: DiagnosticCheck[];
-      findings: string[];
-      tcpStacks?: TCPStackDiagnostic[];
-      report: string;
+    export interface TCPFlowDiagnostic {
+      congestionControl: string;
+      configuredLossRecovery: string;
+      lossRecovery: string;
+      dsackSent: number;
+      dsackReceived: number;
+      tailLossProbes: number;
+      spuriousRecoveries: number;
+      state: string;
+      local: string;
+      remote: string;
+      cwndBytes: number;
+      bytesInFlight: number;
+      srttMs: number;
+      rtoMs: number;
+      pacingBytesPerSecond: number;
+      lostBytes: number;
+      retransmissions: number;
+      duplicateAcks: number;
+      pathMss: number;
+      retries: number;
+      recovering: boolean;
+      bbrMode?: string;
+      bbrPhase?: string;
     }
     export interface Interfaces {
       interfaces: Interface[];
@@ -2407,6 +2506,31 @@ export namespace Go {
     }
     export interface LogBatch {
       log: string[];
+    }
+  }
+  export namespace transport {
+    export interface LANLink {
+      invitation: string;
+      privateKey?: string;
+    }
+    export interface LANLinkInvitation {
+      coordinator: string;
+      registration: string;
+      token: string;
+      routes: string[];
+    }
+    export interface PeerTunnel {
+      coordinator: string;
+      token: string;
+      privateKey: string;
+      peerPublicKey: string;
+      localIp: string;
+      peerIp: string;
+      routes: string[];
+    }
+    export interface TCPSettings {
+      congestionControl?: string;
+      lossRecovery?: string;
     }
   }
   export namespace update {
@@ -2447,6 +2571,7 @@ export namespace Go {
       releaseNotes: string;
       publishedAt: string;
       assetName: string;
+      assetUrl: string;
       assetSha256: string;
       updateAvailable: boolean;
       reason: string;

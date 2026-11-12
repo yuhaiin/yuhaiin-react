@@ -17,9 +17,14 @@ import dynamic from "../../component/AsyncComponent";
 import { Flow, FlowContainer } from "../connections/components";
 import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
+import { formatBytes } from "./format";
 import TelemetryOverview from "./TelemetryOverview";
 import SetupCard from "./SetupCard";
+import { AndroidVpnCard } from "../android/AndroidVpnCard";
+import { useAndroidPlatform } from "@/hooks/use-android-platform";
 import { appendTrafficSample } from "./traffic";
+
+const formatRate = (value?: number) => value == null ? "—" : `${formatBytes(value, 1, " ")}/s`;
 
 const trafficRanges: Array<{ key: string; label: string; interval?: TrafficSeries["interval"]; durationMs?: number }> = [
     { key: "live", label: "Live" },
@@ -79,6 +84,7 @@ const EndpointCard: FC<{
 };
 
 function HomePage() {
+    const android = useAndroidPlatform();
     const mobile = useMediaQuery('(max-width: 639px)');
     const chartHeight = mobile ? 220 : 300;
     const { t: uiT } = useTranslation('ui');
@@ -124,8 +130,12 @@ function HomePage() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <PageHeader title={t('nav:home')} className="mb-4" actions={activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>} />
-            <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
+            <PageHeader title={t('nav:home')} className="mb-3 lg:mb-4" actions={activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>} />
+            {/* One vertical rhythm: the stack's gap spaces every block, so no block carries its own margin. */}
+            <MainContainer className="flex flex-col gap-3 sm:gap-4">
+            {/* On Android the VPN state and its switch come first. */}
+            {android && <AndroidVpnCard compact />}
+            <div className="grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
                 <EndpointCard
                     label={t("tcpEndpoint")}
                     node={now?.tcp}
@@ -140,18 +150,17 @@ function HomePage() {
                 />
             </div>
 
-            <div className="mb-3"><FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" /></div>
+            <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" />
 
-            <MainContainer>
                 <SetupCard />
                 <Card className="min-h-[240px] sm:min-h-[300px]" density="compact">
-                    <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
+                    <CardHeader className="flex-col items-stretch gap-3 !border-b-0 px-4 pb-1 pt-3.5 sm:flex-row sm:items-center">
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
                                 icon={Activity}
                                 tone="neutral"
-                                title={isLiveTraffic ? "Live traffic" : "Traffic history"}
-                                description={isLiveTraffic ? "Current download and upload speed" : "Download and upload totals by period"}
+                                title={uiT(isLiveTraffic ? "liveTraffic" : "trafficHistory")}
+                                description={uiT(isLiveTraffic ? "liveTrafficDescription" : "trafficHistoryDescription")}
                             />
                         </div>
 
@@ -159,13 +168,17 @@ function HomePage() {
                             <ToggleGroup type="single" value={selectedRange} aria-label={uiT("trafficRange")} onValueChange={value => { if (value) setSelectedRange(value); }}>
                                 {trafficRanges.map(item => <ToggleItem key={item.key} value={item.key}>{item.key === 'live' && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}{item.label}</ToggleItem>)}
                             </ToggleGroup>
-                            <div className="flex items-center justify-end gap-3 text-xs text-ui-muted">
-                                <span className="inline-flex items-center gap-1.5">
-                                    <ArrowDownToLine size={12} className="text-ui-info" />
-                                    {uiT("download")}</span>
-                                <span className="inline-flex items-center gap-1.5">
-                                    <ArrowUpFromLine size={12} className="text-ui-success" />
-                                    {uiT("upload")}</span>
+                            <div className="flex items-center justify-end gap-4 text-xs text-ui-muted">
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <ArrowDownToLine size={13} className="text-ui-info" />
+                                    <span className={isLiveTraffic ? "sr-only sm:not-sr-only" : undefined}>{uiT("download")}</span>
+                                    {isLiveTraffic && <span className="min-w-[4.5rem] text-right text-sm font-medium tabular-nums text-ui-heading">{formatRate(traffic.download[traffic.download.length - 1])}</span>}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <ArrowUpFromLine size={13} className="text-ui-success" />
+                                    <span className={isLiveTraffic ? "sr-only sm:not-sr-only" : undefined}>{uiT("upload")}</span>
+                                    {isLiveTraffic && <span className="min-w-[4.5rem] text-right text-sm font-medium tabular-nums text-ui-heading">{formatRate(traffic.upload[traffic.upload.length - 1])}</span>}
+                                </span>
                             </div>
                         </div>
                     </CardHeader>
@@ -176,14 +189,14 @@ function HomePage() {
                     </CardBody>
                 </Card>
 
-                <div className="my-5"><Activates showFooter={false} /></div>
+                <div className="py-1"><Activates showFooter={false} /></div>
                 <Card density="compact">
                     <CardHeader className="px-4 py-3.5">
                         <IconBox
                             icon={Activity}
                             tone="neutral"
                             title={uiT("trafficBreakdown")}
-                            description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
+                            description={uiT("trafficBreakdownDescription", { range: isLiveTraffic ? "24H" : range.label })}
                         />
                     </CardHeader>
                     <CardBody>

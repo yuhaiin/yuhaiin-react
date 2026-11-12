@@ -1,3 +1,4 @@
+import { navigation } from '@/hooks/navigation';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
 import { loginWithPasskey, passkeySupported } from '@/auth/passkey';
@@ -11,6 +12,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { OAuthLogin } from './oauth';
+import { LOGIN_NAME_PATTERN } from '@/auth/login-name';
 
 type Mode = 'login' | 'enroll' | 'setup';
 export default function LoginPage() {
@@ -35,8 +37,8 @@ export default function LoginPage() {
                 if (request.signal.aborted) return;
                 if (status.authentication === 'none') {
                     setApiUrl(controller);
-                    establishLocalConnection(getApiUrl());
-                    window.location.hash = '/';
+                    establishLocalConnection(getApiUrl(), status.lanManagement === true);
+                    navigation.replace('/');
                     return;
                 }
                 setRequired(status.required); setExpiresAt(status.expiresAt);
@@ -63,7 +65,7 @@ export default function LoginPage() {
                 await enroll(capability, enteredPassword);
                 setCapability(''); discardEnrollment(); setRequired(false); setMode('login'); setNotice(t('enrolled'));
             } else {
-                await login(name, enteredPassword); window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
+                await login(name, enteredPassword); navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
             }
         } catch (cause) {
             const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : 0;
@@ -76,7 +78,7 @@ export default function LoginPage() {
             requireSecureController(controller);
             setApiUrl(controller);
             await loginWithPasskey();
-            window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
+            navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
         } catch { setError(t('passkeyFailed')); }
         finally { setBusy(false); }
     };
@@ -89,7 +91,7 @@ export default function LoginPage() {
                     <label className="block space-y-2"><span>{t('controller')}</span><Input value={controller} onChange={event => { setController(event.target.value); setRequired(null); setError(''); setCapability(''); setPassword(''); setConfirmation(''); discardEnrollment(); }} placeholder={window.location.origin} disabled={busy} /></label>
                     {required === null ? <p role="status" className="text-sm text-ui-muted">{t(error ? 'checkControllerHint' : 'checkingController')}</p> : <>
                         <p className="text-sm text-ui-muted">{t(mode === 'setup' ? 'setupHint' : mode === 'login' ? 'loginHint' : 'enrollmentHint')}</p>
-                        {mode !== 'enroll' && <label className="block space-y-2"><span>{t('loginName')}</span><Input name="username" value={name} onChange={event => setName(event.target.value)} required maxLength={64} pattern={mode === 'setup' ? '[A-Za-z0-9_.-]{1,64}' : undefined} disabled={busy} /></label>}
+                        {mode !== 'enroll' && <label className="block space-y-2"><span>{t('loginName')}</span><Input name="username" value={name} onChange={event => setName(event.target.value)} required maxLength={64} pattern={mode === 'setup' ? LOGIN_NAME_PATTERN : undefined} disabled={busy} /></label>}
                         {mode !== 'login' && <label className="block space-y-2"><span>{t(mode === 'setup' ? 'initializationCode' : 'enrollmentCapability')}</span><Input type="password" value={capability} onChange={event => setCapability(event.target.value)} required autoComplete="off" disabled={busy} /></label>}
                         <label className="block space-y-2"><span>{t(mode === 'login' ? 'password' : 'newPassword')}</span><Input name="password" type="password" value={password} onChange={event => setPassword(event.target.value)} required autoComplete="off" disabled={busy} /></label>
                         {mode !== 'login' && <label className="block space-y-2"><span>{t('confirmPassword')}</span><Input type="password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required autoComplete="off" disabled={busy} /></label>}

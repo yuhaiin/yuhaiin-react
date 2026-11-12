@@ -46,3 +46,12 @@ it('follows the current sidebar order across groups', async () => {
         expect(host.textContent).toBe('1');
     } finally { act(() => root.unmount()); }
 });
+
+it('cross-fades between tab-bar sections but still slides on Back and inside a section', async () => {
+    const { transitionDirection } = await import('./useSmartAnimation');
+    const section = (path: string) => path.startsWith('/docs/group') ? 'nodes' : path.startsWith('/docs/bypass') ? 'routing' : undefined;
+    expect(transitionDirection('/docs/group', '/docs/bypass', [], 1, 2, section)).toBe(0);
+    expect(transitionDirection('/docs/bypass', '/docs/config/log', [], 1, 2, section)).toBe(0);
+    expect(transitionDirection('/docs/bypass', '/docs/group', [], 2, 1, section)).toBe(-1);
+    expect(transitionDirection('/docs/group', '/docs/group/selectors', [], 1, 2, section)).toBe(1);
+});

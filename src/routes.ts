@@ -36,6 +36,10 @@ const ConfigPprofPage = dynamic(() => import('@/docs/config/pprof/page'), { load
 const ConfigDocumentsPage = dynamic(() => import('@/docs/config/documents/page'), { loading });
 const ConfigLicensesPage = dynamic(() => import('@/docs/config/licenses/page'), { loading });
 const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { loading });
+const AndroidPage = dynamic(() => import('@/docs/android/page'), { loading });
+const AndroidRoutesPage = dynamic(() => import('@/docs/android/routes/page'), { loading });
+const AndroidBackupPage = dynamic(() => import('@/docs/android/backup/page'), { loading });
+const AndroidPrivacyPage = dynamic(() => import('@/docs/android/privacy/page'), { loading });
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security", component: SecurityPage },
@@ -70,4 +74,8 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/config/documents", component: ConfigDocumentsPage },
     { path: "/docs/config/licenses", component: ConfigLicensesPage },
     { path: "/docs/config/about", component: ConfigAboutPage },
+    { path: "/docs/android", component: AndroidPage },
+    { path: "/docs/android/routes", component: AndroidRoutesPage },
+    { path: "/docs/android/backup", component: AndroidBackupPage },
+    { path: "/docs/android/privacy", component: AndroidPrivacyPage },
 ];

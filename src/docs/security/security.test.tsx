@@ -37,7 +37,7 @@ it('shows a generated token once with owner/scopes and keeps the secret out of t
     await act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     const dialog = document.querySelector('[role=dialog]')!;
     expect(dialog.textContent).toContain('copyOnce'); expect(dialog.textContent).toContain('nodes:read'); expect(dialog.textContent).toContain('admin');
-    expect(document.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('only-once-token');
+    expect(dialog.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('only-once-token');
     await act(async () => { [...document.querySelectorAll('button')].find(button => button.textContent === 'done')!.click(); });
-    expect(document.querySelector('textarea')).toBeNull(); act(() => root.unmount()); host.remove();
+    expect(document.querySelector('[role=dialog]')).toBeNull(); act(() => root.unmount()); host.remove();
 });

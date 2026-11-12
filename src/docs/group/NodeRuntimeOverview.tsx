@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/component/v2/badge";
+import { NodeRuntimeError } from '@/component/node-runtime-error';
 import type { OutboundRuntimeStatus, OutboundState } from "@/api/node-observability";
 
 export function outboundStateVariant(state: OutboundState): "success" | "danger" | "secondary" | "warning" {
@@ -58,7 +59,7 @@ export function NodeRuntimeOverview({ status, error }: { status?: OutboundRuntim
             <Badge pill variant={outboundStateVariant(status.state)}>{t(`outboundState_${status.state}`)}</Badge>
         </div>
         <p className="text-xs text-ui-muted">{t("outboundStateHelp")}</p>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 @lg:gap-3 @3xl:grid-cols-3">
             {numeric.map(([label, value, exact]) =>
                 <div key={label} className="rounded-ui-md border border-ui-border/70 bg-ui-surface-muted p-3">
                     <div className="mb-1 text-xs text-ui-muted">{label}</div>
@@ -97,10 +98,6 @@ export function NodeRuntimeOverview({ status, error }: { status?: OutboundRuntim
             </>}
         </div>
         {status.protocol && <p className="text-xs text-ui-muted" data-testid="native-status-help">{t('outboundNativeHelp')}</p>}
-        {(status.lastError || status.protocol?.lastError) &&
-            <div className="rounded-ui-md border border-ui-danger/30 bg-ui-danger-soft p-3 text-sm text-ui-danger" role="alert">
-                <div className="text-xs font-medium">{t("outboundLastError")}</div>
-                <div className="mt-1 break-all">{status.protocol?.lastError || status.lastError}</div>
-            </div>}
+        <NodeRuntimeError status={status} />
     </section>;
 }

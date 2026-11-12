@@ -1,3 +1,6 @@
+import { LANLinkInboundForm } from "@/component/lan-link-form";
+import { PeerDiscoveryForm, PeerTunnelForm } from "@/component/peer-tunnel-form";
+import { TCPSettingsEditor } from '@/component/tcp-settings';
 import { FormSection } from '@/component/v2/form-section';
 import { timezoneOptions } from '@/common/timezones';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
@@ -9,19 +12,22 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/component/v2/button";
 import { SettingLabel } from "@/component/v2/card";
 import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
+import { confirmAction } from "@/component/v2/confirmation";
+import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
+import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { Textarea } from "@/component/v2/input";
 import { Tooltip } from "@/component/v2/tooltip";
 import { InputList } from "@/component/v2/listeditor";
 
 import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
-import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
-import { FC, useId, useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, ChevronRight, Plus, Trash } from "lucide-react";
+import { FC, useId, useMemo } from "react";
 
 import { UserAuthentication } from "./authentication";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "sstp", "ssh", "krunlet", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "peer_discovery", "lan_link", "peer_tunnel", "sstp", "ssh", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -55,37 +61,44 @@ const InboundEditor: FC<{
                 onChange={(name) => onChange(normalizeInbound({ ...inbound, name }))}
             />
 
-            <FormSection title={uiT("network")}>
-                    <NetworkSection inbound={inbound} onChange={onChange} />
-            </FormSection>
-
-            <FormSection title={uiT("transport")}>
-                    <TransportSection inbound={inbound} onChange={onChange} />
-            </FormSection>
-
+            {/* The protocol decides which listeners and transports apply, so it comes first. */}
             <FormSection title={uiT("protocol")}>
-                    <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
+                <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
             </FormSection>
+
+            {!["peer_tunnel", "lan_link"].includes(inbound.protocol.type) && <FormSection title={uiT("inboundEditor.listener")}>
+                <NetworkSection inbound={inbound} onChange={onChange} />
+            </FormSection>}
+
+            <TransportSection inbound={inbound} onChange={onChange} />
+
             <UserAuthentication inbound={inbound} onChange={onChange} />
         </div></SecretValues>
     );
 };
 
-const TypeUseRow: FC<{
+/** Human labels for contract enums; the raw value stays the stored one. */
+function useTypeLabels() {
+    const { t: uiT } = useTranslation('ui');
+    return {
+        protocol: (type: string) => uiT(`inboundEditor.protocolType.${type}`, { defaultValue: type }),
+        protocolHelp: (type: string) => uiT(`inboundEditor.protocolHelp.${type}`, { defaultValue: "" }),
+        network: (type: string) => uiT(`inboundEditor.networkType.${type}`, { defaultValue: type }),
+        transport: (type: string) => uiT(`inboundEditor.transportType.${type}`, { defaultValue: type }),
+    };
+}
+
+/** A small segmented control that applies the choice immediately. */
+const Segmented: FC<{
     label: string;
     value: string;
-    values: string[];
-    onValueChange: (value: string) => void;
-    onUse: () => void;
-    useLabel?: string;
-}> = ({ label, value, values, onValueChange, onUse, useLabel = "Use" }) => (
-    <div className="mb-4 flex items-center">
-        <SettingLabel className="mb-0 mr-4 whitespace-nowrap" style={{ minWidth: "auto" }}>{label}</SettingLabel>
-        <div className="mr-2 grow">
-            <Select value={value} onValueChange={onValueChange} items={values.map((item) => ({ value: item, label: item }))} />
-        </div>
-        <Button onClick={onUse}>{useLabel}</Button>
-    </div>
+    items: { value: string; label: string }[];
+    onChange: (value: string) => void;
+}> = ({ label, value, items, onChange }) => (
+    <ToggleGroup type="single" aria-label={label} value={value} onValueChange={(next) => next && next !== value && onChange(next)} className="flex w-full">
+        {/* Equal widths on one line; a long label truncates instead of wrapping to a second row. */}
+        {items.map(item => <ToggleItem key={item.value} value={item.value} title={item.label} className="min-w-0 flex-1 basis-0 overflow-hidden whitespace-nowrap px-2">{item.label}</ToggleItem>)}
+    </ToggleGroup>
 );
 
 const NetworkSection: FC<{
@@ -94,8 +107,7 @@ const NetworkSection: FC<{
 }> = ({ inbound, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
-    const [choice, setChoice] = useState<InboundNetwork["type"] | undefined>();
-    const selected = choice ?? inbound.network.type;
+    const labels = useTypeLabels();
 
     if (inbound.protocol.type === "wireguard") {
         return <p className="text-sm text-ui-muted">{uiT("wgNoSystemTun")}</p>;
@@ -105,20 +117,23 @@ const NetworkSection: FC<{
         return <NetworkEditor value={inbound.network} tcpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
 
-    if (inbound.protocol.type === "hysteria2") {
+    if (inbound.protocol.type === "hysteria2" || inbound.protocol.type === "peer_discovery") {
         return <NetworkEditor value={inbound.network} udpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
 
     return (
         <>
-            <TypeUseRow
+            <Segmented
                 label={uiT("networkType")}
-                value={selected}
-                values={networkTypes}
-                onValueChange={(value) => setChoice(value as InboundNetwork["type"])}
-                onUse={() => {
-                    onChange(normalizeInbound({ ...inbound, network: createDefaultNetwork(selected) }));
-                    setChoice(undefined);
+                value={inbound.network.type}
+                items={networkTypes.map(type => ({ value: type, label: labels.network(type) }))}
+                onChange={(value) => {
+                    // Keep the listen address when switching between TCP/UDP and QUIC.
+                    const host = inbound.network.type === "tcp_udp" ? inbound.network.tcp_udp.host : inbound.network.type === "quic" ? inbound.network.quic.host : "";
+                    const network = createDefaultNetwork(value as InboundNetwork["type"]);
+                    if (host && network.type === "tcp_udp") network.tcp_udp.host = host;
+                    if (host && network.type === "quic") network.quic.host = host;
+                    onChange(normalizeInbound({ ...inbound, network }));
                 }}
             />
             <NetworkEditor
@@ -137,21 +152,27 @@ const ProtocolSection: FC<{
 }> = ({ inbound, onChange, protocols, platform }) => {
     const { t: uiT } = useTranslation('ui');
 
-    const [choice, setChoice] = useState<InboundProtocol["type"] | undefined>();
-    const selected = choice ?? inbound.protocol.type;
+    const labels = useTypeLabels();
+    const available = protocolTypes.filter(type => !protocols || protocols.includes(type) || type === inbound.protocol.type);
+    const help = labels.protocolHelp(inbound.protocol.type);
 
     return (
         <>
-            <TypeUseRow
-                label={uiT("protocol")}
-                value={selected}
-                values={protocolTypes.filter(type => !protocols || protocols.includes(type) || type === inbound.protocol.type)}
-                onValueChange={(value) => setChoice(value as InboundProtocol["type"])}
-                onUse={() => {
-                    onChange(selectInboundProtocol(inbound, selected));
-                    setChoice(undefined);
-                }}
-            />
+            <div className="grid gap-1.5">
+                <Select
+                    ariaLabel={uiT("protocol")}
+                    value={inbound.protocol.type}
+                    items={available.map(type => ({ value: type, label: labels.protocol(type) }))}
+                    onValueChange={(value) => {
+                        if (value === inbound.protocol.type) return;
+                        void (async () => {
+                            if (!await confirmAction(uiT("inboundEditor.protocolChangeConfirm", { name: labels.protocol(value) }))) return;
+                            onChange(selectInboundProtocol(inbound, value as InboundProtocol["type"]));
+                        })();
+                    }}
+                />
+                {help && <p className="text-xs text-ui-muted">{help}</p>}
+            </div>
             <ProtocolConfigEditor
                 value={inbound.protocol}
                 platform={platform}
@@ -174,20 +195,32 @@ const NetworkEditor: FC<{
             return <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("thisInboundDoesNotBindANetworkListener")}</div>;
         case "tcp_udp":
             return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-4">
                     <SettingInputVertical
                         label={uiT("listenHost")}
                         value={value.tcp_udp.host}
                         onChange={(host) => onChange({ ...value, tcp_udp: { ...value.tcp_udp, host } })}
                         placeholder=":9002"
                     />
-                    <SettingSelectVertical
-                        label="UDP"
-                        value={value.tcp_udp.udp}
-                        values={udpOnly ? ["udp_only"] : tcpOnly ? ["tcp_only"] : ["enabled", "disabled", "tcp_only", "udp_only"]}
-                        disabled={udpOnly || tcpOnly}
-                        onChange={(udp) => onChange({ ...value, tcp_udp: { ...value.tcp_udp, udp: udp as typeof value.tcp_udp.udp } })}
-                    />
+                    {udpOnly || tcpOnly ? (
+                        <div className="grid content-start gap-2">
+                            <span className="text-sm font-medium text-ui-secondary">{uiT("inboundEditor.mode")}</span>
+                            <p className="rounded-ui-sm border border-ui-border/70 px-3 py-2.5 text-sm text-ui-secondary">
+                                {uiT(udpOnly ? "inboundEditor.udpOnlyFixed" : "inboundEditor.tcpOnlyFixed")}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid content-start gap-2">
+                            <span className="text-sm font-medium text-ui-secondary">{uiT("inboundEditor.mode")}</span>
+                            {/* "disabled" behaves exactly like "tcp_only" in the backend. */}
+                            <Segmented
+                                label={uiT("inboundEditor.mode")}
+                                value={value.tcp_udp.udp === "disabled" ? "tcp_only" : value.tcp_udp.udp}
+                                items={(["enabled", "tcp_only", "udp_only"] as const).map(mode => ({ value: mode, label: uiT(`inboundEditor.udpMode.${mode}`) }))}
+                                onChange={(udp) => onChange({ ...value, tcp_udp: { ...value.tcp_udp, udp: udp as typeof value.tcp_udp.udp } })}
+                            />
+                        </div>
+                    )}
                 </div>
             );
         case "quic":
@@ -217,14 +250,14 @@ const ProtocolConfigEditor: FC<{
         case "masque":
             return (
                 <div className="grid gap-4">
-                    <p className="text-sm text-ui-muted">Standard HTTP/3 CONNECT-IP. Requires an HTTPS certificate in the TLS transport and a Bearer token; HTTP/2 server mode is not supported.</p>
-                    <SettingInputVertical label="CONNECT-IP path" value={value.masque.path ?? ""} onChange={(path) => onChange({ ...value, masque: { ...value.masque, path } })} placeholder="/.well-known/masque/ip/*/*/" />
-                    <SettingInputVertical label="Bearer token" value={value.masque.authToken} onChange={(authToken) => onChange({ ...value, masque: { ...value.masque, authToken } })} />
-                    <InputList title="Server IP addresses" data={value.masque.serverAddresses} onChange={(serverAddresses) => onChange({ ...value, masque: { ...value.masque, serverAddresses } })} />
-                    <InputList title="Client IP addresses (host CIDRs)" data={value.masque.clientAddresses} onChange={(clientAddresses) => onChange({ ...value, masque: { ...value.masque, clientAddresses } })} />
+                    <p className="text-sm text-ui-muted">{uiT("inboundEditor.masqueHelp")}</p>
+                    <SettingInputVertical label={uiT("inboundEditor.connectIpPath")} value={value.masque.path ?? ""} onChange={(path) => onChange({ ...value, masque: { ...value.masque, path } })} placeholder="/.well-known/masque/ip/*/*/" />
+                    <SettingInputVertical label={uiT("inboundEditor.bearerToken")} value={value.masque.authToken} onChange={(authToken) => onChange({ ...value, masque: { ...value.masque, authToken } })} />
+                    <InputList title={uiT("inboundEditor.serverAddresses")} data={value.masque.serverAddresses} onChange={(serverAddresses) => onChange({ ...value, masque: { ...value.masque, serverAddresses } })} />
+                    <InputList title={uiT("inboundEditor.clientAddresses")} data={value.masque.clientAddresses} onChange={(clientAddresses) => onChange({ ...value, masque: { ...value.masque, clientAddresses } })} />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingInputVertical label="MTU" type="number" min={1280} max={65535} step={1} value={String(value.masque.mtu ?? 1280)} onChange={(mtu) => onChange({ ...value, masque: { ...value.masque, mtu: numberValue(mtu) } })} />
-                        <SettingInputVertical label="Max sessions" type="number" min={1} max={1024} step={1} value={String(value.masque.maxSessions ?? 64)} onChange={(maxSessions) => onChange({ ...value, masque: { ...value.masque, maxSessions: numberValue(maxSessions) } })} />
+                        <SettingInputVertical label={uiT("inboundEditor.maxSessions")} type="number" min={1} max={1024} step={1} value={String(value.masque.maxSessions ?? 64)} onChange={(maxSessions) => onChange({ ...value, masque: { ...value.masque, maxSessions: numberValue(maxSessions) } })} />
                     </div>
                 </div>
             );
@@ -260,7 +293,7 @@ const ProtocolConfigEditor: FC<{
             return (
                 <div className="grid gap-4">
                     <AuthFields username={value.socks5.username} password={value.socks5.password} onChange={(patch) => onChange({ ...value, socks5: { ...value.socks5, ...patch } })} />
-                    <SwitchCard label="UDP" checked={value.socks5.udp} onCheckedChange={(udp) => onChange({ ...value, socks5: { ...value.socks5, udp } })} />
+                    <SwitchCard label={uiT("inboundEditor.allowUdp")} checked={value.socks5.udp} onCheckedChange={(udp) => onChange({ ...value, socks5: { ...value.socks5, udp } })} />
                 </div>
             );
         case "yuubinsya":
@@ -273,7 +306,7 @@ const ProtocolConfigEditor: FC<{
         case "socks4a":
             return <SettingInputVertical label={uiT("username")} value={value.socks4a.username} onChange={(username) => onChange({ ...value, socks4a: { ...value.socks4a, username } })} />;
         case "krunlet":
-            return <SettingInputVertical label="Unix socket" value={value.krunlet.socket} onChange={socket => onChange({ ...value, krunlet: { ...value.krunlet, socket } })} />;
+            return <SettingInputVertical label={uiT("inboundEditor.unixSocket")} value={value.krunlet.socket} onChange={socket => onChange({ ...value, krunlet: { ...value.krunlet, socket } })} />;
         case "tproxy":
             return (
                 <div className="grid gap-4">
@@ -288,6 +321,12 @@ const ProtocolConfigEditor: FC<{
             return <SSHServerEditor value={value.ssh} onChange={(ssh) => onChange({ ...value, ssh })} />;
         case "sstp":
             return <SSTPServerEditor value={value.sstp} onChange={(sstp) => onChange({ ...value, sstp })} />;
+        case "peer_discovery":
+            return <PeerDiscoveryForm value={value.peer_discovery} onChange={patch => onChange({ ...value, peer_discovery: { ...value.peer_discovery, ...patch } })} />;
+        case "lan_link":
+            return <LANLinkInboundForm value={value.lan_link} onChange={patch => onChange({ ...value, lan_link: { ...value.lan_link, ...patch } })} />;
+        case "peer_tunnel":
+            return <PeerTunnelForm value={value.peer_tunnel} onChange={patch => onChange({ ...value, peer_tunnel: { ...value.peer_tunnel, ...patch } })} />;
         case "wireguard":
             return <WireguardServerEditor value={value.wireguard} onChange={(wireguard) => onChange({ ...value, wireguard })} />;
         case "tun":
@@ -490,15 +529,9 @@ const TunEditor: FC<{
     return (
         <div className="grid gap-4">
             <div className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
-                <div className="grid gap-1">
-                    <SettingSelectVertical
-                        label={uiT("tunCongestionControl")}
-                        value={value.congestionControl || "cubic"}
-                        values={[["Reno + HyStart++", "reno"], ["CUBIC + HyStart++", "cubic"], ["BBR v3", "bbr"]]}
-                        onChange={(congestionControl) => patch({ congestionControl })}
-                    />
-                    <p className="text-xs text-ui-muted">{uiT("tunCongestionControlHint")}</p>
-                </div>
+                <TCPSettingsEditor defaultCongestion="cubic"
+                    value={{ congestionControl: value.congestionControl, lossRecovery: value.lossRecovery }}
+                    onChange={(settings) => patch(settings)} />
                 <SettingSelectVertical
                     label={uiT("tunOutputScheduler")}
                     value={value.outputScheduler || "fifo"}
@@ -531,7 +564,7 @@ const TunEditor: FC<{
                 </>}
             </FormSection>}
             <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} />
-            <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} />
+            <InputList title={uiT("inboundEditor.excludes")} data={value.excludes} onChange={(excludes) => patch({ excludes })} />
             <InputList secret executable title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} />
             <InputList secret executable title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} />
         </div>
@@ -724,7 +757,7 @@ const TransportSection: FC<{
 }> = ({ inbound, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
-    const [newTransport, setNewTransport] = useState<InboundTransport["type"]>("normal");
+    const labels = useTypeLabels();
     const transports = Array.isArray(inbound.transports) ? inbound.transports : [];
 
     const changeTransport = (index: number, value: InboundTransport) => {
@@ -745,57 +778,68 @@ const TransportSection: FC<{
         onChange(normalizeInbound({ ...inbound, transports: transports.filter((_, current) => current !== index) }));
     };
 
-    if (inbound.protocol.type === "ssh") return <p className="text-sm text-ui-muted">{uiT("sshNoExtraTransports")}</p>;
-    if (inbound.protocol.type === "sstp") return <p className="text-sm text-ui-muted">{uiT("sstpNoExtraTransports")}</p>;
-    if (inbound.protocol.type === "wireguard") return <p className="text-sm text-ui-muted">{uiT("wgNoExtraTransports")}</p>;
-    if (inbound.protocol.type === "hysteria2") return <HysteriaTLSSection inbound={inbound} onChange={onChange} />;
+    const title = uiT("transport");
+    const fixed = (message: string) => <FormSection title={title}><p className="text-sm text-ui-muted">{message}</p></FormSection>;
+    if (["peer_discovery", "peer_tunnel", "lan_link"].includes(inbound.protocol.type)) return null;
+    if (inbound.protocol.type === "ssh") return fixed(uiT("sshNoExtraTransports"));
+    if (inbound.protocol.type === "sstp") return fixed(uiT("sstpNoExtraTransports"));
+    if (inbound.protocol.type === "wireguard") return fixed(uiT("wgNoExtraTransports"));
+    if (inbound.protocol.type === "hysteria2") return <FormSection title={title}><HysteriaTLSSection inbound={inbound} onChange={onChange} /></FormSection>;
 
+    const add = (type: InboundTransport["type"]) => onChange(normalizeInbound({ ...inbound, transports: [...transports, createDefaultTransport(type)] }));
     return (
-        <>
+        <FormSection title={title} description={uiT("inboundEditor.transportHelp")}
+            actions={<Dropdown>
+                <DropdownTrigger asChild>
+                    <Button size="sm" variant="outline-secondary" className="gap-1.5"><Plus size={15} />{uiT("inboundEditor.addTransport")}</Button>
+                </DropdownTrigger>
+                <DropdownContent align="end" className="w-auto min-w-[200px]">
+                    {transportTypes.map(type => <DropdownItem key={type} onSelect={() => add(type)}>{labels.transport(type)}</DropdownItem>)}
+                </DropdownContent>
+            </Dropdown>}>
             {transports.length === 0 ? (
-                <div className="mb-4 rounded-ui-lg border border-dashed border-ui-border p-4 text-center text-sm text-ui-muted">{uiT("noTransports")}</div>
+                <p className="text-sm text-ui-muted">{uiT("inboundEditor.noTransports")}</p>
             ) : (
-                <Accordion type="multiple" defaultValue={["transport-0"]} className="mb-4">
-                    {transports.map((transport, index) => (
-                        <AccordionItem value={`transport-${index}`} key={`${index}-${transport.type}`}>
-                            <AccordionTrigger>
-                                <span className="flex min-w-0 items-center gap-3">
-                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ui-primary-soft text-sm font-bold text-ui-primary">
-                                        {index + 1}
+                <>
+                    <p aria-label={uiT("inboundEditor.transportOrder")} className="flex flex-wrap items-center gap-1 text-xs text-ui-muted">
+                        <span>{uiT("inboundEditor.client")}</span>
+                        {transports.map((transport, index) => <span key={index} className="inline-flex items-center gap-1">
+                            <ChevronRight size={12} aria-hidden="true" />
+                            <span className="rounded-full border border-ui-border px-2 py-0.5 font-medium text-ui-secondary">{labels.transport(transport.type)}</span>
+                        </span>)}
+                        <ChevronRight size={12} aria-hidden="true" />
+                        <span>{labels.protocol(inbound.protocol.type)}</span>
+                    </p>
+                    <Accordion type="multiple" defaultValue={["transport-0"]}>
+                        {transports.map((transport, index) => (
+                            <AccordionItem value={`transport-${index}`} key={`${index}-${transport.type}`}>
+                                <AccordionTrigger>
+                                    <span className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ui-border text-xs font-medium tabular-nums text-ui-secondary">
+                                            {index + 1}
+                                        </span>
+                                        <span className="truncate font-medium">{labels.transport(transport.type)}</span>
                                     </span>
-                                    <span className="truncate font-bold">{transport.type}</span>
-                                </span>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <TransportEditor
-                                    value={transport}
-                                    onChange={(value) => changeTransport(index, value)}
-                                />
-                                <div className="mt-4 flex justify-end gap-2 border-t border-ui-border pt-4">
-                                    <Button size="sm" onClick={() => moveTransport(index, -1)} disabled={index === 0}>
-                                        <ArrowUp size={16} />
-                                    </Button>
-                                    <Button size="sm" onClick={() => moveTransport(index, 1)} disabled={index === transports.length - 1}>
-                                        <ArrowDown size={16} />
-                                    </Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => removeTransport(index)}>
-                                        <Trash className="mr-1" size={16} /> {uiT("delete")}</Button>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <TransportEditor value={transport} onChange={(value) => changeTransport(index, value)} />
+                                    <div className="mt-4 flex justify-end gap-2 border-t border-ui-border pt-4">
+                                        <Button size="sm" variant="outline-secondary" aria-label={uiT("inboundEditor.moveUp")} title={uiT("inboundEditor.moveUp")} onClick={() => moveTransport(index, -1)} disabled={index === 0}>
+                                            <ArrowUp size={16} />
+                                        </Button>
+                                        <Button size="sm" variant="outline-secondary" aria-label={uiT("inboundEditor.moveDown")} title={uiT("inboundEditor.moveDown")} onClick={() => moveTransport(index, 1)} disabled={index === transports.length - 1}>
+                                            <ArrowDown size={16} />
+                                        </Button>
+                                        <Button variant="outline-danger" size="sm" onClick={() => removeTransport(index)}>
+                                            <Trash className="mr-1" size={16} /> {uiT("delete")}</Button>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </>
             )}
-
-            <TypeUseRow
-                label={uiT("type")}
-                value={newTransport}
-                values={transportTypes}
-                onValueChange={(value) => setNewTransport(value as InboundTransport["type"])}
-                onUse={() => onChange(normalizeInbound({ ...inbound, transports: [...transports, createDefaultTransport(newTransport)] }))}
-                useLabel="Add"
-            />
-        </>
+        </FormSection>
     );
 };
 
@@ -805,14 +849,14 @@ const HysteriaTLSSection: FC<{
 }> = ({ inbound, onChange }) => {
     const { t: uiT } = useTranslation('ui');
     const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
-    const [choice, setChoice] = useState<"tls" | "tls_auto">();
-    const selected = choice ?? certificate?.type ?? "tls_auto";
+    const labels = useTypeLabels();
+    // Nothing is selected until a certificate source is chosen.
+    const selected = certificate?.type ?? "";
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("hysteria2ServerHelp")}</p>
-            <TypeUseRow label={uiT("type")} value={selected} values={["tls_auto", "tls"]}
-                onValueChange={(value) => setChoice(value as "tls" | "tls_auto")}
-                onUse={() => onChange(normalizeInbound({ ...inbound, transports: [certificate?.type === selected ? certificate : createDefaultTransport(selected)] }))} />
+            <Segmented label={uiT("type")} value={selected} items={(["tls_auto", "tls"] as const).map(type => ({ value: type, label: labels.transport(type) }))}
+                onChange={(type) => onChange(normalizeInbound({ ...inbound, transports: [createDefaultTransport(type as "tls" | "tls_auto")] }))} />
             {certificate && <TransportConfigEditor value={certificate} showNextProtos={false}
                 onChange={(value) => onChange(normalizeInbound({ ...inbound, transports: [value] }))} />}
         </div>

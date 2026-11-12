@@ -6,11 +6,14 @@ export function chartPalette() {
     const downloadStroke = read('--color-info');
     return {
         uploadStroke,
-        uploadFill: `color-mix(in srgb, ${uploadStroke} 12%, transparent)`,
+        uploadFill: `color-mix(in srgb, ${uploadStroke} 8%, transparent)`,
         downloadStroke,
-        downloadFill: `color-mix(in srgb, ${downloadStroke} 10%, transparent)`,
+        downloadFill: `color-mix(in srgb, ${downloadStroke} 8%, transparent)`,
         axis: read('--text-secondary'),
         grid: read('--border'),
         pointFill: read('--surface'),
+        tooltipBg: read('--surface-raised'),
+        tooltipBorder: read('--border'),
+        tooltipText: read('--text-primary'),
     };
 }

@@ -29,16 +29,21 @@ vi.mock("@/component/route-target-picker", () => ({
   RouteTargetPicker: () => <div>existing target picker</div>,
 }));
 
+// jsdom has no layout: answer the width queries the page asks for.
+function stubViewport(size: "desktop" | "phone") {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: size === "phone" ? query.includes("max-width") : query.includes("min-width"),
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }));
+}
+
 let host: HTMLDivElement;
 let root: Root;
 let config: Config;
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal("matchMedia", () => ({
-    matches: false,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-  }));
+  stubViewport("desktop");
   const gateway = {
     ...newGateway(),
     id: "g",
@@ -337,7 +342,9 @@ it("deletes a Gateway together with its interception and filters", async () => {
     },
   ];
   await render();
-  await click("delete Site gateway");
+  await click("deleteGateway");
+  expect(host.querySelector('[role="group"][aria-label="deleteGateway"]')).not.toBeNull();
+  await click("confirmDeleteGateway");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -423,12 +430,32 @@ it("creates an interception-only gateway with a safe forward fallback", async ()
   }));
 });
 
-it("never changes the Gateway fallback merely to create a backend pool", async () => {
+it("never offers a backend pool for a non-proxy fallback", async () => {
   await render();
-  const button = host.querySelector<HTMLButtonElement>('nav[aria-label="gateway"] button[aria-label="addUpstream"]');
-  expect(button?.disabled).toBe(true);
-  await click("addUpstream");
-  expect(api.saveGatewayConfig).not.toHaveBeenCalled();
+  await selectGatewayItem("defaultAction");
+  expect(host.textContent).not.toContain("createBackendPool");
+  expect(host.querySelector('nav[aria-label="gateway"] button[aria-label="addUpstream"]')).toBeNull();
+});
+
+it("keeps the gateway when deletion is cancelled", async () => {
+  await render();
+  await click("deleteGateway");
+  await click("cancel");
+  expect(host.querySelector('[role="group"][aria-label="deleteGateway"]')).toBeNull();
+  expect(host.textContent).toContain("Site gateway");
+});
+
+it("lists rules in evaluation order with condition and action summaries", async () => {
+  config.rules = [
+    { ...newRule(), id: "late", name: "", priority: 200, match: { field: "host", operator: "exact", values: ["late.example"] } },
+    { ...newRule(), id: "early", name: "", priority: 10, match: { field: "path", operator: "prefix", values: ["/ad"] } },
+  ];
+  config.gateways[0].ruleIds = ["late", "early"];
+  await render();
+  const labels = [...host.querySelectorAll('nav[aria-label="gateway"] button')]
+    .map((button) => button.querySelector("span")?.textContent ?? "")
+    .filter((label) => label.includes("→"));
+  expect(labels).toEqual(["Path prefix /ad → block 403", "Host exact late.example → block 403"]);
 });
 
 
@@ -497,7 +524,8 @@ it("creates a backend pool only for an explicitly selected reverse proxy action"
     ...config.gateways[0].default, type: "reverse_proxy", upstream: "",
   };
   await render();
-  await click("addUpstream");
+  await selectGatewayItem("defaultAction");
+  await click("createBackendPool");
   await click("saveActivate");
   const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.upstreams).toHaveLength(1);
@@ -517,9 +545,7 @@ it("creates a second backend pool for a new reverse rule without changing the fa
   const reverse = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
     .find(option => option.textContent === "reverse_proxy")!;
   await act(async () => reverse.click());
-  const addPool = host.querySelector<HTMLButtonElement>('nav[aria-label="gateway"] button[aria-label="addUpstream"]')!;
-  expect(addPool.disabled).toBe(false);
-  await click("addUpstream");
+  await click("createBackendPool");
   await click("saveActivate");
   const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.upstreams).toHaveLength(2);
@@ -540,7 +566,6 @@ it("lets an existing reverse rule select a new pool while the fallback retains i
     .find(option => option.textContent === "newBackendPool");
   expect(create).toBeDefined();
   await act(async () => create!.click());
-  await click("addUpstream");
   await click("saveActivate");
   const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.upstreams).toHaveLength(2);
@@ -561,7 +586,7 @@ it("shows scoped filters and allows editing within the owning gateway", async ()
 
 it("configures HTTPS MITM directly on the Gateway without attaching an Inbound", async () => {
   await render();
-  await selectGatewayItem("interception");
+  await selectGatewayItem("entry");
   expect(host.textContent).not.toContain("addSource");
   const mode = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="interceptionMode"]')!;
   await act(async () => mode.click());
@@ -577,3 +602,24 @@ it("configures HTTPS MITM directly on the Gateway without attaching an Inbound",
 });
 
 afterEach(resetTestAuth);
+
+it("starts on the list of gateways on a phone instead of opening the first one", async () => {
+  stubViewport("phone");
+  await render();
+  expect(host.textContent).toContain("gatewayDirectoryHelp");
+  expect(host.querySelector('nav[aria-label="gateway"]')).toBeNull();
+  expect(window.location.hash).not.toContain("gateway=");
+});
+
+it("shows Save and Discard on a phone only while there are unsaved changes", async () => {
+  stubViewport("phone");
+  await render();
+  const saveButtons = () => [...host.querySelectorAll("button")].filter((b) => b.textContent?.trim() === "saveActivate");
+  expect(saveButtons()).toHaveLength(0);
+  await act(async () => host.querySelector<HTMLButtonElement>("ul button")!.click());
+  await click("gatewaySettings");
+  edit(input("name"), "Renamed");
+  expect(saveButtons()).toHaveLength(1);
+  await click("discard");
+  expect(saveButtons()).toHaveLength(0);
+});

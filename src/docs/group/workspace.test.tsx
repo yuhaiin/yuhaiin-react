@@ -9,7 +9,7 @@ import { normalizeNode, type Node } from '@/contract/node';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Group from './page';
 
-const api = vi.hoisted(() => ({ listNodeGroups: vi.fn(), listNodes: vi.fn(), getNode: vi.fn(), saveNode: vi.fn(), createNode: vi.fn(), deleteNode: vi.fn(), useNode: vi.fn(), selectedNodes: vi.fn(), latencyNode: vi.fn() }));
+const api = vi.hoisted(() => ({ listPeerTunnelPeers: vi.fn(), listNodeGroups: vi.fn(), listNodes: vi.fn(), getNode: vi.fn(), saveNode: vi.fn(), createNode: vi.fn(), deleteNode: vi.fn(), useNode: vi.fn(), selectedNodes: vi.fn(), latencyNode: vi.fn() }));
 const statusApi = vi.hoisted(() => ({ getNodeStatuses: vi.fn() }));
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.mock('@/api/nodes', () => api);
@@ -89,7 +89,10 @@ it('shows the mobile directory first and protects returning from an edited node'
     await click('Second'); await click('Edit draft');
     const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToNodes'); expect(settings()).not.toBeNull();
-    confirm.mockResolvedValue(true); await click('backToNodes'); expect(settings()).toBeNull();
+    confirm.mockResolvedValue(true); await click('backToNodes');
+    // Closing returns to the list entry with Back, so Android Back does not reopen it.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+    expect(settings()).toBeNull(); expect(window.location.hash).not.toContain('node=');
     await click('Second'); expect(settings()?.querySelector('output')?.textContent).toBe('Second');
 });
 
@@ -206,3 +209,18 @@ describe('initial group', () => {
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
 
 afterEach(() => { clearHashSearch(); resetTestAuth(); });
+
+it('looks up configured peer addresses when the peer directory is opened', async () => {
+    api.listPeerTunnelPeers.mockResolvedValue({
+        items: [{ nodeId: 'publisher', name: 'Office publisher', state: 'online', endpoint: '192.0.2.10:51821', tunnelIp: '10.88.1.1', routes: ['192.168.10.0/24'] }],
+        page: { page: 1, pageSize: 16, total: 1 },
+    });
+    await render();
+    expect(api.listPeerTunnelPeers).not.toHaveBeenCalled();
+    await click('peerTunnel.peers');
+    expect(api.listPeerTunnelPeers).toHaveBeenCalledWith(1);
+    const contents = document.querySelector('[role="dialog"]')?.textContent;
+    for (const value of ['Office publisher', 'peerTunnel.peerState.online', '192.0.2.10:51821', '10.88.1.1', '192.168.10.0/24']) {
+        expect(contents).toContain(value);
+    }
+});

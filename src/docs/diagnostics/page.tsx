@@ -8,6 +8,7 @@ import { useClipboard } from '@/component/v2/clipboard';
 import { Input } from '@/component/v2/input';
 import { Spinner } from '@/component/v2/spinner';
 import type { DiagnosticReport } from '@/contract/tools';
+import clsx from 'clsx';
 import { Activity, Copy, Download, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,8 @@ export default function DiagnosticsPage() {
         const target = new URLSearchParams(search).get('host');
         if (target) setHost(target);
     }
+    // A TCP stack row opened on a phone is its own screen; the rest of the page steps aside.
+    const stackDetail = ['node', 'inbound'].some(name => new URLSearchParams(search).has(name)) && 'max-md:hidden';
     const [report, setReport] = useState<DiagnosticReport>();
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
@@ -73,8 +76,8 @@ export default function DiagnosticsPage() {
 
     return (
         <div className="w-full min-w-0 space-y-5">
-            <PageHeader title={t('title')} description={t('description')} />
-            <Card noMargin>
+            <PageHeader title={t('title')} description={t('description')} className={clsx(stackDetail)} />
+            <Card noMargin className={clsx(stackDetail)}>
                 <CardBody>
                     <form onSubmit={event => { event.preventDefault(); void run(); }} className="space-y-3">
                         <label className="block text-sm font-medium" htmlFor="diagnostic-host">{t('target')}</label>
@@ -90,7 +93,7 @@ export default function DiagnosticsPage() {
                 </CardBody>
             </Card>
             <TCPStackPanel />
-            {report && <>
+            {report && <div className={clsx('space-y-5', stackDetail)}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0 break-words text-sm text-ui-muted">{report.host} · {report.platform} · {new Date(report.startedAt).toLocaleString()} · {report.durationMs} ms</div>
                     <div className="flex flex-wrap gap-2">
@@ -116,7 +119,7 @@ export default function DiagnosticsPage() {
                     </CardBody></Card>)}
                 </div>
                 <p className="text-xs text-ui-muted">{t('privacy')}</p>
-            </>}
+            </div>}
             {manualCopyModal}
         </div>
     );

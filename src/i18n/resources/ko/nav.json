@@ -5,8 +5,8 @@
   "bypass": "우회",
   "connections": "연결",
   "setting": "설정",
-  "toggle": "내비게이션 전환",
   "close": "내비게이션 닫기",
+  "reload": "페이지 새로고침",
   "monitoring": "개요 및 모니터링",
   "trafficConfiguration": "트래픽 설정",
   "system": "시스템",
@@ -20,5 +20,20 @@
   "account": "계정",
   "credentials": "인증 정보",
   "usageAudit": "사용량 및 감사",
-  "administration": "관리"
+  "administration": "관리",
+  "android": "Android",
+  "tabs": {
+    "home": "홈",
+    "nodes": "노드",
+    "routing": "라우팅",
+    "connections": "연결",
+    "more": "더 보기"
+  },
+  "primary": "기본 탐색",
+  "more": "다른 페이지",
+  "menu": "내비게이션",
+  "openMenu": "내비게이션 열기",
+  "refresh": "새로고침",
+  "refreshing": "새로고침 중…",
+  "sections": "이 섹션의 페이지"
 }

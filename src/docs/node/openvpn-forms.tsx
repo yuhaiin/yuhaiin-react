@@ -36,7 +36,7 @@ export const OpenVPNForm: FC<{
     const ciphers = config.data_ciphers?.length ? config.data_ciphers : defaultCiphers;
 
     return <div className="grid min-w-0 gap-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
             <SettingInputVertical label={uiT("openVPNGateway")} value={config.gateway ?? ""}
                 placeholder="vpn.example.com:1194" disabled={!editable}
                 onChange={(gateway) => onChange({ gateway })} />
@@ -54,7 +54,7 @@ export const OpenVPNForm: FC<{
         <PEMField label={uiT("caCert")} value={config.ca_cert_pem}
             placeholder="-----BEGIN CERTIFICATE-----" disabled={!editable}
             onChange={(ca_cert_pem) => onChange({ ca_cert_pem })} />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
             <PEMField label={uiT("openVPNClientCert")} value={config.client_cert_pem}
                 placeholder="-----BEGIN CERTIFICATE-----" disabled={!editable}
                 onChange={(client_cert_pem) => onChange({ client_cert_pem })} />
@@ -73,7 +73,7 @@ export const OpenVPNForm: FC<{
             value={protection === "tls-auth" ? config.tls_auth_key : config.tls_crypt_key}
             placeholder="-----BEGIN OpenVPN Static key V1-----" disabled={!editable}
             onChange={(value) => onChange(protection === "tls-auth" ? { tls_auth_key: value } : { tls_crypt_key: value })} />}
-        {protection === "tls-auth" && <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {protection === "tls-auth" && <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
             <VPNSelect label={uiT("openVPNKeyDirection")} value={String(config.key_direction ?? -1)}
                 options={[["-1", uiT("openVPNBidirectional")], ["0", "0"], ["1", "1"]]}
                 disabled={!editable} onChange={(value) => onChange({ key_direction: value === "-1" ? undefined : Number(value) })} />
@@ -88,7 +88,7 @@ export const OpenVPNForm: FC<{
                 options={defaultCiphers.map((cipher) => ({ value: cipher, label: cipher, disabled: ciphers.length === 1 && ciphers.includes(cipher) }))} />
             <p className="mb-0 text-sm text-ui-muted">{uiT("openVPNCipherHelp")}</p>
         </fieldset>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
             <SettingInputVertical label={uiT("mtuOverride")} type="number" min={0} max={1500} step={1}
                 value={config.mtu ?? 0} disabled={!editable}
                 onChange={(value) => onChange({ mtu: Number(value) || 0 })} />
@@ -135,7 +135,7 @@ export const OpenVPNRuntimeInfo: FC<{ nodeId: string }> = ({ nodeId }) => {
         </div>
         <p className="mb-0 mt-2 text-sm text-ui-muted">{uiT("openVPNInfoHelp")}</p>
         {unavailable && <p role="status" className="mb-0 mt-3 text-sm text-ui-danger">{uiT("openVPNInfoUnavailable")}</p>}
-        {info && <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+        {info && <div className="mt-3 grid grid-cols-1 gap-3 @xl:grid-cols-2">
             <RuntimeInfoList label={uiT("openVPNTunnelPrefixes")} values={info.tunnel_prefixes} />
             <RuntimeInfoList label={uiT("openVPNDataCiphers")} value={info.cipher} />
             <RuntimeInfoList label={uiT("globalProtectDNSServers")} values={info.dns} />

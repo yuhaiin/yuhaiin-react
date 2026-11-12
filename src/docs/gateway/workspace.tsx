@@ -1,3 +1,6 @@
+import { navigation } from "@/hooks/navigation";
+import { DetailBack } from "@/component/v2/detail-back";
+import { parentLocation, useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { createID } from "@/common/id";
 import { Button } from "@/component/v2/button";
 import {
@@ -8,7 +11,7 @@ import {
 } from "@/component/workspace-layout";
 import type { Config, Gateway, Rule, Upstream, Interception, FilterList } from "@/contract/gateway";
 import { deleteGateway, deleteRule, newRule, newUpstream, newInterception, newGateway } from "@/contract/gateway";
-import { ArrowLeft, ListFilter, Plus } from "lucide-react";
+import { ArrowLeft, ListFilter, Plus, Settings2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionEditor } from "./fields";
@@ -19,6 +22,7 @@ import {
   InterceptionEditor,
   FilterEditor,
 } from "./resources";
+import { actionSummary, entrySummary, needsPool, ruleSummary, sortRulesByPriority } from "./summary";
 
 type FilterReport = { id: string; accepted: number; rejected: number; errors: string[] };
 type GatewayRuntime = { id: string; requests: number; blocked: number; forwarded: number; errors: number; tlsFailures: number; filterReports?: FilterReport[] };
@@ -39,15 +43,26 @@ type GatewayEditorSelection =
   | { kind: "filter"; id: string }
   | { kind: "pool"; id: string };
 
-function NavigationGroup({ title, count, action, children }: {
+/**
+ * One stage of the request pipeline. Stages are numbered and connected so the
+ * navigation itself explains the order in which a request is handled.
+ */
+function PipelineStep({ index, title, count, action, last = false, children }: {
+  index: number;
   title: string;
   count?: number;
   action?: ReactNode;
+  last?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-1 border-t border-ui-border/60 pt-3">
-      <header className="flex items-center justify-between gap-2 px-2">
+    <section className="relative pb-3 pl-7">
+      <span aria-hidden="true"
+        className="absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ui-border bg-ui-surface text-xs font-medium tabular-nums text-ui-secondary">
+        {index}
+      </span>
+      {!last && <span aria-hidden="true" className="absolute bottom-0 left-[9.5px] top-7 w-px bg-ui-border/70" />}
+      <header className="flex min-h-8 items-center justify-between gap-2">
         <h3 className="min-w-0 truncate text-xs font-medium text-ui-secondary">
           {title}{count !== undefined ? <span className="ml-1 text-ui-muted">· {count}</span> : null}
         </h3>
@@ -58,26 +73,34 @@ function NavigationGroup({ title, count, action, children }: {
   );
 }
 
-function NavigationItem({ label, description, selected, onSelect }: {
+function NavigationItem({ label, description, selected, onSelect, muted = false, nested = false, warning = false }: {
   label: string;
   description?: ReactNode;
   selected: boolean;
   onSelect: () => void;
+  muted?: boolean;
+  nested?: boolean;
+  warning?: boolean;
 }) {
   return (
-    <li>
+    <li className={nested ? "pl-3" : undefined}>
       <button
         type="button"
         aria-current={selected ? "true" : undefined}
         onClick={onSelect}
-        className={`relative w-full min-w-0 rounded-ui-sm px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus ${selected ? "bg-ui-selected" : "hover:bg-ui-surface-muted/60"}`}
+        title={typeof description === "string" ? `${label}\n${description}` : label}
+        className={`relative w-full min-w-0 rounded-ui-sm px-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus ${nested ? "py-1.5" : "py-2"} ${selected ? "bg-ui-selected" : "hover:bg-ui-surface-muted/60"} ${muted ? "opacity-60" : ""}`}
       >
         {selected && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-ui-primary" />}
-        <span className="block truncate text-sm font-medium text-ui-heading">{label}</span>
-        {description && <span className="mt-0.5 block truncate text-xs text-ui-secondary">{description}</span>}
+        <span className={`block truncate font-medium text-ui-heading ${nested ? "text-xs" : "text-sm"}`}>{label}</span>
+        {description && <span className={`mt-0.5 block truncate text-xs ${warning ? "text-ui-warning" : "text-ui-secondary"}`}>{description}</span>}
       </button>
     </li>
   );
+}
+
+function EmptyStepHint({ children }: { children: ReactNode }) {
+  return <li className="px-3 py-1.5 text-xs text-ui-muted">{children}</li>;
 }
 
 function AddNavigationItemButton({ label, disabled = false, onClick }: {
@@ -113,18 +136,28 @@ function pruneUnusedPools(config: Config): Config {
 
 export function GatewayWorkspace({ config, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
-  const [selectedId, setSelectedId] = useState<string | null>(() => config.gateways[0]?.id ?? null);
+  // Adapt i18next's overloaded TFunction to the simple summary helpers.
+  const summaryT = (key: string, options?: Record<string, unknown>): string =>
+    options ? t(key, options) : t(key);
+  // The open gateway lives in the URL (`?gateway=`). The desktop detail pane opens
+  // the first one (replacing the entry, so no history). Phones start on the list
+  // of gateways instead of being sent straight into the first one.
+  const workspace = useWorkspaceNavigation("gateway", { autoSelect: config.gateways[0]?.id });
+  const selectedId = workspace.id || null;
+  const openGateway = workspace.open;
   const [editorByGateway, setEditorByGateway] = useState<Record<string, GatewayEditorSelection>>({});
   const [narrowEditorOpen, setNarrowEditorOpen] = useState(false);
   const [creatingGateway, setCreatingGateway] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
   const knownGatewayIds = useRef(new Set(config.gateways.map((gateway) => gateway.id)));
   useEffect(() => {
     const added = config.gateways.find((gateway) => !knownGatewayIds.current.has(gateway.id));
     knownGatewayIds.current = new Set(config.gateways.map((gateway) => gateway.id));
-    if (added) setSelectedId(added.id);
+    if (added) void openGateway(added.id);
+    // A removed gateway (or a stale link) closes to the list without a new step.
     else if (selectedId && !knownGatewayIds.current.has(selectedId))
-      setSelectedId(config.gateways[0]?.id ?? null);
-  }, [config.gateways, selectedId]);
+      navigation.replace(parentLocation(navigation.current.location, "gateway"));
+  }, [config.gateways, selectedId, openGateway]);
   const selectedGateway = config.gateways.find((gateway) => gateway.id === selectedId) ?? null;
 
   const createGateway = (mode: "listener" | "interception") => {
@@ -144,7 +177,6 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
         } satisfies Gateway
       : newGateway();
     setCreatingGateway(false);
-    setSelectedId(gateway.id);
     setNarrowEditorOpen(false);
     onChange({
       ...config,
@@ -185,7 +217,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
   };
 
   const gateway = selectedGateway;
-  const rules = gateway ? config.rules.filter((rule) => gateway.ruleIds.includes(rule.id)) : [];
+  const rules = gateway ? sortRulesByPriority(config.rules.filter((rule) => gateway.ruleIds.includes(rule.id))) : [];
   const interception = gateway
     ? config.interceptions.find((item) => item.gatewayId === gateway.id) ?? newInterception(gateway.id)
     : null;
@@ -195,10 +227,6 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
     ...rules.map((rule) => rule.action),
   ].filter((action) => action.type === "reverse_proxy").map((action) => action.upstream));
   const pools = config.upstreams.filter((upstream) => neededUpstreams.has(upstream.id));
-  const unassignedRule = rules.find((rule) =>
-    rule.action.type === "reverse_proxy" && !rule.action.upstream);
-  const unassignedFallback = gateway?.default.type === "reverse_proxy" && !gateway.default.upstream;
-  const canAddPool = Boolean(unassignedRule || unassignedFallback);
   const runtime = gateway ? status.find((item) => item.id === gateway.id) : undefined;
   const requestedSelection = gateway
     ? editorByGateway[gateway.id] ?? { kind: "settings" as const }
@@ -222,11 +250,11 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
   const editorTitle = activeSelection.kind === "settings"
     ? t("gatewaySettings")
     : activeSelection.kind === "interception"
-      ? t("interception")
+      ? t("entry")
       : activeSelection.kind === "defaultAction"
         ? t("defaultAction")
         : activeSelection.kind === "rule"
-          ? selectedRule?.name || t("newRule")
+          ? selectedRule?.name || (selectedRule ? ruleSummary(selectedRule, pools, summaryT) : t("newRule"))
           : activeSelection.kind === "filter"
             ? selectedFilter?.name || t("newFilter")
             : selectedPool?.name || t("newUpstream");
@@ -270,23 +298,34 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
     onChange({ ...config, filterLists: [...config.filterLists, filter] });
   };
 
-  const addGatewayPool = () => {
-    // A new pool is only available after an explicit reverse-proxy action has
-    // been selected. Adding it assigns it to that action, and nothing else.
-    if (!gateway || !canAddPool) return;
+  // A pool is always created for one explicit reverse-proxy action and
+  // assigned to it in the same draft change; no other action is touched.
+  const createPool = (target: { kind: "rule"; id: string } | { kind: "defaultAction" }) => {
+    if (!gateway) return;
     const upstream = newUpstream();
+    const assign = (action: Rule["action"]): Rule["action"] =>
+      ({ ...action, type: "reverse_proxy", upstream: upstream.id });
     selectEditor({ kind: "pool", id: upstream.id });
-    const nextRules = unassignedRule
-      ? config.rules.map((rule) => rule.id === unassignedRule.id
-        ? { ...rule, action: { ...rule.action, upstream: upstream.id } } : rule)
-      : config.rules;
-    const nextGateways = unassignedRule ? config.gateways : config.gateways.map((item) =>
-      item.id === gateway.id
-        ? { ...item, default: { ...item.default, upstream: upstream.id } }
-        : item);
-    onChange(pruneUnusedPools({ ...config, rules: nextRules, gateways: nextGateways,
-      upstreams: [...config.upstreams, upstream] }));
+    onChange(pruneUnusedPools({
+      ...config,
+      upstreams: [...config.upstreams, upstream],
+      rules: target.kind === "rule"
+        ? config.rules.map((rule) => rule.id === target.id ? { ...rule, action: assign(rule.action) } : rule)
+        : config.rules,
+      gateways: target.kind === "defaultAction"
+        ? config.gateways.map((item) => item.id === gateway.id ? { ...item, default: assign(item.default) } : item)
+        : config.gateways,
+    }));
   };
+  const editPool = (id: string) => selectEditor({ kind: "pool", id });
+  const poolOf = (action: Rule["action"]) => action.type === "reverse_proxy"
+    ? pools.find((pool) => pool.id === action.upstream) : undefined;
+  const poolItem = (pool: Upstream | undefined, key: string) => pool && (
+    <NavigationItem key={key} nested label={pool.name || t("newUpstream")}
+      description={`${t(pool.balance)} · ${pool.backends.length} ${t("backends")}`}
+      selected={activeSelection.kind === "pool" && activeSelection.id === pool.id}
+      onSelect={() => editPool(pool.id)} />
+  );
 
   return (
     <WorkspaceLayout>
@@ -324,7 +363,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
             </div>
           )}
         </div>
-        <ul className="m-0 max-h-[min(72vh,900px)] list-none space-y-1 overflow-y-auto overscroll-contain p-0">
+        <ul className="m-0 list-none space-y-1 p-0 md:max-h-[min(72vh,900px)] md:overflow-y-auto md:overscroll-contain">
           {config.gateways.map((item) => {
             const itemRuntime = status.find((entry) => entry.id === item.id);
             const selected = item.id === selectedId;
@@ -335,8 +374,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                   type="button"
                   aria-current={selected ? "true" : undefined}
                   onClick={() => {
-                    setSelectedId(item.id);
-                    setNarrowEditorOpen(false);
+                    void workspace.open(item.id).then((opened) => { if (opened) setNarrowEditorOpen(false); });
                   }}
                   className="min-w-0 w-full rounded-ui-md py-2.5 pl-3 pr-3 text-left hover:bg-ui-surface-muted/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus"
                 >
@@ -350,7 +388,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                   <p className="mt-1 truncate pl-0 text-xs text-ui-secondary">
                     {item.enabled ? t("enabled") : t("disabled")} · {item.listen || t("interception")}
                   </p>
-                  <p className="mt-1 text-[11px] text-ui-secondary">
+                  <p className="mt-1 text-xs text-ui-secondary">
                     {itemRuntime?.requests ?? 0} {t("requests")}
                   </p>
                 </button>
@@ -365,78 +403,116 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
       <WorkspaceDetail hiddenOnMobile={!gateway} transitionKey={gateway?.id ?? "empty-gateway"}>
         {gateway && interception ? (
           <div className="space-y-4">
-            <header className="mb-4 border-b border-ui-border/60 pb-4">
-              <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden"
-                onClick={() => setSelectedId(null)}>
-                <ArrowLeft size={16} />{t("backToGateways")}
-              </Button>
-              <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">
-                {gateway.name || t("newGateway")}
-              </h2>
+            <header className="border-b border-ui-border/60 pb-4">
+              <DetailBack label={t("backToGateways")} onBack={workspace.close} />
+              {/* On phones the name gets the full width and the actions sit below it. */}
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="min-w-0 flex-1">
+                  <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">
+                    {gateway.name || t("newGateway")}
+                  </h2>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ui-secondary">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={gateway.enabled ? "h-1.5 w-1.5 rounded-full bg-ui-success" : "h-1.5 w-1.5 rounded-full bg-ui-muted"} aria-hidden="true" />
+                      {gateway.enabled ? t("enabled") : t("disabled")}
+                    </span>
+                    <span>{runtime?.requests ?? 0} {t("requests")}</span>
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button size="sm" variant={activeSelection.kind === "settings" ? "outline-primary" : "outline-secondary"}
+                    className="gap-1.5" aria-pressed={activeSelection.kind === "settings"}
+                    onClick={() => selectEditor({ kind: "settings" })}>
+                    <Settings2 size={15} aria-hidden="true" />{t("gatewaySettings")}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 min-w-8 text-ui-danger"
+                    aria-label={t("deleteGateway")} title={t("deleteGateway")}
+                    aria-expanded={confirmingDelete === gateway.id}
+                    onClick={() => setConfirmingDelete((current) => current === gateway.id ? null : gateway.id)}>
+                    <Trash2 size={16} aria-hidden="true" />
+                  </Button>
+                </div>
+              </div>
+              {confirmingDelete === gateway.id && (
+                <div role="group" aria-label={t("deleteGateway")}
+                  className="mt-3 flex flex-wrap items-center gap-3 rounded-ui-sm border border-ui-danger/40 bg-ui-danger-soft p-3 text-sm text-ui-heading">
+                  <p className="min-w-0 flex-1">{t("deleteGatewayWarning", { name: gateway.name || t("newGateway") })}</p>
+                  <Button size="sm" variant="destructive" onClick={() => {
+                    setConfirmingDelete(null);
+                    removeGateway(gateway.id);
+                  }}>{t("confirmDeleteGateway")}</Button>
+                  <Button size="sm" variant="outline-secondary" onClick={() => setConfirmingDelete(null)}>{t("cancel")}</Button>
+                </div>
+              )}
             </header>
-            <p className="text-xs text-ui-secondary">
-              {gateway.enabled ? t("enabled") : t("disabled")} · {gateway.listen || t("interception")}
-              {" · "}{runtime?.requests ?? 0} {t("requests")}
-            </p>
             {gateway.rejectWhenDisabled && !gateway.enabled && (
               <p role="status" className="rounded-md border border-ui-warning/40 bg-ui-warning/10 p-3 text-sm text-ui-heading">
                 {t("importedGatewayGuard")}
               </p>
             )}
-            <div className="grid min-w-0 gap-5 xl:grid-cols-[230px_minmax(0,1fr)]">
-              <nav aria-label={t("gateway")} className={`min-w-0 max-h-[min(68vh,760px)] overflow-y-auto pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
-                <ul className="m-0 list-none space-y-0.5 p-0">
-                  <NavigationItem label={t("gatewaySettings")} selected={activeSelection.kind === "settings"}
-                    onSelect={() => selectEditor({ kind: "settings" })} />
-                  <NavigationItem label={t("interception")} selected={activeSelection.kind === "interception"}
+            <div className="grid min-w-0 gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
+              <nav aria-label={t("gateway")} className={`min-w-0 xl:max-h-[min(68vh,760px)] xl:overflow-y-auto xl:pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
+                <p className="mb-3 text-xs text-ui-muted">{t("pipelineHelp")}</p>
+                <PipelineStep index={1} title={t("entry")}>
+                  <NavigationItem label={t("entry")} description={entrySummary(gateway, interception, summaryT)}
+                    selected={activeSelection.kind === "interception"}
                     onSelect={() => selectEditor({ kind: "interception" })} />
-                  <NavigationItem label={t("defaultAction")} selected={activeSelection.kind === "defaultAction"}
-                    onSelect={() => selectEditor({ kind: "defaultAction" })} />
-                </ul>
-                <NavigationGroup title={t("rules")} count={rules.length}
-                  action={<AddNavigationItemButton label={t("addRule")} onClick={addGatewayRule} />}>
-                  {rules.map((rule, index) => (
-                    <NavigationItem key={rule.id} label={rule.name || `${t("newRule")} ${index + 1}`}
-                      description={`${t("priority")}: ${rule.priority} · ${rule.enabled ? t("enabled") : t("disabled")}`}
-                      selected={activeSelection.kind === "rule" && activeSelection.id === rule.id}
-                      onSelect={() => selectEditor({ kind: "rule", id: rule.id })} />
-                  ))}
-                  {!rules.length && <li className="px-3 py-2 text-xs text-ui-secondary">{t("selectRuleHelp")}</li>}
-                </NavigationGroup>
-                <NavigationGroup title={t("filters")} count={filters.length}
+                </PipelineStep>
+                <PipelineStep index={2} title={t("filters")} count={filters.length}
                   action={<AddNavigationItemButton label={t("addFilter")} onClick={addGatewayFilter} />}>
-                  {filters.map((filter, index) => (
-                    <NavigationItem key={filter.id} label={filter.name || `${t("newFilter")} ${index + 1}`}
-                      description={`${filter.enabled ? t("enabled") : t("disabled")} · ${filter.url ? t("sourceUrl") : t("filterText")}`}
-                      selected={activeSelection.kind === "filter" && activeSelection.id === filter.id}
-                      onSelect={() => selectEditor({ kind: "filter", id: filter.id })} />
-                  ))}
-                  {!filters.length && <li className="px-3 py-2 text-xs text-ui-secondary">{t("selectFilterHelp")}</li>}
-                </NavigationGroup>
-                <NavigationGroup title={t("backendPools")} count={pools.length}
-                  action={<AddNavigationItemButton label={t("addUpstream")} disabled={!canAddPool} onClick={addGatewayPool} />}>
-                  {pools.map((pool, index) => (
-                    <NavigationItem key={pool.id} label={pool.name || `${t("newUpstream")} ${index + 1}`}
-                      description={`${t(pool.balance)} · ${pool.backends.length} ${t("backends")}`}
-                      selected={activeSelection.kind === "pool" && activeSelection.id === pool.id}
-                      onSelect={() => selectEditor({ kind: "pool", id: pool.id })} />
-                  ))}
-                  {!pools.length && <li className="px-3 py-2 text-xs text-ui-secondary">{t("backendPoolHelp")}</li>}
-                </NavigationGroup>
-                <div className="mt-3 border-t border-ui-border/60 pt-3">
-                  <Button variant="outline-danger" onClick={() => removeGateway(gateway.id)}>
-                    {t("delete")} {gateway.name || t("gateway")}
-                  </Button>
-                </div>
+                  {filters.map((filter, index) => {
+                    const report = runtime?.filterReports?.find((item) => item.id === filter.id);
+                    return (
+                      <NavigationItem key={filter.id} label={filter.name || `${t("newFilter")} ${index + 1}`}
+                        muted={!filter.enabled}
+                        description={[
+                          filter.enabled ? undefined : t("disabled"),
+                          filter.url ? t("sourceUrl") : t("filterText"),
+                          report ? `${report.accepted} ${t("acceptedRules")}` : undefined,
+                        ].filter(Boolean).join(" · ")}
+                        selected={activeSelection.kind === "filter" && activeSelection.id === filter.id}
+                        onSelect={() => selectEditor({ kind: "filter", id: filter.id })} />
+                    );
+                  })}
+                  {!filters.length && <EmptyStepHint>{t("noFilters")}</EmptyStepHint>}
+                </PipelineStep>
+                <PipelineStep index={3} title={t("rules")} count={rules.length}
+                  action={<AddNavigationItemButton label={t("addRule")} onClick={addGatewayRule} />}>
+                  {rules.flatMap((rule) => {
+                    const summary = ruleSummary(rule, pools, summaryT);
+                    return [
+                      <NavigationItem key={rule.id} label={rule.name || summary}
+                        muted={!rule.enabled}
+                        warning={needsPool(rule.action)}
+                        description={[
+                          rule.enabled ? undefined : t("disabled"),
+                          rule.name ? summary : undefined,
+                          `${t("priority")} ${rule.priority}`,
+                        ].filter(Boolean).join(" · ")}
+                        selected={activeSelection.kind === "rule" && activeSelection.id === rule.id}
+                        onSelect={() => selectEditor({ kind: "rule", id: rule.id })} />,
+                      poolItem(poolOf(rule.action), `${rule.id}-pool`),
+                    ];
+                  })}
+                  {!rules.length && <EmptyStepHint>{t("noRules")}</EmptyStepHint>}
+                </PipelineStep>
+                <PipelineStep index={4} title={t("fallthrough")} last>
+                  <NavigationItem label={t("defaultAction")}
+                    description={actionSummary(gateway.default, pools, summaryT)}
+                    warning={needsPool(gateway.default)}
+                    selected={activeSelection.kind === "defaultAction"}
+                    onSelect={() => selectEditor({ kind: "defaultAction" })} />
+                  {poolItem(poolOf(gateway.default), "default-pool")}
+                </PipelineStep>
               </nav>
-              <section className={`min-w-0 space-y-4 border-t border-ui-border/60 pt-4 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0 ${narrowEditorOpen ? "" : "hidden xl:block"}`}>
+              <section className={`min-w-0 space-y-4 xl:border-l xl:border-ui-border/60 xl:pl-5 ${narrowEditorOpen ? "" : "hidden xl:block"}`}>
                 <header className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Button size="sm" variant="outline-secondary" className="mb-2 gap-2 border-transparent xl:hidden"
                       onClick={() => setNarrowEditorOpen(false)}>
                       <ArrowLeft size={16} />{t("backToGatewayItems")}
                     </Button>
-                    <h3 className="break-words text-base font-medium text-ui-heading">{editorTitle}</h3>
+                    <h3 className="line-clamp-2 break-all text-base font-medium text-ui-heading" title={editorTitle}>{editorTitle}</h3>
                   </div>
                   <div className="flex shrink-0 flex-wrap justify-end gap-2">
                     {selectedRule && <Button size="sm" variant="outline-danger" onClick={() => removeGatewayRule(selectedRule)}>
@@ -462,12 +538,22 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                 </header>
                 {activeSelection.kind === "settings" && <GatewayEditor item={gateway} config={config} minimal change={updateGateway} />}
                 {activeSelection.kind === "interception" && <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3 rounded-ui-sm border border-ui-border/70 px-3 py-2 text-sm">
+                    <span className="min-w-0 flex-1 text-ui-secondary">
+                      {gateway.listen ? t("entryListener", { address: gateway.listen }) : t("noListener")}
+                    </span>
+                    <Button size="sm" variant="outline-secondary" onClick={() => selectEditor({ kind: "settings" })}>
+                      {t("editListener")}
+                    </Button>
+                  </div>
                   <p className="text-sm text-ui-secondary">{t("routeHandoffHelp")}</p>
                   <InterceptionEditor item={interception} change={updateInterception} />
                 </div>}
                 {activeSelection.kind === "defaultAction" && <ActionEditor value={gateway.default} upstreams={pools}
-                  onChange={(action) => updateGateway({ ...gateway, default: action })} />}
-                {selectedRule && <RuleEditor item={selectedRule} config={{ ...config, upstreams: pools }} change={updateRule} />}
+                  onChange={(action) => updateGateway({ ...gateway, default: action })}
+                  onCreatePool={() => createPool({ kind: "defaultAction" })} onEditPool={editPool} />}
+                {selectedRule && <RuleEditor item={selectedRule} config={{ ...config, upstreams: pools }} change={updateRule}
+                  onCreatePool={() => createPool({ kind: "rule", id: selectedRule.id })} onEditPool={editPool} />}
                 {selectedFilter && <>
                   <FilterEditor item={selectedFilter} config={config} hideGateway change={updateFilter} />
                   {runtime?.filterReports?.filter((report) => report.id === selectedFilter.id).map((report) => (

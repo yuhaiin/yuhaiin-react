@@ -159,6 +159,42 @@
       "quota_exhausted": "트래픽 할당량 소진",
       "bandwidth_limit": "대역폭 제한",
       "quota_credit_pending": "할당량 크레딧 또는 기간 갱신 대기"
+    },
+    "statusTitle": "사용량 한도 상태",
+    "unassigned": "선택 안 됨",
+    "noQuotaShort": "한도 없음",
+    "statusField": {
+      "windows": "한도 기간",
+      "pendingWrites": "쓰기 대기",
+      "denied": "거부",
+      "persistenceFailures": "영구 저장 실패",
+      "refreshFailures": "갱신 실패",
+      "droppedAlerts": "알림 폐기",
+      "pendingAlerts": "알림 대기",
+      "alertPersistenceFailures": "알림 영구 저장 실패"
     }
-  }
+  },
+  "sections": "트래픽 제어 섹션",
+  "tabBandwidth": "대역폭",
+  "tabResources": "사용자 리소스",
+  "tabDiagnostics": "진단",
+  "unlimited": "무제한",
+  "burstDefault": "기본값",
+  "burstSettings": "버스트 설정",
+  "burstHint": "버스트는 짧은 순간 대역폭을 초과하는 통신을 허용합니다. 비워 두면 기본값을 사용합니다. 1 Mbps = 125,000 바이트/초.",
+  "addProfile": "프로필 추가",
+  "cancel": "취소",
+  "defaultBadge": "기본",
+  "usedBy_one": "적용 대상 {{count}}개",
+  "usedBy_other": "적용 대상 {{count}}개",
+  "setDefault": "기본으로 설정",
+  "unsetDefault": "기본 해제",
+  "noDefaultHint": "기본 프로필이 없어 프로필이 없는 인바운드와 규칙은 제한되지 않습니다.",
+  "profilesInactive": "트래픽 제한이 꺼져 있어 프로필은 저장되지만 적용되지 않습니다.",
+  "bindingsNeedProfile": "QoS 프로필을 만들면 인바운드와 라우팅 규칙에 할당할 수 있습니다.",
+  "assignedCount_one": "{{count}}개 할당됨",
+  "assignedCount_other": "{{count}}개 할당됨",
+  "showAll": "모두 표시",
+  "showAssigned": "할당된 항목만 표시",
+  "inheritDefault": "상속({{name}})"
 }

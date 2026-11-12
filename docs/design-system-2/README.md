@@ -1,5 +1,7 @@
 # Design System 2.0 — retained workspaces, refined controls
 
+> Superseded in part by [Design System 3](../design-system-3/README.md): neutral colors, motion durations, the phone shell and dialog motion changed there. Component rules below still apply unless that page says otherwise.
+
 The Sidebar, resource directory and detail pane keep their existing structure, width breakpoints, surfaces and navigation. This pass refines neutral colors, control states and the information inside those panes. It starts from merged PR #473 (`510b90c`), with no backend, protocol, matching or data-fetching changes.
 
 ## Review and implementation sequence

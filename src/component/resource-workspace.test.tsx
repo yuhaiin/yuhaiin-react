@@ -4,18 +4,19 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from './resource-workspace';
 import { useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { resetNavigationForTests } from '@/hooks/navigation';
 
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.mock('@/hooks/use-media-query', () => ({ useMediaQuery: () => viewport.desktop }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 let root: Root;
 let host: HTMLDivElement;
-beforeEach(() => { viewport.desktop = true; host = document.createElement('div'); document.body.append(host); root = createRoot(host); });
+beforeEach(() => { window.history.replaceState(null, '', '/'); resetNavigationForTests(); viewport.desktop = true; host = document.createElement('div'); document.body.append(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 
 const records = [{ id: 'a', name: 'Alpha' }, { id: 'b', name: 'Beta' }];
 function Probe({ ids = ['a', 'b'], pending = false }: { ids?: string[]; pending?: boolean }) {
-    const selection = useResourceSelection(ids);
+    const selection = useResourceSelection(ids, 'resource');
     const record = records.find(item => item.id === selection.id);
     const { value, setValue, dirty, commit } = useEditorDraft(selection.creating ? 'new' : selection.id, record, () => ({ id: '', name: '' }));
     const close = useCloseGuard(dirty, pending, selection.close);
@@ -55,7 +56,11 @@ it('starts with the directory on mobile and guards the editor back button', asyn
     viewport.desktop = false; await render(); expect(host.querySelector('input')).toBeNull();
     await click('Beta'); edit('Draft'); const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToDirectory'); expect(host.querySelector('input')?.value).toBe('Draft');
-    confirm.mockResolvedValue(true); await click('backToDirectory'); expect(host.querySelector('input')).toBeNull();
+    confirm.mockResolvedValue(true); await click('backToDirectory');
+    // The list is the previous entry, so closing goes Back instead of adding one.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+    expect(host.querySelector('input')).toBeNull();
+    expect(window.location.hash).toBe('#/');
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

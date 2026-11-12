@@ -353,6 +353,7 @@
   "outboundLastFailure": "Last failure",
   "outboundLastUsed": "Last used",
   "outboundLastError": "Last connection error",
+  "outboundErrorHistory": "Historical connection error",
   "outboundProtocolState": "Protocol status",
   "outboundStatusError": "Failed to load outbound runtime status.",
   "outboundTrafficHelp": "Payload traffic at this node boundary. Nested proxy chains can account bytes on multiple nodes.",

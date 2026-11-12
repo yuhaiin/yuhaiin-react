@@ -40,9 +40,12 @@ try {
     return point;
   }
   async function key(key,code){await send('Input.dispatchKeyEvent',{type:'keyDown',key,code:key,windowsVirtualKeyCode:code,...(key==='Enter'?{text:'\r'}:{})});await send('Input.dispatchKeyEvent',{type:'keyUp',key,windowsVirtualKeyCode:code});}
+  // Phones slide a bottom sheet up; wider screens spring a dialog from 0.88 with a slight overshoot.
   async function assertDialogBounce() {
-  const scales=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e)values.push(new DOMMatrix(getComputedStyle(e).transform).a);if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
-  assert(scales.some(value=>value<0.5)&&scales.some(value=>value>1.01),'Dialog lost its original expanding spring bounce');
+  const frames=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e){const m=new DOMMatrix(getComputedStyle(e).transform);values.push({scale:m.a,y:m.f,bottom:e.getBoundingClientRect().bottom>=innerHeight-1});}if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
+  assert(frames.length>0,'Dialog did not open');
+  if(frames[frames.length-1].bottom) assert(frames.every(f=>f.scale===1)&&frames.some(f=>f.y>1),'Bottom sheet did not slide up: '+JSON.stringify(frames));
+  else assert(frames.every(f=>f.scale>=0.87&&f.scale<=1.03)&&frames.some(f=>f.scale<0.97)&&frames.some(f=>f.scale>1.002),'Dialog entrance is not the 0.88 → 1 spring with a slight overshoot: '+JSON.stringify(frames));
   }
   const firstId=()=>evaluate(`document.querySelector('[data-connection-id]')?.dataset.connectionId`);
   const table='[role="table"]', row='[data-connection-id]';
@@ -61,7 +64,9 @@ try {
     assert(!metrics.overflow&&!metrics.clipped,`Overflow at ${width}: ${JSON.stringify(metrics)}`);
     assert(metrics.height===(mobile?92:52),`Virtual row height at ${width}: ${metrics.height}`);
     assert(metrics.count<95,`Virtualization missing at ${width}`);
-    if(mobile&&height>=800) assert(metrics.listHeight>=height*.62,`Mobile list is squeezed at ${width}x${height}: ${metrics.listHeight}px`);
+    // The phone tab bar takes its own height from the viewport below lg.
+    const tabBar=await evaluate(`(()=>{const e=document.querySelector('nav[data-bottom-nav="visible"]');return e?e.getBoundingClientRect().height:0;})()`);
+    if(mobile&&height>=800) assert(metrics.listHeight>=(height-tabBar)*.62,`Mobile list is squeezed at ${width}x${height}: ${metrics.listHeight}px`);
     if(height<=500) assert(metrics.listHeight>=(mobile?92:104),`Short viewport cannot show full connection rows at ${width}x${height}: ${metrics.listHeight}px`);
     if(width<1024) assert(metrics.topGap>=12,`Missing top spacing at ${width}`);
     assert(await evaluate(`(()=>{const r=document.querySelector('${row}'),exit=r.querySelector('[role=cell] > span[title]');return innerWidth>=1280||Boolean(exit&&exit.getBoundingClientRect().height);})()`),'Shared exit hidden on narrow screens');
@@ -122,13 +127,14 @@ try {
   // Observe the actual close event, rather than starting a timer before CDP dispatch.
   async function closeWithMotion(action, readySelector='[data-gallery-ready]') {
     const event=action==='escape'?'keydown':'click';
-    await evaluate(`window.modalExitFrames=new Promise(resolve=>{document.addEventListener('${event}',()=>{const start=performance.now(),frames=[],content=document.querySelector('[role="dialog"]').textContent;function sample(){const d=document.querySelector('[role="dialog"]');if(!d){resolve(frames);return;}frames.push({time:performance.now()-start,opacity:Number(getComputedStyle(d).opacity),scale:new DOMMatrix(getComputedStyle(d).transform).a,sameContent:d.textContent===content});if(performance.now()-start>700){resolve(frames);return;}requestAnimationFrame(sample);}requestAnimationFrame(sample);},{once:true,capture:true});});true`);
+    await evaluate(`window.modalExitFrames=new Promise(resolve=>{document.addEventListener('${event}',()=>{const start=performance.now(),frames=[],content=document.querySelector('[role="dialog"]').textContent;function sample(){const d=document.querySelector('[role="dialog"]');if(!d){resolve(frames);return;}frames.push({time:performance.now()-start,opacity:Number(getComputedStyle(d).opacity),y:new DOMMatrix(getComputedStyle(d).transform).f,scale:new DOMMatrix(getComputedStyle(d).transform).a,sameContent:d.textContent===content});if(performance.now()-start>700){resolve(frames);return;}requestAnimationFrame(sample);}requestAnimationFrame(sample);},{once:true,capture:true});});true`);
     if(action==='escape') await key('Escape',27);
     else if(action==='button') await click('[role="dialog"] button[aria-label="Close"]');
     else {await send('Input.dispatchMouseEvent',{type:'mousePressed',x:10,y:10,button:'left',clickCount:1});await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:10,y:10,button:'left',clickCount:1});}
     const frames=await evaluate('window.modalExitFrames');
-    assert(frames.some(f=>f.time>=140&&f.time<200&&f.opacity>.01&&f.scale<.99),`Closing motion too brief or absent (${action}): ${JSON.stringify(frames)}`);
-    assert(frames.some(f=>f.opacity>.01&&f.scale<.5),`Closing dialog did not shrink back toward its trigger (${action})`);
+    // A short visible exit: fade with a slight shrink, or a sheet sliding down.
+    assert(frames.some(f=>f.time>=20&&f.opacity>.01&&(f.scale<.999||f.opacity<.99||f.y>1)),`Closing motion too brief or absent (${action}): ${JSON.stringify(frames)}`);
+    assert(frames.every(f=>f.scale>=.95),`Closing dialog scaled more than the subtle exit (${action})`);
     assert(frames.every(f=>f.sameContent),`Closing content changed before exit finished (${action})`);
     await waitForPreview(send,readySelector);
     assert(!await evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),`Dialog remained after closing (${action})`);
@@ -142,7 +148,7 @@ try {
   assert(await evaluate(`new DOMMatrix(getComputedStyle(document.querySelector('[role="dialog"]')).transform).a`)===1,'Reduced motion still scales');
   await key('Escape',27);await waitForPreview(send,'[data-gallery-ready]');
   assert(!await evaluate(`Boolean(document.querySelector('[data-ui-transition=overlay]'))`),'Reduced-motion overlay lingered after closing');
-  console.log('Verified small/empty lists, dialog origin/scale, original spring bounce and shrink-back via Escape/button/overlay and reduced motion');
+  console.log('Verified small/empty lists, dialog origin, subtle entrance/exit via Escape/button/overlay, phone sheets and reduced motion');
 } finally {
   ws?.close();
   const exited=new Promise(resolve=>chrome.once('exit',resolve));chrome.kill('SIGTERM');await exited;

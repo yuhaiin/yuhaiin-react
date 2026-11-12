@@ -1,4 +1,3 @@
-import { useHashSearch } from '@/hooks/useHashLocation';
 import { getNode } from '@/api/nodes';
 import { listSelectors } from '@/api/selectors';
 import { MonitoringSettings } from '@/component/selector-monitoring';
@@ -17,9 +16,8 @@ export default function SelectorsPage() {
     const { data, error, isLoading, mutate } = useSWR('/api/v2/outbound/selectors', listSelectors);
     const [query, setQuery] = useState('');
     const [editorState, setEditorState] = useState({ dirty: false, pending: false });
-    const search = useHashSearch();
     const items = data?.items ?? [];
-    const selection = useResourceSelection(items.map(item => item.id), new URLSearchParams(search).get('selector'));
+    const selection = useResourceSelection(items.map(item => item.id), 'selector');
     const editing = selection.creating ? undefined : items.find(item => item.id === selection.id);
     const saved = (item: Selector) => {
         void mutate(previous => ({ items: [...(previous?.items ?? []).filter(value => value.id !== item.id), item] }), { revalidate: true });

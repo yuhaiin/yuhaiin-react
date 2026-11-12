@@ -353,6 +353,7 @@
   "outboundLastFailure": "最終失敗",
   "outboundLastUsed": "最終使用",
   "outboundLastError": "最終接続エラー",
+  "outboundErrorHistory": "過去の接続エラー",
   "outboundProtocolState": "プロトコル状態",
   "outboundStatusError": "出口ノードの状態を取得できませんでした。",
   "outboundTrafficHelp": "ノード境界で計測した有効データ。多段プロキシでは複数ノードに計上される場合があります。",

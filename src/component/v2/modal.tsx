@@ -6,7 +6,8 @@ import { AnimatePresence, motion, useDragControls, useReducedMotion, type DragCo
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
 import { useMediaQuery } from "../../hooks/use-media-query";
-import { cn, motionTiming, ui } from "./styles";
+import { useHistoryLayer } from "../../hooks/use-history-layer";
+import { cn, motionEase, motionTiming, ui } from "./styles";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string, close: () => void }>({ open: false, transformOrigin: 'center center', close: () => undefined });
@@ -15,13 +16,18 @@ const SheetDragContext = React.createContext<DragControls | null>(null);
 
 // --- Wrapper ---
 // We wrap DialogPrimitive.Root to capture the open state and pass it down
-const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, defaultOpen = false, onOpenChange, ...props }) => {
+type ModalProps = React.ComponentProps<typeof DialogPrimitive.Root> & {
+    /** Back closes the dialog through its own history entry. Off for confirmations. */
+    history?: boolean;
+};
+const Modal: React.FC<ModalProps> = ({ children, open, defaultOpen = false, onOpenChange, history = true, ...props }) => {
     const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
     const isOpen = open ?? internalOpen;
     const changeOpen = (next: boolean) => {
         if (open === undefined) setInternalOpen(next);
         onOpenChange?.(next);
     };
+    useHistoryLayer(isOpen, () => changeOpen(false), history);
     const getLastClick = useLastClickPosition();
     const [opening, setOpening] = React.useState({ open: isOpen, origin: "center center" });
     // Capture the click origin before the new open state is committed, so the
@@ -53,19 +59,22 @@ const overlayVariants = {
     visible: { opacity: 1 },
 };
 
+// The dialog grows out of the click with a spring that overshoots by about 1%
+// and settles. Opacity finishes first, so the movement is seen instead of
+// happening behind a fade. A spring also turns around smoothly when the dialog
+// is closed mid-entrance.
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
+    hidden: { opacity: 0, scale: 0.88, y: "-50%", x: "-50%" },
     visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
-        type: 'spring', stiffness: 300, damping: 25,
-        opacity: { duration: motionTiming.normal, ease: 'easeOut' },
+        type: 'spring', stiffness: 500, damping: 27,
+        opacity: { duration: motionTiming.fast, ease: 'easeOut' },
     } },
-    exit: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%", transition: { duration: motionTiming.slow, ease: 'easeInOut' } },
+    exit: { opacity: 0, scale: 0.94, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeIn' } },
 };
 
-const sheetEase = [0.32, 0.72, 0, 1] as const;
 const sheetVariants = {
     hidden: { y: "100%" },
-    visible: { y: 0, transition: { duration: 0.28, ease: sheetEase } },
+    visible: { y: 0, transition: { duration: motionTiming.sheet, ease: motionEase.sheet } },
     exit: { y: "100%", transition: { duration: motionTiming.slow, ease: 'easeIn' } },
 };
 const reducedSheetVariants = {
@@ -78,7 +87,11 @@ const SHEET_DISMISS_VELOCITY = 500;
 
 type ModalContentProps = React.ComponentProps<typeof DialogPrimitive.Content> & {
     width?: number;
-    /** Below md, slides up from the bottom edge and can be dragged down to close. */
+    /**
+     * Below md, slides up from the bottom edge and can be dragged down by its
+     * handle or header to close. On by default so phones share one pattern;
+     * pass false for a dialog that must stay centered.
+     */
     mobileSheet?: boolean;
 };
 
@@ -116,8 +129,8 @@ const ModalDialog = ({ className, children, style, width = 500, sheet, ...props 
                             className={cn(
                                 "fixed min-w-0 z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border shadow-ui-elevated",
                                 sheet
-                                    ? "inset-x-0 bottom-0 w-full max-h-[85dvh] rounded-t-ui-lg border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
-                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] rounded-ui-lg",
+                                    ? "inset-x-0 bottom-0 w-full max-h-[calc(100dvh-env(safe-area-inset-top)-24px)] rounded-t-[16px] border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
+                                    : "top-1/2 left-1/2 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] rounded-ui-lg",
                                 className
                             )}
                             variants={sheet ? (reducedMotion ? reducedSheetVariants : sheetVariants) : reducedMotion ? {
@@ -165,7 +178,7 @@ const ModalSheetContent = (props: Omit<ModalContentProps, 'mobileSheet'>) => {
     return <ModalDialog sheet={narrow} {...props} />;
 };
 
-const ModalContent = ({ mobileSheet = false, ...props }: ModalContentProps) =>
+const ModalContent = ({ mobileSheet = true, ...props }: ModalContentProps) =>
     mobileSheet ? <ModalSheetContent {...props} /> : <ModalDialog sheet={false} {...props} />;
 ModalContent.displayName = "ModalContent";
 
@@ -215,7 +228,8 @@ ModalTitle.displayName = "ModalTitle";
 
 // 4. Body
 const ModalBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto overscroll-contain p-4", className)} {...props} />
+    // A size container, so forms lay out by the dialog's width like they do in a workspace pane.
+    <div className={clsx("@container relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto overscroll-contain p-4", className)} {...props} />
 );
 
 // 5. Footer

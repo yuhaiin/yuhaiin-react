@@ -1,3 +1,4 @@
+import { RecoveryFailure } from './requirements';
 import { VerifyBackupDialog } from './verify-dialog';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -166,7 +167,12 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                             {item.localState && <p className="mt-1 text-xs text-ui-muted">{t(`recoveryBackup.localState.${item.localState}`, { defaultValue: item.localState })}</p>}
                             {item.retrieval && <p className="mt-1 text-xs" role={['failed', 'cancelled', 'interrupted'].includes(item.retrieval) ? 'alert' : undefined}>{t(`recoveryBackup.retrieval.${item.retrieval}`, { defaultValue: item.retrieval })}</p>}
                             {item.archiveCheck && <p className="mt-1 text-xs">{t(`recoveryBackup.archiveCheck.${item.archiveCheck}`, { defaultValue: item.archiveCheck })}</p>}
-                            {item.errorCode && <p role="alert" className="mt-1 text-sm text-ui-danger">{t(`recoveryBackup.errors.${item.errorCode}`, { defaultValue: item.errorCode })}</p>}
+                            <RecoveryFailure item={item} />
+                            {(item.requirementCount ?? 0) > 0 && <div role="status" className="mt-2 text-sm">
+                                <p>{t('recoveryBackup.withRequirements', { count: item.requirementCount })}</p>
+                                <ul className="list-disc pl-5">{item.warnings?.map(warning => <li key={warning}>{t(`recoveryBackup.requirements.${warning}`, { defaultValue: t('recoveryBackup.requirements.unknown') })}</li>)}</ul>
+                                <p className="text-xs text-ui-muted">{t('recoveryBackup.inspectRequirements')}</p>
+                            </div>}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {['local_ready', 'verified'].includes(item.state) && (!item.localState || item.localState === 'present') && <Button aria-label={t('recoveryBackup.download')} disabled={disabled}

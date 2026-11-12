@@ -3,7 +3,7 @@ import { pbkdf2Sync, webcrypto } from 'node:crypto';
 import { afterEach, expect, it, vi } from 'vitest';
 import { deriveCredential, login, enroll, initialize, initializationStatus, type PasswordParameters } from './api';
 import { authorizedFetch } from './transport';
-import { authHeaders, authScope, clearSession, establishSession, establishLocalConnection, getSession, can } from './session';
+import { authHeaders, authScope, clearSession, establishSession, establishLocalConnection, allowsAnonymousController, getSession, can } from './session';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 const parameters: PasswordParameters = { algorithm: 'pbkdf2-sha256-v1', salt: 'AAECAwQFBgcICQoLDA0ODw', iterations: 600000, digest: 'SHA-256', bytes: 32, normalization: 'NFC', encoding: 'utf-8/base64url-unpadded' };
 const principal = { userId: 'reader', credentialType: 'session', permissions: ['identity:read', 'nodes:read'] };
@@ -106,4 +106,17 @@ it('never sends credentials to remote HTTP, foreign origins, or token query URLs
     await expect(authorizedFetch(new URL('https://other.example/api/v2/auth/me'))).rejects.toThrow('endpoint');
     await expect(authorizedFetch('/api/v2/auth/me?token=private')).rejects.toThrow('endpoint');
     expect(fetch).not.toHaveBeenCalled();
+});
+
+it('allows anonymous Android LAN only with explicit server capability and same-origin HTTPS', async () => {
+    const androidOrigin = 'https://192.168.20.13:46565';
+    expect(allowsAnonymousController(androidOrigin, true, androidOrigin)).toBe(true);
+    expect(allowsAnonymousController(androidOrigin, false, androidOrigin)).toBe(false);
+    expect(allowsAnonymousController(androidOrigin, true, 'https://other.example')).toBe(false);
+    expect(allowsAnonymousController('http://192.168.20.13:46565', true, 'http://192.168.20.13:46565')).toBe(false);
+    expect(allowsAnonymousController('http://127.0.0.1:50051', false, 'https://other.example')).toBe(true);
+    setApiUrl(androidOrigin);
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ authentication: 'none', lanManagement: true })));
+    // A controller on another Origin must not bypass the local-only restriction.
+    await expect(initializationStatus(androidOrigin, new AbortController().signal)).rejects.toThrow('same-origin');
 });

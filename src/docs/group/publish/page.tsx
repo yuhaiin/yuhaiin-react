@@ -81,7 +81,7 @@ function PublishPage() {
     const { data, error, isLoading, mutate } = useSWR('/api/v2/publishes', listPublishes);
     const [query, setQuery] = useState('');
     const items = data?.items ?? [];
-    const selection = useResourceSelection(items.map(item => item.name));
+    const selection = useResourceSelection(items.map(item => item.name), 'publish');
     const editing = items.find(item => item.name === selection.id);
     const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(false, pending, () => undefined);

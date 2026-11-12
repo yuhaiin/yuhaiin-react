@@ -25,16 +25,17 @@ it('matches a hash route with query parameters and keeps rejected navigation fro
         act(() => root.render(<Router hook={useHashLocation}><Switch><Route path="/docs/bypass" component={Page} /></Switch></Router>));
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-1');
         const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
-        await act(async () => { window.history.replaceState(null, '', '#/docs/bypass?rule=stable-2'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        // Rejected in-app navigation keeps the editor target and URL.
+        await act(async () => { host.querySelectorAll('button')[1].click(); await Promise.resolve(); });
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-1');
         expect(window.location.hash).toBe('#/docs/bypass?rule=stable-1');
         confirm.mockResolvedValue(true);
-        await act(async () => { host.querySelectorAll('button')[0].click(); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        await act(async () => { host.querySelectorAll('button')[0].click(); await Promise.resolve(); });
         expect(new URLSearchParams(host.querySelector('span')?.textContent).get('value')).toBe('/opt/App/');
         act(() => clearHashSearch());
         expect(host.querySelector('span')?.textContent).toBe('');
         expect(window.location.hash).toBe('#/docs/bypass');
-        await act(async () => { host.querySelectorAll('button')[1].click(); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        await act(async () => { host.querySelectorAll('button')[1].click(); await Promise.resolve(); });
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-3');
     } finally {
         act(() => root.unmount());
