@@ -27,6 +27,10 @@ export const passesMinLevel = (entry: LogEntry, min: LogLevel): boolean => {
     return level === "LOG" || LEVEL_ORDER.indexOf(level) >= LEVEL_ORDER.indexOf(min);
 }
 
+/** Whether a line is shown under the minimum level and an already trimmed, lowercased search term. */
+export const matchesLogFilter = (entry: LogEntry, minLevel: LogLevel, search: string): boolean =>
+    passesMinLevel(entry, minLevel) && (!search || (entry.lowerLine ??= entry.line.toLowerCase()).includes(search));
+
 export const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
     ERROR: {
         bar: "bg-red-500",
@@ -205,6 +209,20 @@ export class LogRingBuffer {
     get(index: number) {
         if (index < 0 || index >= this.count) return undefined
         return this.entries[(this.head + index) % this.capacity]
+    }
+
+    /**
+     * Counts the retained lines newer than `afterId` that the filter would show. Ids alone cannot answer
+     * this: they also advance for filtered-out lines and for lines the ring has already dropped.
+     */
+    countNewerThan(afterId: number, minLevel: LogLevel, search: string) {
+        let matched = 0
+        for (let i = 0; i < this.count; i++) {
+            const entry = this.entries[(this.head + i) % this.capacity]!
+            if (entry.id <= afterId) break
+            if (matchesLogFilter(entry, minLevel, search)) matched++
+        }
+        return matched
     }
 
     append(values: string[]) {

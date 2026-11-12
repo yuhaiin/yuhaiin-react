@@ -142,7 +142,11 @@ it('publishes held-back lines and scrolls to the top when the new-logs button is
     emit(['first']);
     await advance(301);
     const viewport = host.querySelector<HTMLElement>('[data-testid="virtual-log"]')!;
-    act(() => { viewport.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 })); });
+    act(() => {
+        viewport.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+        viewport.scrollTop = 120;
+        viewport.dispatchEvent(new Event('scroll', { bubbles: true }));
+    });
 
     emit(['second', 'third']);
     await advance(301);

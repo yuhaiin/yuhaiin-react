@@ -1,4 +1,4 @@
-import { expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { LogRingBuffer, parseLogFields, parseLogLine, passesMinLevel, type LogEntry } from './log-buffer';
 
 it('keeps the newest lines and frees entries when retention is reduced or cleared', () => {
@@ -90,4 +90,47 @@ it('splits slog attributes into ordered fields and undoes quoting', () => {
         { key: 'tail', value: 'open' },
     ]);
     expect(parseLogFields(undefined)).toEqual([]);
+});
+
+describe('countNewerThan', () => {
+    it('counts only retained lines after the given id that pass the level and search filter', () => {
+        const buffer = new LogRingBuffer(100);
+        buffer.append(['level=INFO msg=old']);
+        const shown = buffer.latestId;
+        // Batches arrive newest first.
+        buffer.append(['level=ERROR msg="DNS failed"', 'level=DEBUG msg="dns query"', 'level=WARN msg=tcp', 'plain dns line']);
+
+        expect(buffer.countNewerThan(shown, 'TRACE', '')).toBe(4);
+        expect(buffer.countNewerThan(shown, 'WARN', '')).toBe(3);
+        expect(buffer.countNewerThan(shown, 'TRACE', 'dns')).toBe(3);
+        expect(buffer.countNewerThan(shown, 'WARN', 'dns')).toBe(2);
+        expect(buffer.countNewerThan(shown, 'TRACE', 'nothing')).toBe(0);
+        expect(buffer.countNewerThan(buffer.latestId, 'TRACE', '')).toBe(0);
+    });
+
+    it('is bounded by what the ring still holds, however far the ids have advanced', () => {
+        const buffer = new LogRingBuffer(5);
+        buffer.append(['seed']);
+        const shown = buffer.latestId;
+        for (let i = 0; i < 1000; i++) buffer.append([i % 2 ? 'odd' : 'even']);
+
+        expect(buffer.latestId - shown).toBe(1000);
+        expect(buffer.countNewerThan(shown, 'TRACE', '')).toBe(5);
+        expect(buffer.countNewerThan(shown, 'TRACE', 'odd')).toBe(3);
+    });
+
+    it('follows capacity changes, the retained-size limit and clearing', () => {
+        const buffer = new LogRingBuffer(10);
+        buffer.append(Array.from({ length: 10 }, (_, index) => `line ${index}`));
+        buffer.setCapacity(4);
+        expect(buffer.countNewerThan(0, 'TRACE', '')).toBe(4);
+
+        buffer.setCapacity(2000);
+        buffer.append(Array.from({ length: 600 }, () => 'x'.repeat(8000)));
+        expect(buffer.countNewerThan(0, 'TRACE', '')).toBe(buffer.size);
+        expect(buffer.size).toBeLessThan(600);
+
+        buffer.clear();
+        expect(buffer.countNewerThan(0, 'TRACE', '')).toBe(0);
+    });
 });

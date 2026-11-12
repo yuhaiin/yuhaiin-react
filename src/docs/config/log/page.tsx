@@ -2,7 +2,7 @@ import { confirmAction } from '@/component/v2/confirmation';
 import { PageHeader } from '@/component/v2/page-header';
 import { usePageVisible } from "@/common/hooks";
 import { LogDetailModal } from "./log-detail";
-import { LogRingBuffer, levelStyles, parseLogLine, passesMinLevel, type LogEntry, type LogLevel } from "./log-buffer";
+import { LogRingBuffer, levelStyles, matchesLogFilter, parseLogLine, type LogEntry, type LogLevel } from "./log-buffer";
 import { exportAndroidLogs, getAndroidLogs, startDownload } from '@/api/android';
 import { useAndroidPlatform } from '@/hooks/use-android-platform';
 
@@ -28,6 +28,12 @@ type LogSource = 'core' | 'android'
 // Android logs are polled; after the first full read only the tail is needed to find new lines.
 const ANDROID_POLL_MS = 3000;
 const ANDROID_POLL_LINES = 1000;
+// Within this distance of the newest line the view counts as following it.
+const FOLLOW_THRESHOLD_PX = 40;
+// Covers a classic scrollbar gutter as well as an overlay scrollbar drawn over the rows.
+const SCROLLBAR_EDGE_PX = 16;
+const SCROLL_AWAY_KEYS = ["ArrowDown", "PageDown", "End", " "];
+const normalizeSearch = (term: string) => term.trim().toLowerCase();
 const MIN_LEVELS: readonly LogLevel[] = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
 const LEVEL_LABEL_KEY: Partial<Record<LogLevel, string>> = { TRACE: 'V', DEBUG: 'D', INFO: 'I', WARN: 'W', ERROR: 'E' };
 const errorText = (e: unknown) => e instanceof Error ? e.message : String(e);
@@ -118,8 +124,14 @@ export default function LogComponent() {
     const logListRef = useRef<VListHandle>(null);
     const listWrapperRef = useRef<HTMLDivElement>(null);
     const followLatestRef = useRef(true);
-    // Newest log id included in the published snapshot; used to count lines held back while the view is frozen.
+    // Scroll events alone cannot stop following: virtua also moves the offset itself when it keeps the visible
+    // rows in place under a prepend. 'input' is input toward older lines; 'scrolling' means the list moved since.
+    const userScrollRef = useRef<'idle' | 'input' | 'scrolling'>('idle');
+    const touchYRef = useRef(0);
+    // Newest log id included in the published snapshot; lines after it are held back while the view is frozen.
     const shownLatestIdRef = useRef(0);
+    // What the list is filtered by, readable from stream callbacks without resubscribing them.
+    const filterRef = useRef<{ minLevel: LogLevel; search: string }>({ minLevel: 'TRACE', search: '' });
     const [pendingCount, setPendingCount] = useState(0);
 
     // Publishing a snapshot is the only thing that changes the virtual list's data. While the user is
@@ -131,10 +143,18 @@ export default function LogComponent() {
     }, [logBuffer]);
 
     const resumeFollowing = useCallback(() => {
-        if (followLatestRef.current) return;
+        userScrollRef.current = 'idle';
         followLatestRef.current = true;
         publish();
     }, [publish]);
+
+    const noteScrollInput = () => { if (userScrollRef.current === 'idle') userScrollRef.current = 'input'; };
+
+    // Runs once per batch of received lines: show them when following, otherwise announce how many would appear.
+    const flush = useCallback(() => {
+        if (followLatestRef.current) publish();
+        else setPendingCount(logBuffer.countNewerThan(shownLatestIdRef.current, filterRef.current.minLevel, filterRef.current.search));
+    }, [logBuffer, publish]);
 
     useEffect(() => {
         if (activeSource !== 'core' || paused || !visible) return;
@@ -152,9 +172,7 @@ export default function LogComponent() {
                     logBuffer.append(batch.log.slice(-retention).reverse());
                     if (flushTimer === undefined) flushTimer = window.setTimeout(() => {
                         flushTimer = undefined;
-                        if (stopped) return;
-                        if (followLatestRef.current) publish();
-                        else setPendingCount(logBuffer.latestId - shownLatestIdRef.current);
+                        if (!stopped) flush();
                     }, LOG_RENDER_INTERVAL_MS);
                 }
                 setLogError(undefined);
@@ -173,10 +191,10 @@ export default function LogComponent() {
             stopped = true;
             source.close();
             if (flushTimer !== undefined) window.clearTimeout(flushTimer);
-            if (followLatestRef.current) publish();
+            flush();
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [logBuffer, publish, streamNonce, paused, visible, retention, activeSource])
+    }, [logBuffer, flush, streamNonce, paused, visible, retention, activeSource])
 
     useEffect(() => {
         if (activeSource !== 'android' || paused || !visible) return;
@@ -195,8 +213,7 @@ export default function LogComponent() {
                 if (fresh.length > 0) {
                     lastAndroidLineRef.current = fresh[fresh.length - 1];
                     logBuffer.append(fresh.slice(-retention).reverse());
-                    if (followLatestRef.current) publish();
-                    else setPendingCount(logBuffer.latestId - shownLatestIdRef.current);
+                    flush();
                 }
                 setLogError(undefined);
             } catch (error) {
@@ -211,22 +228,19 @@ export default function LogComponent() {
             controller.abort();
             if (timer !== undefined) window.clearTimeout(timer);
         };
-    }, [activeSource, logBuffer, publish, paused, visible, retention])
+    }, [activeSource, logBuffer, flush, paused, visible, retention])
 
     // Snapshot publication, not mutable buffer writes, controls virtual-list reconciliation.
     const version = localVersion
 
     const visibleLog = useMemo(() => {
         void version;
-        const search = deferredSearchTerm.trim().toLowerCase()
+        const search = normalizeSearch(deferredSearchTerm)
         const entries: LogEntry[] = []
 
         for (let i = 0; i < logBuffer.size; i++) {
             const entry = logBuffer.get(i)
-            if (!entry || !passesMinLevel(entry, minLevel)) continue
-            if (!search || (entry.lowerLine ??= entry.line.toLowerCase()).includes(search)) {
-                entries.push(entry)
-            }
+            if (entry && matchesLogFilter(entry, minLevel, search)) entries.push(entry)
         }
 
         return entries
@@ -258,11 +272,18 @@ export default function LogComponent() {
     }, [visibleLog, display, filterKey]);
     const latestLogId = display.items[0]?.id;
 
+    // The list is about to reposition itself for this data; input that has scrolled nothing so far (a list
+    // too short to scroll, a key the row handled) must not be credited with that move.
+    useLayoutEffect(() => {
+        if (followLatestRef.current && userScrollRef.current === 'input') userScrollRef.current = 'idle';
+    }, [display.items]);
+
     useEffect(() => {
         if (!followLatestRef.current) return;
 
         const frame = requestAnimationFrame(() => {
-            if (followLatestRef.current) logListRef.current?.scrollTo(0);
+            // A scroll the user has under way is theirs to finish; it ends following once it leaves the top.
+            if (followLatestRef.current && userScrollRef.current !== 'scrolling') logListRef.current?.scrollTo(0);
         });
 
         return () => cancelAnimationFrame(frame);
@@ -274,16 +295,16 @@ export default function LogComponent() {
         setRetention(next)
         logBuffer.setCapacity(next)
         // A larger window must be read again from logcat, which has no cursor to resume from.
-        if (activeSource === 'android') { logBuffer.clear(); lastAndroidLineRef.current = undefined }
-        publish()
-    }, [logBuffer, publish, activeSource])
+        if (activeSource === 'android') { logBuffer.clear(); lastAndroidLineRef.current = undefined; resumeFollowing() }
+        else publish()
+    }, [logBuffer, publish, resumeFollowing, activeSource])
 
     const changeMinLevel = useCallback((value: string) => {
         if (!MIN_LEVELS.includes(value as LogLevel)) return
-        followLatestRef.current = true
-        publish()
+        filterRef.current.minLevel = value as LogLevel
+        resumeFollowing()
         setMinLevel(value as LogLevel)
-    }, [publish])
+    }, [resumeFollowing])
 
     const changeSource = useCallback((value: string) => {
         if ((value !== 'core' && value !== 'android') || value === activeSource) return
@@ -293,9 +314,8 @@ export default function LogComponent() {
         setActionError(undefined)
         logBuffer.clear()
         lastAndroidLineRef.current = undefined
-        followLatestRef.current = true
-        publish()
-    }, [logBuffer, publish, activeSource])
+        resumeFollowing()
+    }, [logBuffer, resumeFollowing, activeSource])
 
     const downloadAndroidLogs = useCallback(async () => {
         // Logs can contain destinations, addresses and credentials.
@@ -310,9 +330,8 @@ export default function LogComponent() {
     const clearLogs = useCallback(() => {
         logBuffer.clear()
         lastAndroidLineRef.current = undefined
-        followLatestRef.current = true
-        publish()
-    }, [logBuffer, publish])
+        resumeFollowing()
+    }, [logBuffer, resumeFollowing])
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
@@ -330,7 +349,7 @@ export default function LogComponent() {
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
                     <div className="flex flex-wrap items-center gap-2">
-                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; publish(); setSearchTerm(term); }} className="min-w-0 flex-1 basis-48" inputClassName="max-sm:min-h-11 max-sm:text-base" />
+                        <FilterSearch size="sm" onSearch={(term) => { filterRef.current.search = normalizeSearch(term); resumeFollowing(); setSearchTerm(term); }} className="min-w-0 flex-1 basis-48" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         {/* Phones: everything but search and pause folds into one menu so the list keeps the screen. */}
                         <Dropdown>
                             <DropdownTrigger asChild>
@@ -410,11 +429,23 @@ export default function LogComponent() {
                         <div
                             ref={listWrapperRef}
                             className="h-full min-h-0 w-full font-mono"
-                            onWheelCapture={(event) => { if (event.deltaY > 0) followLatestRef.current = false; }}
-                            onTouchMoveCapture={() => { followLatestRef.current = false; }}
-                            onPointerDownCapture={() => { followLatestRef.current = false; }}
-                            onKeyDownCapture={(event) => {
-                                if (["ArrowDown", "PageDown", "End", " "].includes(event.key)) followLatestRef.current = false;
+                            // Input only records intent; following stops once the list has really moved (see onScroll),
+                            // so a click, a tap or a list too short to scroll changes nothing.
+                            onWheelCapture={(event) => { if (event.deltaY > 0) noteScrollInput(); }}
+                            onTouchStartCapture={(event) => { touchYRef.current = event.touches[0].clientY; }}
+                            onTouchMoveCapture={(event) => {
+                                const y = event.touches[0].clientY;
+                                if (y < touchYRef.current) noteScrollInput();
+                                touchYRef.current = y;
+                            }}
+                            onKeyDownCapture={(event) => { if (SCROLL_AWAY_KEYS.includes(event.key)) noteScrollInput(); }}
+                            // A scrollbar drag has no input event of its own and may start any time after the press, so
+                            // a mouse press on the scroller's own edge (never a row) already counts as scrolling.
+                            onPointerDownCapture={(event) => {
+                                const scroller = event.currentTarget.firstElementChild;
+                                const list = logListRef.current;
+                                if (scroller && list && event.pointerType === 'mouse' && event.target === scroller && list.scrollSize > list.viewportSize
+                                    && event.nativeEvent.offsetX >= scroller.clientWidth - SCROLLBAR_EDGE_PX) userScrollRef.current = 'scrolling';
                             }}
                         >
                             <VList
@@ -423,12 +454,17 @@ export default function LogComponent() {
                                 data={display.items}
                                 shift={display.shift}
                                 onScroll={(offset) => {
-                                    // Only user gestures disable following; returning to the top re-enables it.
-                                    if (offset < 40) resumeFollowing();
+                                    // Newest lines are at the top: being there follows them, a user scroll away stops.
+                                    if (offset >= FOLLOW_THRESHOLD_PX) { if (userScrollRef.current !== 'idle') followLatestRef.current = false; }
+                                    else if (!followLatestRef.current) resumeFollowing();
+                                    if (userScrollRef.current === 'input') userScrollRef.current = 'scrolling';
                                     // Rows under a still cursor would otherwise toggle :hover (and repaint) on every frame.
                                     listWrapperRef.current?.setAttribute("data-scrolling", "");
                                 }}
-                                onScrollEnd={() => listWrapperRef.current?.removeAttribute("data-scrolling")}
+                                onScrollEnd={() => {
+                                    userScrollRef.current = 'idle';
+                                    listWrapperRef.current?.removeAttribute("data-scrolling");
+                                }}
                                 style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
                             >
                                 {renderLogLine}
