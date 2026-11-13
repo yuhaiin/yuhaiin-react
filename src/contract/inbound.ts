@@ -81,6 +81,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     portalV6: "",
                     routes: [],
                     excludes: [],
+                    routing: { mode: "non_private" },
                     postUp: [],
                     postDown: [],
                 },

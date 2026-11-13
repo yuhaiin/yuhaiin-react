@@ -1463,5 +1463,97 @@
   "frontendRollback": "Rollback frontend",
   "frontendRollbackConfirmation": "Restore the previous frontend and reload?",
   "frontendUpdateComplete": "Frontend switched successfully.",
-  "frontendExternalOverride": "EXTERNAL_WEB is active, so managed OTA is disabled."
+  "frontendExternalOverride": "EXTERNAL_WEB is active, so managed OTA is disabled.",
+  "tunRouting": {
+    "title": "Traffic routing",
+    "description": "Choose which destinations go through this TUN. Everything else keeps using your normal network.",
+    "modeLabel": "Routing mode",
+    "recommended": "Recommended",
+    "androidNote": "On Android, the selected mode replaces the route profile chosen in the app.",
+    "priority": "If a network is in both lists, the bypass list wins. A more specific route that already exists on the system (for example from another VPN) also keeps priority.",
+    "modes": {
+      "global": {
+        "title": "Global",
+        "description": "Send all normal internet traffic through the TUN.",
+        "example": "Example: websites, games and apps all go through the TUN. Only local-only traffic such as multicast and link-local stays on your network."
+      },
+      "non_private": {
+        "title": "Non-private",
+        "description": "Send internet traffic through the TUN, except private networks and LAN traffic.",
+        "example": "Example: google.com goes through the TUN, while your router (192.168.1.1), a NAS and Tailscale devices (100.x.x.x) are reached directly."
+      },
+      "custom": {
+        "title": "Custom",
+        "description": "Choose exactly what goes through the TUN with CIDRs or country codes.",
+        "example": "Example: only 10.0.0.0/8 and addresses in Japan (JP) go through the TUN."
+      }
+    },
+    "families": {
+      "label": "IP versions",
+      "v4On": "IPv4 destinations are routed through the TUN.",
+      "v4Off": "No IPv4 address is set, so IPv4 traffic uses your normal network.",
+      "v6On": "IPv6 destinations are routed through the TUN while IPv6 is enabled in Settings.",
+      "v6Off": "No IPv6 address is set, so IPv6 traffic uses your normal network. Set an IPv6 address above to route IPv6 too."
+    },
+    "defaults": {
+      "title": "Private networks stay on your network automatically",
+      "help": "LAN devices, Tailscale (100.64.0.0/10 and its fd7a:115c:a1e0::/48 IPv6 range) and other private addresses do not go through the TUN. You normally do not need to change this.",
+      "show": "Show excluded networks",
+      "private": "Private, shared (CGNAT / Tailscale) and unique local IPv6",
+      "local": "Loopback, link-local, multicast and reserved"
+    },
+    "additionalInclude": {
+      "label": "Additional TUN CIDRs",
+      "help": "Private networks that should still go through the TUN, one per line. Example: 10.8.0.0/16 for an office network you can only reach through your proxy."
+    },
+    "bypass": {
+      "label": "Additional bypass CIDRs",
+      "helpGlobal": "Networks that must not go through the TUN, one per line. Example: 192.168.1.0/24 to reach your LAN directly.",
+      "helpNonPrivate": "Networks that must keep using your normal network, one per line. If you reach a network through a Tailscale subnet router, add it here: advertised subnets are not always private addresses (for example 203.0.113.0/24).",
+      "helpCustom": "Addresses inside the routes or countries above that must not go through the TUN."
+    },
+    "custom": {
+      "cidrTitle": "CIDR routes",
+      "cidrLabel": "Route these networks through the TUN",
+      "cidrHelp": "One IPv4 or IPv6 network per line. A single address such as 8.8.8.8 is also accepted.",
+      "countriesTitle": "GeoIP countries",
+      "countriesHelp": "Route the addresses of the selected countries, using the GeoIP database set in Routing lists. Routes update automatically when that database is refreshed.",
+      "invertTitle": "Reverse selection",
+      "invertLabel": "Route all countries except the selected ones",
+      "invertOff": "Off: only the selected countries go through the TUN.",
+      "invertOn": "On: everything except the selected countries goes through the TUN. Private networks still stay on your network.",
+      "invertWithoutCountries": "No country is selected, so all internet traffic goes through the TUN.",
+      "bypassTitle": "Bypass CIDRs",
+      "empty": "Add at least one CIDR route or country, or turn on reverse selection.",
+      "summary": "Through the TUN: {{targets}}.",
+      "summaryJoin": " and ",
+      "summaryCidrs": "{{count}} networks",
+      "summaryCidrs_one": "{{count}} network",
+      "summaryCidrs_other": "{{count}} networks",
+      "summaryCountries": "addresses in {{countries}}",
+      "summaryInverted": "the internet except {{countries}}",
+      "summaryPublic": "all internet traffic",
+      "summaryBypass": "{{count}} bypass networks stay on your network.",
+      "summaryBypass_one": "{{count}} bypass network stays on your network.",
+      "summaryBypass_other": "{{count}} bypass networks stay on your network."
+    },
+    "cidr": {
+      "cidr": "Line {{line}}: \"{{value}}\" is not a valid IP address or CIDR.",
+      "prefix": "Line {{line}}: \"{{value}}\" has an invalid prefix length (IPv4 0–32, IPv6 0–128).",
+      "zone": "Line {{line}}: \"{{value}}\" contains an interface zone, which routes cannot use.",
+      "more": "…and {{count}} more invalid lines.",
+      "more_one": "…and {{count}} more invalid line.",
+      "more_other": "…and {{count}} more invalid lines.",
+      "count": "{{count}} networks (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_one": "{{count}} network (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_other": "{{count}} networks (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "hint": "Empty. Examples: 192.168.20.0/24, 2001:db8::/32 or 8.8.8.8"
+    },
+    "legacy": {
+      "notice": "This TUN uses manual route lists from an earlier version. Choose a routing mode above to switch; your lists are kept, and valid excluded routes are carried over to the bypass list.",
+      "keptSummary": "Earlier manual route lists (not used)",
+      "keptHelp": "These lists are still saved but are ignored while a routing mode is selected.",
+      "restore": "Use manual route lists again"
+    }
+  }
 }

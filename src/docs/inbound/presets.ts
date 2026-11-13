@@ -7,7 +7,7 @@ export function presetInbound(value: Inbound, preset: InboundPreset, platform: s
         const protocol = createDefaultProtocol('tun');
         if (protocol.type !== 'tun') throw new Error('Unexpected TUN protocol');
         protocol.tun = { ...protocol.tun, name: platform === 'darwin' ? 'tun://utun8' : 'tun://yuhaiin', mtu: 1500,
-            portal: '172.19.0.1/30', portalV6: 'fdfe:dcba:9876::1/126', routes: ['0.0.0.0/0'], skipMulticast: true };
+            portal: '172.19.0.1/30', portalV6: 'fdfe:dcba:9876::1/126', routes: [], excludes: [], routing: { mode: 'non_private' }, skipMulticast: true };
         return normalizeInbound({ ...value, network: { type: 'empty', empty: {} }, transports: [], protocol });
     }
     return normalizeInbound({ ...value,
