@@ -5,7 +5,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { SWRConfig } from "swr";
 import { expect, it, vi } from "vitest";
-import { LANLinkInboundForm, LANLinkRuntimeInfo } from "./lan-link-form";
+import { LANLinkInboundForm, LANLinkOutboundForm, LANLinkRuntimeInfo } from "./lan-link-form";
 
 vi.mock("@/api/inbounds", () => ({ listLANLinkNetworks: vi.fn() }));
 vi.mock("@/api/nodes", () => ({ getNodeExtraInfo: vi.fn() }));
@@ -70,6 +70,43 @@ it("shows the outbound's own addresses and the peer path in the node editor", as
         for (const text of ["lanLink.linkState.connected", "10.20.0.3", "10.20.0.1", "192.168.1.5:40200", "ffeeddccbbaa", "198.51.100.7:51821", "203.0.113.9:51821", "lanLink.path.public"]) {
             expect(host.textContent).toContain(text);
         }
+    } finally {
+        await act(async () => root.unmount());
+        host.remove();
+    }
+});
+
+it("turns client-to-client on for the gateway", async () => {
+    authorizeTest();
+    const host = document.createElement("div");
+    document.body.append(host);
+    vi.mocked(listLANLinkNetworks).mockResolvedValue({ supported: true, items: [] });
+    const onChange = vi.fn();
+    const root = await render(host, onChange);
+    try {
+        expect(host.textContent).toContain("lanLink.clientToClient");
+        const toggle = host.querySelector('[role="switch"]') as HTMLElement;
+        expect(toggle.getAttribute("aria-checked")).toBe("false");
+        await act(async () => toggle.click());
+        expect(onChange).toHaveBeenCalledWith({ clientToClient: true });
+    } finally {
+        await act(async () => root.unmount());
+        host.remove();
+    }
+});
+
+it("lets an outbound accept incoming flows", async () => {
+    authorizeTest();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const onChange = vi.fn();
+    const root = createRoot(host);
+    try {
+        await act(async () => root.render(<LANLinkOutboundForm value={{ invitation: "lan-link:v1:x", allowIncoming: true }} onChange={onChange} />));
+        const toggle = host.querySelector('[role="switch"]') as HTMLElement;
+        expect(toggle.getAttribute("aria-checked")).toBe("true");
+        await act(async () => toggle.click());
+        expect(onChange).toHaveBeenCalledWith({ allowIncoming: false });
     } finally {
         await act(async () => root.unmount());
         host.remove();

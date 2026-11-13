@@ -3,7 +3,7 @@ import { getNodeExtraInfo } from "@/api/nodes";
 import type { Go } from "@/api/generated-contracts";
 import { Badge } from "@/component/v2/badge";
 import { FormSection } from "@/component/v2/form-section";
-import { SettingInputVertical, SettingValue } from "@/component/v2/forms";
+import { SettingInputVertical, SettingValue, SwitchCard } from "@/component/v2/forms";
 import { InputList } from "@/component/v2/listeditor";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -38,6 +38,8 @@ export function LANLinkInboundForm({ value, onChange }: {
             </div>
         </FormSection>
         <SettingValue label={t("lanLink.subnet")} value={value.subnet || t("lanLink.autoSubnet")} />
+        <SwitchCard label={t("lanLink.clientToClient")} description={t("lanLink.clientToClientHelp")}
+            checked={value.clientToClient ?? false} onCheckedChange={clientToClient => onChange({ clientToClient })} />
         <details className="min-w-0 rounded-ui-md border border-ui-border px-3 py-2">
             <summary className="cursor-pointer text-sm font-medium text-ui-heading">{t("lanLink.advanced")}</summary>
             <div className="mt-3 grid gap-4">
@@ -52,11 +54,15 @@ export function LANLinkInboundForm({ value, onChange }: {
 
 export function LANLinkOutboundForm({ value, onChange, disabled }: {
     value: Partial<Go.transport.LANLink>;
-    onChange: (invitation: string) => void;
+    onChange: (patch: Partial<Go.transport.LANLink>) => void;
     disabled?: boolean;
 }) {
     const { t } = useTranslation("ui");
-    return <SettingInputVertical secret type="password" label={t("lanLink.invitation")} value={value.invitation ?? ""} onChange={onChange} disabled={disabled} />;
+    return <div className="grid min-w-0 gap-4">
+        <SettingInputVertical secret type="password" label={t("lanLink.invitation")} value={value.invitation ?? ""} onChange={invitation => onChange({ invitation })} disabled={disabled} />
+        <SwitchCard label={t("lanLink.allowIncoming")} description={t("lanLink.allowIncomingHelp")} disabled={disabled}
+            checked={value.allowIncoming ?? false} onCheckedChange={allowIncoming => onChange({ allowIncoming })} />
+    </div>;
 }
 
 /** Shows a peer UDP address with whether it is a LAN or a public address. */

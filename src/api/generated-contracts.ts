@@ -540,6 +540,7 @@ export namespace Go {
       listen?: string;
       publicEndpoint?: string;
       stunServer?: string;
+      clientToClient?: boolean;
       privateKey?: string;
       clients?: LANLinkClient[];
     }
@@ -2534,12 +2535,14 @@ export namespace Go {
     export interface LANLink {
       invitation: string;
       privateKey?: string;
+      allowIncoming?: boolean;
     }
     export interface LANLinkInvitation {
       coordinator: string;
       registration: string;
       token: string;
       routes: string[];
+      subnet?: string;
     }
     export interface LANLinkStatus {
       pairingId: string;
