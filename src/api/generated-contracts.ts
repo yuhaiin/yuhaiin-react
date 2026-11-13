@@ -640,6 +640,13 @@ export namespace Go {
       error?: string;
       createdAt: number;
     }
+    export interface TunRouting {
+      mode?: string;
+      includeCidrs?: string[];
+      bypassCidrs?: string[];
+      geoipCountries?: string[];
+      geoipInvert?: boolean;
+    }
     export interface Authentication {
       mode?: string;
       users: string[];
@@ -750,6 +757,7 @@ export namespace Go {
       portalV6: string;
       routes: string[];
       excludes: string[];
+      routing?: TunRouting;
       postUp: string[];
       postDown: string[];
     }

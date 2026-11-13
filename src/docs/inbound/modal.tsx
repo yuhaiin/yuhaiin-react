@@ -21,6 +21,7 @@ import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
+import { tunRoutingHasErrors } from "./tun-routing";
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -108,7 +109,8 @@ const InboundModal: FC<{
                     </div>
                     <div className={editorActionsClass}>
                         <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
+                        <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)
+                            || inbound.protocol.type === "tun" && tunRoutingHasErrors(inbound.protocol.tun.routing)} onClick={handleSave}>
                             <Check size={16} />{uiT("save")}
                         </Button>
                     </div>

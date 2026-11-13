@@ -23,6 +23,7 @@ import { ArrowDown, ArrowUp, ChevronRight, Plus, Trash } from "lucide-react";
 import { FC, useId, useMemo } from "react";
 
 import { UserAuthentication } from "./authentication";
+import { TunRoutingEditor } from "./tun-routing";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -522,7 +523,14 @@ const TunEditor: FC<{
         darwin: { experimentalBatch: false, batchSize: 32, pendingPackets: 32, ...value.darwin, ...fields },
     });
     return (
-        <div className="grid gap-4">
+        <div className="grid min-w-0 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
+                <SettingInputVertical label="MTU" type="number" min={576} max={65535} step={1} value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
+                <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
+                <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
+            </div>
+            <TunRoutingEditor value={value} platform={platform} onChange={patch} />
             <div className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
                 <TCPSettingsEditor defaultCongestion="cubic"
                     value={{ congestionControl: value.congestionControl, lossRecovery: value.lossRecovery }}
@@ -534,12 +542,6 @@ const TunEditor: FC<{
                     onChange={(outputScheduler) => patch({ outputScheduler })}
                 />
                 <p className="text-xs text-ui-muted">{uiT("tunOutputSchedulerHint")}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
-                <SettingInputVertical label="MTU" type="number" min={576} max={65535} step={1} value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
-                <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
-                <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
             </div>
             <SwitchCard label={uiT("forceFakeip")} checked={value.forceFakeIp} onCheckedChange={(forceFakeIp) => patch({ forceFakeIp })} />
             <SwitchCard label={uiT("skipMulticast")} checked={value.skipMulticast} onCheckedChange={(skipMulticast) => patch({ skipMulticast })} />
@@ -558,8 +560,6 @@ const TunEditor: FC<{
                     <p className="text-xs text-ui-muted">{uiT("tunDarwinPendingHint")}</p>
                 </>}
             </FormSection>}
-            <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} />
-            <InputList title={uiT("inboundEditor.excludes")} data={value.excludes} onChange={(excludes) => patch({ excludes })} />
             <InputList secret executable title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} />
             <InputList secret executable title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} />
         </div>

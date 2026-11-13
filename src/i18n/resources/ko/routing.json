@@ -135,7 +135,7 @@
   "tunInterface": "TUN 인터페이스 (tun://이름 또는 fd://번호)",
   "tunAdvancedHelp": "주소 범위, 경로, MTU 및 드라이버 옵션은 유지됩니다. 변경하려면 고급 편집기를 여세요.",
   "entryInstructions": "연결 방법",
-  "tunInstructions": "TUN에는 기기 권한 또는 Android VPN 기기 디스크립터가 필요합니다. 활성화한 후 리스너 상태를 확인하세요. 프리셋은 IPv4 트래픽을 처리합니다. 필요에 따라 고급 편집기에서 IPv6 및 제외 경로를 설정하세요.",
+  "tunInstructions": "TUN에는 기기 권한 또는 Android VPN 기기 디스크립터가 필요합니다. 활성화한 후 리스너 상태를 확인하세요. 프리셋은 '사설망 제외' 라우팅 모드를 사용하여 인터넷 트래픽은 TUN을 거치고 LAN과 Tailscale 네트워크에는 직접 연결합니다. 모드 변경이나 우회 네트워크 추가는 고급 편집기에서 할 수 있습니다.",
   "localEntryInstructions": "관리 중인 기기의 앱에 이 프록시 주소를 설정하세요. 이 입력은 로컬 연결을 받습니다.",
   "lanEntryInstructions": "다른 기기에 관리 중인 기기의 접근 가능한 IP와 이 포트를 설정하세요. your-device-ip를 해당 IP로 바꾸세요.",
   "entryAuthInstructions": "위에서 입력한 사용자 이름과 비밀번호를 클라이언트에 설정하세요.",

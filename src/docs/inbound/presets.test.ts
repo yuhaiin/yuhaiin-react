@@ -15,7 +15,7 @@ it('creates local and LAN mixed proxies using the same inbound contract', () => 
 it('keeps tunneled or encrypted configurations in the advanced editor', () => {
     const value = initialInbound('stable');
     const tun = presetInbound(value, 'tun', 'darwin');
-    expect(tun.protocol).toMatchObject({ type: 'tun', tun: { name: 'tun://utun8', routes: ['0.0.0.0/0'] } });
+    expect(tun.protocol).toMatchObject({ type: 'tun', tun: { name: 'tun://utun8', routes: [], routing: { mode: 'non_private' } } });
     expect(tun.network.type).toBe('empty');
     expect(supportsSimpleInbound(tun)).toBe(true);
     expect(proxyInstructions(tun)).toBeUndefined();
