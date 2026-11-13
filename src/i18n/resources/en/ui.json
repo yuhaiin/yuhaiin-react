@@ -1229,7 +1229,6 @@
       "lan": "LAN",
       "public": "Public"
     },
-    "thisDevice": "This device",
     "localListen": "Local UDP address",
     "gatewayAddress": "Gateway address",
     "linkState": {
@@ -1237,7 +1236,9 @@
       "connecting": "Connecting",
       "connected": "Connected"
     },
-    "idleHelp": "The link starts the first time a connection uses this node."
+    "idleHelp": "The link starts the first time a connection uses this node.",
+    "status": "Connection status",
+    "statusUnavailable": "Save and enable this node to see its connection status."
   },
   "peerTunnel": {
     "peers": "Peer tunnels",

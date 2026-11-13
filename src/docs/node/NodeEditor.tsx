@@ -1,4 +1,4 @@
-import { LANLinkOutboundForm } from "@/component/lan-link-form";
+import { LANLinkOutboundForm, LANLinkRuntimeInfo } from "@/component/lan-link-form";
 import { OutboundTCPSettings } from './tcp-settings';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
@@ -112,6 +112,7 @@ const NodeEditor: FC<{
             onRemoveProtocol={onRemoveProtocol}
             onAddProtocol={onAddProtocol}
         />
+        {value.id && value.chain.some((protocol) => containsProtocol(protocol, "lan_link")) && <LANLinkRuntimeInfo key={`lan-link-${value.id}`} nodeId={value.id} />}
         {value.chain.some((protocol) => containsProtocol(protocol, "globalprotect")) && <GlobalProtectRuntimeInfo key={`gp-${value.id}`} nodeId={value.id} />}
         {value.chain.some((protocol) => containsProtocol(protocol, "openvpn")) && <OpenVPNRuntimeInfo key={`ovpn-${value.id}`} nodeId={value.id} />}
         {(["l2tp", "l2tpv3"] as const).map((type) => value.chain.some((protocol) => containsProtocol(protocol, type)) && <L2TPRuntimeInfo key={`${type}-${value.id}`} nodeId={value.id} type={type} />)}
@@ -151,7 +152,7 @@ export function protocolSummary(protocol: NodeProtocol, labels: { noAuth: string
     return parts.join(" · ");
 }
 
-function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3"): boolean {
+function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3" | "lan_link"): boolean {
     if (protocol.type === type) return true;
     if (protocol.type !== "network_split") return false;
     return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsProtocol(child, type) : false);

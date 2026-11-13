@@ -1388,6 +1388,7 @@ export namespace Go {
       l2tpv3?: L2TPInfo;
       openvpn?: OpenVPNInfo;
       globalprotect?: GlobalProtectInfo;
+      lan_link?: Go.transport.LANLinkStatus;
     }
     export interface GlobalProtectInfo {
       tunnel_prefix?: string;
