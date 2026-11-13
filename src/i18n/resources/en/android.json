@@ -106,7 +106,7 @@
   "vpnSettings": "VPN & settings",
   "routes": {
     "title": "Route profiles",
-    "description": "IP ranges the Android VPN captures when the TUN inbound has no explicit routes.",
+    "description": "IP ranges the Android VPN captures when no System Network rule targets it. A System Network rule for the VPN replaces the selected profile.",
     "newName": "New profile name",
     "create": "Create",
     "active": "In use",

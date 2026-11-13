@@ -19,11 +19,10 @@ import { Tooltip } from "@/component/v2/tooltip";
 import { InputList } from "@/component/v2/listeditor";
 
 import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
-import { ArrowDown, ArrowUp, ChevronRight, Plus, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Info, Plus, Trash } from "lucide-react";
 import { FC, useId, useMemo } from "react";
 
 import { UserAuthentication } from "./authentication";
-import { TunRoutingEditor } from "./tun-routing";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -530,7 +529,10 @@ const TunEditor: FC<{
                 <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
                 <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
             </div>
-            <TunRoutingEditor value={value} platform={platform} onChange={patch} />
+            <p role="note" className="flex gap-2 rounded-ui-md bg-ui-info-soft p-3 text-sm leading-relaxed text-ui-fg">
+                <Info size={16} className="mt-0.5 shrink-0 text-ui-info" aria-hidden="true" />
+                <span>{uiT("tunSystemNetworkHint")} <a href="#/docs/system-network" className="text-ui-primary underline">{uiT("tunSystemNetworkLink")}</a></span>
+            </p>
             <div className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
                 <TCPSettingsEditor defaultCongestion="cubic"
                     value={{ congestionControl: value.congestionControl, lossRecovery: value.lossRecovery }}

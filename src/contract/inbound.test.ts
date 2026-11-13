@@ -7,7 +7,8 @@ describe('TUN automatic FakeIP route defaults', () => {
         expect(protocol.type).toBe('tun');
         if (protocol.type !== 'tun') throw new Error('unexpected protocol');
         expect(protocol.tun.autoFakeIpRoute).toBe(true);
-        expect(protocol.tun.routes).toEqual([]);
+        expect(protocol.tun.routes).toBeUndefined();
+        expect(protocol.tun.routing).toBeUndefined();
     });
 
     it('keeps missing flags disabled for existing configurations', () => {

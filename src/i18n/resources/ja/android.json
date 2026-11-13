@@ -106,7 +106,7 @@
   "vpnSettings": "VPN と設定",
   "routes": {
     "title": "ルートプロファイル",
-    "description": "TUN インバウンドにルートが指定されていない場合に Android VPN が取り込む IP 範囲です。",
+    "description": "システムネットワークのルールが VPN を対象にしていない場合に Android VPN が取り込む IP 範囲です。VPN を対象にしたシステムネットワークのルールがあれば、選んだプロファイルの代わりにそれが使われます。",
     "newName": "新しいプロファイル名",
     "create": "作成",
     "active": "使用中",

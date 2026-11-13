@@ -755,8 +755,8 @@ export namespace Go {
       driver: string;
       portal: string;
       portalV6: string;
-      routes: string[];
-      excludes: string[];
+      routes?: string[];
+      excludes?: string[];
       routing?: TunRouting;
       postUp: string[];
       postDown: string[];
@@ -2446,6 +2446,176 @@ export namespace Go {
     }
     export interface ResolvePublishResponse {
       points: Go.node.Node[];
+    }
+  }
+  export namespace sysnet {
+    export interface Capabilities {
+      platform: string;
+      routeManagement: boolean;
+      multipleTargets: boolean;
+      externalInterfaces: boolean;
+      gateways: boolean;
+      policyRouting: boolean;
+      ipv4Forwarding: boolean;
+      ipv6Forwarding: boolean;
+      nat: boolean;
+      tproxy: boolean;
+      routeTargets: string[];
+      forwardTargets: string[];
+      notes?: string[];
+    }
+    export interface Status {
+      state: string;
+      error?: string;
+      generation: number;
+      appliedAt?: number;
+      routes: number;
+      rules: RuleStatus[];
+      forwarding: ForwardingStatus;
+      required?: RequiredRoutes[];
+      capabilities: Capabilities;
+      migrations?: Migration[];
+    }
+    export interface RuleStatus {
+      id: string;
+      state: string;
+      error?: string;
+      interface?: string;
+      interfaceIndex?: number;
+      ipv4Routes: number;
+      ipv6Routes: number;
+      conflicts?: string[];
+      overriddenBy?: string[];
+      shadowed?: boolean;
+      stale?: boolean;
+    }
+    export interface RequiredRoutes {
+      inboundId: string;
+      interface: string;
+      prefixes: string[];
+      conflicts?: string[];
+    }
+    export interface ForwardingStatus {
+      state: string;
+      error?: string;
+      ipv4: boolean;
+      ipv6: boolean;
+      rules: ForwardRuleStatus[];
+    }
+    export interface ForwardRuleStatus {
+      id: string;
+      state: string;
+      error?: string;
+      ingress?: string;
+      egress?: string;
+      masquerade?: boolean;
+    }
+    export interface Interface {
+      name: string;
+      index: number;
+      type: string;
+      up: boolean;
+      mtu: number;
+      hardwareAddr?: string;
+      addresses: string[];
+      gateway?: string;
+      gatewayV6?: string;
+      pointToPoint?: boolean;
+      ownership: string;
+      inboundId?: string;
+      inboundName?: string;
+      routable: boolean;
+    }
+    export interface Interfaces {
+      items: Interface[];
+      tunInbounds: TunInbound[];
+      tproxyInbounds?: TProxyInbound[];
+      missing?: MissingTarget[];
+    }
+    export interface TunInbound {
+      id: string;
+      name: string;
+      running: boolean;
+      interface?: string;
+      platform?: boolean;
+    }
+    export interface TProxyInbound {
+      id: string;
+      name: string;
+      listen: string;
+    }
+    export interface MissingTarget {
+      target: RouteTarget;
+      ruleIds: string[];
+    }
+    export interface Preview {
+      routes: number;
+      rules: RulePreview[];
+      error?: string;
+    }
+    export interface RulePreview {
+      id: string;
+      ipv4Routes: number;
+      ipv6Routes: number;
+      overriddenBy?: string[];
+      shadowed?: boolean;
+      error?: string;
+      sample?: string[];
+    }
+    export interface SaveResult {
+      config: Config;
+      status: Status;
+    }
+    export interface Config {
+      routes: RouteRule[];
+      forwarding: Forwarding;
+      migrations?: Migration[];
+    }
+    export interface RouteRule {
+      id: string;
+      name: string;
+      enabled: boolean;
+      priority: number;
+      match: RouteMatch;
+      target: RouteTarget;
+    }
+    export interface RouteMatch {
+      mode: string;
+      includeCidrs?: string[];
+      bypassCidrs?: string[];
+      geoipCountries?: string[];
+      geoipInvert?: boolean;
+    }
+    export interface RouteTarget {
+      type: string;
+      inboundId?: string;
+      interfaceName?: string;
+      hardwareAddr?: string;
+      gateway?: string;
+      gatewayV6?: string;
+    }
+    export interface Forwarding {
+      ipv4: boolean;
+      ipv6: boolean;
+      rules: ForwardRule[];
+    }
+    export interface ForwardRule {
+      id: string;
+      name: string;
+      enabled: boolean;
+      ingressInterface: string;
+      sourceCidrs: string[];
+      destinationCidrs?: string[];
+      egress: RouteTarget;
+      masquerade?: boolean;
+    }
+    export interface Migration {
+      inboundId: string;
+      inboundName: string;
+      ruleId?: string;
+      source: string;
+      warnings?: string[];
+      migratedAt: number;
     }
   }
   export namespace tools {

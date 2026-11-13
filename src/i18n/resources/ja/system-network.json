@@ -1,0 +1,271 @@
+{
+  "title": "システムネットワーク",
+  "description": "OS がどの宛先を Yuhaiin の TUN や他のインターフェースに送るかを設定し、他の機器がこのホストをゲートウェイとして使えるようにします。",
+  "sections": "システムネットワークのセクション",
+  "tabs": {
+    "routing": "ルーティング",
+    "forwarding": "フォワーディング",
+    "interfaces": "インターフェース"
+  },
+  "state": {
+    "active": "適用中",
+    "pending": "未適用",
+    "degraded": "一部適用",
+    "conflict": "競合",
+    "unavailable": "利用不可",
+    "unsupported": "非対応",
+    "disabled": "オフ",
+    "failed": "失敗"
+  },
+  "stateHelp": {
+    "active": "OS に適用されています。",
+    "pending": "保存済みですが、まだ適用されていません。",
+    "degraded": "一部のみ適用されています。以前のルートが使われている場合があります。",
+    "conflict": "一部の宛先は他のプログラムが既にルーティングしています。そのルートが優先されます。",
+    "unavailable": "対象のインターフェースまたは TUN が現在ありません。戻るとルートも自動で戻ります。",
+    "unsupported": "この端末ではこのルールを適用できません。",
+    "disabled": "オフになっています。",
+    "failed": "適用できませんでした。以前の正常なルートを維持しています。"
+  },
+  "save": "保存して適用",
+  "discard": "破棄",
+  "saved": "保存して適用しました。",
+  "savedWithProblems": "保存しました。一部のルールは適用できませんでした。各ルールの状態を確認してください。",
+  "unsaved": "未保存の変更があります。OS は最後に適用したルールを使い続けています。",
+  "invalid": "強調表示されたルールを修正してから保存してください。",
+  "applied": "{{count}} 件のルートを適用中",
+  "applied_one": "{{count}} 件のルートを適用中",
+  "applied_other": "{{count}} 件のルートを適用中",
+  "lastApplied": "最終適用 {{time}}",
+  "platform": {
+    "linux": "Linux: ルールは Yuhaiin 専用のポリシールーティングテーブルを使います。他のプログラムのインターフェースは変更しません。",
+    "darwin": "macOS: ルールはシステムのルーティングテーブルに追加されます。ポリシールーティングがないため、他のプログラムが既にルーティングしている宛先はそのルートが残り、競合として表示されます。",
+    "windows": "Windows: ルールはインターフェースごとにシステムのルーティングテーブルへ追加されます。高度なポリシールーティングとフォワーディングは使えません。",
+    "android": "Android: ルールは Yuhaiin VPN が取り込む宛先を決めます。他のインターフェースとフォワーディングは使えません。ルールがない場合は、アプリで選んだルートプロファイルが使われます。",
+    "none": "この端末ではシステムルートを管理できません。"
+  },
+  "routing": {
+    "title": "ルートルール",
+    "help": "ルールは上から順に確認され、宛先に最初に一致したルールが使われます。具体的なルールを広いルールより上に置いてください。",
+    "add": "ルールを追加",
+    "emptyTitle": "ルートルールはまだありません",
+    "emptyHelp": "ルールがない場合、Yuhaiin は OS の通信の送り先を変更しません。例えば「すべてのインターネット通信を Yuhaiin の TUN へ」「特定のネットワークを WireGuard へ」といったルールを追加できます。",
+    "unnamed": "名前のないルール",
+    "order": "ルール {{n}}",
+    "moveUp": "{{name}} を上へ移動",
+    "moveDown": "{{name}} を下へ移動",
+    "edit": "{{name}} を編集",
+    "remove": "{{name}} を削除",
+    "enable": "{{name}} のオン・オフ",
+    "removeConfirm": "ルール {{name}} を削除しますか？",
+    "to": "→",
+    "routes": "IPv4 {{v4}} / IPv6 {{v6}} 件のルート",
+    "previewRoutes": "保存後: IPv4 {{v4}} / IPv6 {{v6}} 件のルート",
+    "overriddenBy": "一部の宛先は次のルールが先に使っています: {{names}}",
+    "shadowed": "すべての宛先が上のルール（{{names}}）で使われているため、このルールは効果がありません。",
+    "conflicts": "他のプログラムが既にルーティングしています: {{prefixes}}",
+    "stale": "最後に成功した更新のルートを使っています。",
+    "destination": {
+      "global": "すべてのインターネット通信",
+      "non_private": "プライベートネットワーク以外のインターネット",
+      "custom": "指定した宛先",
+      "cidrs": "{{count}} 個のネットワーク",
+      "countries": "国 {{countries}}",
+      "except": "{{countries}} 以外のすべての国",
+      "bypass": "{{count}} 件をバイパス",
+      "cidrs_one": "{{count}} 個のネットワーク",
+      "cidrs_other": "{{count}} 個のネットワーク",
+      "bypass_one": "{{count}} 件をバイパス",
+      "bypass_other": "{{count}} 件をバイパス"
+    },
+    "target": {
+      "tun_inbound": "Yuhaiin TUN",
+      "interface": "インターフェース",
+      "missing": "{{name}}（見つかりません）"
+    },
+    "required": "TUN の必須ルート",
+    "requiredHelp": "動作中の TUN に必要なルート（FakeIP プールなど）です。どのルールよりも先に追加されます。",
+    "migration": "TUN 設定から移行されました",
+    "migrationHelp": "以前 TUN インバウンドにあったルート設定はここに移りました。下のルールを確認してください。",
+    "migrationItem": "{{inbound}}: {{source}}"
+  },
+  "editor": {
+    "titleNew": "新しいルートルール",
+    "titleEdit": "ルートルールを編集",
+    "name": "名前",
+    "namePlaceholder": "例: VPN 経由のインターネット",
+    "stepTarget": "通信をどこへ送りますか？",
+    "stepMatch": "どの宛先を送りますか？",
+    "targetTun": "Yuhaiin TUN",
+    "targetTunHelp": "Yuhaiin のインバウンドが作成した TUN。",
+    "targetInterface": "他のインターフェース",
+    "targetInterfaceHelp": "WireGuard、Tailscale、他の VPN、イーサネット、Wi-Fi。",
+    "chooseTun": "TUN インバウンド",
+    "chooseInterface": "インターフェース",
+    "noTuns": "TUN インバウンドがまだありません。先にインバウンドで作成してください。",
+    "noInterfaces": "使えるインターフェースが見つかりません。",
+    "stopped": "停止中",
+    "running": "動作中",
+    "interfaceNotFound": "{{name}} は現在ありません。現れるまでルールは待機します。",
+    "advanced": "詳細設定",
+    "gateway": "IPv4 ゲートウェイ",
+    "gatewayV6": "IPv6 ゲートウェイ",
+    "gatewayHelp": "イーサネットや Wi-Fi にはルーターのアドレスが必要です。空欄の場合は検出したものを使います。",
+    "gatewayDetected": "検出: {{gateway}}",
+    "gatewayNone": "検出できません。このネットワークのルーターのアドレスを入力してください。",
+    "gatewayNotNeeded": "VPN などのポイントツーポイントインターフェースにはゲートウェイは不要です。",
+    "priority": "優先度",
+    "priorityHelp": "数値が小さいほど先に確認されます。一覧の矢印でも変更できます。",
+    "enabled": "ルールをオンにする",
+    "apply": "完了",
+    "cancel": "キャンセル",
+    "error": {
+      "target": "通信の送り先を選んでください。",
+      "cidr": "不正なネットワークを修正してください。",
+      "empty": "ネットワークか国を 1 つ以上追加するか、選択の反転をオンにしてください。"
+    }
+  },
+  "match": {
+    "modeLabel": "宛先",
+    "recommended": "おすすめ",
+    "modes": {
+      "global": {
+        "title": "グローバル",
+        "description": "すべての通常のインターネット通信。",
+        "example": "例: Web サイト、ゲーム、アプリの通信はすべてこのルートを使います。マルチキャストやリンクローカルなどローカル専用の通信は通常のネットワークを使います。"
+      },
+      "non_private": {
+        "title": "プライベート以外",
+        "description": "プライベートネットワークや LAN 通信を除くインターネット通信。",
+        "example": "例: google.com はこのルートを使い、ルーター (192.168.1.1)、NAS、Tailscale の端末 (100.x.x.x) には直接アクセスします。"
+      },
+      "custom": {
+        "title": "カスタム",
+        "description": "指定したネットワークや国だけ。",
+        "example": "例: 10.0.0.0/8 と日本 (JP) のアドレスだけ。"
+      }
+    },
+    "defaults": {
+      "title": "プライベートネットワークは自動的に除外されます",
+      "help": "LAN の機器、Tailscale (100.64.0.0/10 と IPv6 の fd7a:115c:a1e0::/48)、その他のプライベートアドレスはルーティングされません。通常は変更する必要はありません。",
+      "show": "除外されるネットワークを表示",
+      "private": "プライベート、共有アドレス (CGNAT / Tailscale)、IPv6 ユニークローカル",
+      "local": "ループバック、リンクローカル、マルチキャスト、予約済み"
+    },
+    "include": {
+      "label": "追加で含める",
+      "help": "除外されるネットワークのうち、このルールを使うものを 1 行に 1 つずつ。例: この送り先経由でしか届かない社内ネットワーク 10.8.0.0/16。"
+    },
+    "bypass": {
+      "label": "バイパス",
+      "helpGlobal": "通常のネットワークを使い続けるネットワークを 1 行に 1 つずつ。例: LAN に直接アクセスするための 192.168.1.0/24。",
+      "helpNonPrivate": "通常のネットワークを使い続けるネットワークを 1 行に 1 つずつ。Tailscale の Subnet Router 経由でアクセスするネットワークはここに追加してください。広告されるサブネットはプライベートアドレスとは限りません（例: 203.0.113.0/24）。",
+      "helpCustom": "上のネットワークや国に含まれるアドレスのうち、通常のネットワークを使い続けるもの。"
+    },
+    "priority": "両方のリストにあるネットワークはバイパスが優先されます。",
+    "custom": {
+      "cidrTitle": "ネットワーク",
+      "cidrLabel": "ルーティングするネットワーク",
+      "cidrHelp": "IPv4 または IPv6 のネットワークを 1 行に 1 つずつ。8.8.8.8 のような単一アドレスも使えます。",
+      "countriesTitle": "GeoIP の国",
+      "countriesHelp": "ルーティングリストで設定した GeoIP データベースを使います。データベースが更新されるとルートも自動で更新され、データベースがない間は最後のルートを維持します。",
+      "invertTitle": "選択の反転",
+      "invertLabel": "選択した国以外のすべての国",
+      "invertOff": "オフ: 選択した国だけがこのルールを使います。",
+      "invertOn": "オン: 選択した国以外のすべてがこのルールを使います。プライベートネットワークは引き続き通常のネットワークを使います。",
+      "invertWithoutCountries": "国が選択されていないため、すべてのインターネット通信がこのルールを使います。",
+      "bypassTitle": "バイパス"
+    },
+    "cidr": {
+      "cidr": "{{line}} 行目: 「{{value}}」は有効な IP アドレスまたは CIDR ではありません。",
+      "prefix": "{{line}} 行目: 「{{value}}」のプレフィックス長が不正です（IPv4 は 0〜32、IPv6 は 0〜128）。",
+      "zone": "{{line}} 行目: 「{{value}}」にはインターフェースのゾーンが含まれており、ルートには使えません。",
+      "more": "…ほか {{count}} 行が不正です。",
+      "more_one": "…ほか {{count}} 行が不正です。",
+      "more_other": "…ほか {{count}} 行が不正です。",
+      "count": "{{count}} 個のネットワーク（IPv4 {{ipv4}}、IPv6 {{ipv6}}）",
+      "count_one": "{{count}} 個のネットワーク（IPv4 {{ipv4}}、IPv6 {{ipv6}}）",
+      "count_other": "{{count}} 個のネットワーク（IPv4 {{ipv4}}、IPv6 {{ipv6}}）",
+      "hint": "未入力です。例: 192.168.20.0/24、2001:db8::/32、8.8.8.8"
+    }
+  },
+  "forwarding": {
+    "unsupported": "フォワーディングは Linux でのみ使えます。この端末では他の機器の通信をルーティングできません。",
+    "introTitle": "このホストを旁路由（サイドルーター）として使う",
+    "introHelp": "フォワーディングを使うと、LAN の他の機器の通信をこのホスト経由で、例えば Yuhaiin の TUN へ送れます。",
+    "step1": "LAN の機器（または DHCP サーバー）で、ゲートウェイをこのホストの LAN 側アドレスに設定します。",
+    "step2": "下で IPv4 フォワーディングをオンにし、LAN の機器用のルールを追加します。",
+    "step3": "次のルーターが LAN への戻りルートを持たない場合だけ NAT をオンにします。",
+    "ipv4": "IPv4 フォワーディング",
+    "ipv4Help": "net.ipv4.ip_forward をオンにします。停止時は元の値に戻します（その間に他のサービスが変更した場合を除く）。",
+    "ipv6": "IPv6 フォワーディング",
+    "ipv6Help": "net.ipv6.conf.all.forwarding をオンにします。注意: Linux はルーター広告を無視するようになるため、それで IPv6 のデフォルトルートを得ているホストではルートを失うことがあります。",
+    "rulesTitle": "フォワーディングルール",
+    "add": "フォワーディングルールを追加",
+    "empty": "フォワーディングルールはありません。ルールがない場合、他の機器の通信は Yuhaiin の送り先へ送られません。",
+    "offNote": "その IP バージョンのフォワーディングがオフの間、ルールは無効です。",
+    "titleNew": "新しいフォワーディングルール",
+    "titleEdit": "フォワーディングルールを編集",
+    "ingress": "LAN 側インターフェース",
+    "ingressHelp": "LAN の機器が接続しているインターフェース。",
+    "sources": "LAN の機器",
+    "sourcesHelp": "フォワードする機器のアドレスを 1 行に 1 つずつ。例: LAN 全体なら 192.168.20.0/24、1 台なら 192.168.20.50。このインターフェースの他の機器はフォワードされません。",
+    "destinations": "この宛先だけ",
+    "destinationsHelp": "任意。空欄の場合、これらの機器のすべてのインターネット通信をフォワードします。",
+    "egress": "送り先",
+    "egressTun": "Yuhaiin TUN",
+    "egressInterface": "他のインターフェース",
+    "egressTProxy": "TProxy インバウンド",
+    "egressTProxyHelp": "これらの機器の TCP と UDP を、ルーティングせずにこのホストの TProxy インバウンドへ取り込みます。",
+    "chooseTProxy": "TProxy インバウンド",
+    "noTProxy": "TProxy インバウンドがありません。先にインバウンドで作成してください。",
+    "masquerade": "NAT（マスカレード）",
+    "masqueradeHelp": "送信時に機器のアドレスをこのホストのアドレスに置き換えます。次のルーターが LAN への経路を知らない場合に必要です。初期状態はオフです。",
+    "summary": "{{ingress}} の {{sources}} → {{egress}}",
+    "error": {
+      "ingress": "LAN 側インターフェースを選んでください。",
+      "sources": "LAN の機器のアドレスを 1 つ以上追加してください。",
+      "cidr": "不正なネットワークを修正してください。",
+      "target": "通信の送り先を選んでください。"
+    }
+  },
+  "interfaces": {
+    "title": "インターフェース",
+    "help": "現在このホストにあるインターフェースです。Yuhaiin は自分が所有していないインターフェースを削除・再設定しません。",
+    "refresh": "更新",
+    "addresses": "アドレス",
+    "gateway": "ゲートウェイ",
+    "mtu": "MTU",
+    "noAddress": "アドレスなし",
+    "up": "有効",
+    "down": "無効",
+    "ownership": {
+      "yuhaiin": "Yuhaiin",
+      "external": "外部",
+      "system": "システム"
+    },
+    "ownershipHelp": {
+      "yuhaiin": "インバウンド {{name}} が作成しました。",
+      "external": "WireGuard や Tailscale など、他のプログラムが作成したトンネル。",
+      "system": "OS が管理しています。"
+    },
+    "types": {
+      "loopback": "ループバック",
+      "ethernet": "イーサネット",
+      "wifi": "Wi-Fi",
+      "tunnel": "トンネル",
+      "bridge": "ブリッジ",
+      "virtual": "仮想",
+      "other": "その他"
+    },
+    "routable": "ルートの送り先にできます",
+    "notRoutable": "ここではルートの送り先にできません",
+    "missingTitle": "見つからない保存済みの送り先",
+    "missingHelp": "これらのインターフェースや TUN はルールで使われていますが、現在ありません。該当ルールは一時停止し、戻ると自動で再開します。",
+    "usedBy": "使用しているルール: {{rules}}",
+    "tunTitle": "TUN インバウンド",
+    "tunStopped": "停止中",
+    "tunRunning": "{{name}} として動作中",
+    "viaTun": "ルートルールでは Yuhaiin TUN として選びます。"
+  }
+}

@@ -77,6 +77,32 @@ function selectorStatus(id) {
 }
 const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
+
+const sysnetCaps=scenario==='android'?{platform:'android',routeManagement:true,multipleTargets:false,externalInterfaces:false,gateways:false,policyRouting:false,ipv4Forwarding:false,ipv6Forwarding:false,nat:false,tproxy:false,routeTargets:['tun_inbound'],forwardTargets:[]}
+  :{platform:scenario==='utun'?'darwin':'linux',routeManagement:true,multipleTargets:true,externalInterfaces:true,gateways:true,policyRouting:scenario!=='utun',ipv4Forwarding:scenario!=='utun',ipv6Forwarding:scenario!=='utun',nat:scenario!=='utun',tproxy:scenario!=='utun',routeTargets:['tun_inbound','interface'],forwardTargets:scenario==='utun'?[]:['tun_inbound','interface','tproxy']};
+let systemNetwork={routes:[
+  {id:'legacy-tun-inbound-local-1a2b',name:'macOS TUN (migrated)',enabled:true,priority:100,match:{mode:'non_private',bypassCidrs:['203.0.113.0/24']},target:{type:'tun_inbound',inboundId:'tun-a'}},
+  {id:'route-tailscale',name:'Tailscale network',enabled:true,priority:200,match:{mode:'custom',includeCidrs:['100.64.0.0/10']},target:{type:'interface',interfaceName:'tailscale0'}},
+  {id:'route-office',name:'Office via WireGuard',enabled:true,priority:300,match:{mode:'custom',includeCidrs:['10.10.0.0/16']},target:{type:'interface',interfaceName:'wg0'}},
+  {id:'route-dns',name:'DNS via TUN B',enabled:true,priority:400,match:{mode:'custom',includeCidrs:['8.8.8.8/32']},target:{type:'tun_inbound',inboundId:'tun-b'}},
+],forwarding:{ipv4:true,ipv6:false,rules:[{id:'forward-lan',name:'LAN devices',enabled:true,ingressInterface:'eth1',sourceCidrs:['192.168.20.0/24'],egress:{type:'tun_inbound',inboundId:'tun-a'},masquerade:false}]},
+  migrations:[{inboundId:'tun-a',inboundName:'TUN A',ruleId:'legacy-tun-inbound-local-1a2b',source:'tun_routing:non_private',migratedAt:1700000000}]};
+const systemNetworkInterfaces={items:[
+  {name:'lo',index:1,type:'loopback',up:true,mtu:65536,addresses:['127.0.0.1/8','::1/128'],ownership:'system',routable:false},
+  {name:'eth0',index:2,type:'ethernet',up:true,mtu:1500,hardwareAddr:'02:42:ac:11:00:02',addresses:['192.168.1.20/24','fe80::42:acff:fe11:2/64'],gateway:'192.168.1.1',gatewayV6:'fe80::1',ownership:'system',routable:true},
+  {name:'eth1',index:3,type:'ethernet',up:true,mtu:1500,addresses:['192.168.20.1/24'],ownership:'system',routable:true},
+  {name:'wg0',index:5,type:'tunnel',up:true,mtu:1420,addresses:['10.8.0.2/32'],pointToPoint:true,ownership:'external',routable:true},
+  {name:'utun8',index:9,type:'tunnel',up:true,mtu:1500,addresses:['172.19.0.1/30','fdfe:dcba:9876::1/126'],pointToPoint:true,ownership:'yuhaiin',inboundId:'tun-a',inboundName:'TUN A',routable:false},
+],tunInbounds:[{id:'tun-a',name:'TUN A',running:true,interface:'utun8'},{id:'tun-b',name:'TUN B',running:false}],tproxyInbounds:[{id:'tproxy',name:'TProxy',listen:'0.0.0.0:7893'}],
+  missing:[{target:{type:'interface',interfaceName:'tailscale0'},ruleIds:['route-tailscale']},{target:{type:'tun_inbound',inboundId:'tun-b'},ruleIds:['route-dns']}]};
+const systemNetworkPreview=config=>config.routes.map(r=>({id:r.id,ipv4Routes:r.match.mode==='custom'?(r.match.includeCidrs||[]).length:r.match.mode==='global'?32:58,ipv6Routes:r.match.mode==='custom'?0:16,sample:[]}));
+const systemNetworkStatus=()=>({state:'degraded',generation:7,appliedAt:Math.floor(Date.now()/1000)-30,routes:76,capabilities:sysnetCaps,
+  rules:systemNetwork.routes.map(r=>r.id==='route-tailscale'?{id:r.id,state:'unavailable',error:'interface tailscale0 does not exist',ipv4Routes:0,ipv6Routes:0}
+    :r.id==='route-dns'?{id:r.id,state:'unavailable',error:'the TUN inbound is not running',ipv4Routes:0,ipv6Routes:0}
+    :r.id==='route-office'?{id:r.id,state:'conflict',interface:'wg0',interfaceIndex:5,ipv4Routes:1,ipv6Routes:0,conflicts:['10.10.0.0/16']}
+    :{id:r.id,state:r.enabled?'active':'disabled',interface:'utun8',interfaceIndex:9,ipv4Routes:58,ipv6Routes:16}),
+  forwarding:{state:'active',ipv4:systemNetwork.forwarding.ipv4,ipv6:systemNetwork.forwarding.ipv6,rules:systemNetwork.forwarding.rules.map(r=>({id:r.id,state:'active',ingress:r.ingressInterface,egress:'utun8'}))},
+  required:[{inboundId:'tun-a',interface:'utun8',prefixes:['198.18.0.0/15']}],migrations:systemNetwork.migrations});
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
 if (scenario === 'utun') inbounds[0] = {id:'inbound-local',name:'macOS TUN',enabled:true,network:{type:'empty',empty:{}},transports:[],protocol:{type:'tun',tun:{name:'tun://utun8',mtu:1500,forceFakeIp:false,skipMulticast:true,autoFakeIpRoute:true,driver:'channel',portal:'172.19.0.1/30',portalV6:'fdfe:dcba:9876::1/126',routes:['0.0.0.0/0'],excludes:[],postUp:[],postDown:[],darwin:{experimentalBatch:false,batchSize:32,pendingPackets:32}}}};
 
@@ -289,6 +315,11 @@ const worker=setupWorker(
     else if(op==='inbounds.status')result={items:inbounds.map(item=>({id:item.id,name:item.name,enabled:item.enabled,status:item.enabled?'running':'disabled',changedAt:Date.now(),listeners:[{kind:item.protocol.type,state:item.enabled?'running':'disabled',listen:item.network.tcp_udp?.host,changedAt:Date.now()}],statistics:{acceptedStreams:'4',receivedPackets:'3',receivedPings:'0'}}))};
     else if(op==='inbound.events')result={items:[]};
     else if(op==='inbound.retry'){}
+    else if(op==='systemNetwork.config.get')result=systemNetwork;
+    else if(op==='systemNetwork.config.put'){systemNetwork={...p,migrations:systemNetwork.migrations};result={config:systemNetwork,status:systemNetworkStatus()};}
+    else if(op==='systemNetwork.status')result=systemNetworkStatus();
+    else if(op==='systemNetwork.interfaces')result=systemNetworkInterfaces;
+    else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;
     else if(op==='subscriptions.get')result={items:subscriptions};

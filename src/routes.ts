@@ -18,6 +18,7 @@ const GroupSubscribePage = dynamic(() => import('@/docs/group/subscribe/page'), 
 const GroupPublishPage = dynamic(() => import('@/docs/group/publish/page'), { loading });
 const GroupActivatesPage = dynamic(() => import('@/docs/group/activates/page'), { loading });
 const DiagnosticsPage = dynamic(() => import('@/docs/diagnostics/page'), { loading });
+const SystemNetworkPage = dynamic(() => import('@/docs/system-network/page'), { loading });
 const InboundPage = dynamic(() => import('@/docs/inbound/page'), { loading });
 const BypassPage = dynamic(() => import('@/docs/bypass/page'), { loading });
 const BypassListPage = dynamic(() => import('@/docs/bypass/list/page'), { loading });
@@ -56,6 +57,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/certificates", component: CertificatesPage },
     { path: "/docs/traffic-control", component: TrafficControlPage },
     { path: "/docs/inbound", component: InboundPage },
+    { path: "/docs/system-network", component: SystemNetworkPage },
     { path: "/docs/diagnostics", component: DiagnosticsPage },
     { path: "/docs/bypass", component: BypassPage },
     { path: "/docs/bypass/list", component: BypassListPage },
