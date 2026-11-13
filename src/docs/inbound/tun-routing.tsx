@@ -12,6 +12,7 @@ import type { Go } from '@/api/generated-contracts';
 import { Check, CircleAlert, Globe2, House, Info, SlidersHorizontal } from 'lucide-react';
 import { RadioGroup } from 'radix-ui';
 import { useId, useState, type FC, type ReactNode } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 export type TunRouting = Go.inbound.TunRouting;
@@ -140,7 +141,7 @@ const CustomRouting: FC<{ routing: TunRouting; patch: (fields: Partial<TunRoutin
     </div>;
 };
 
-function customSummary(uiT: (key: string, options?: Record<string, unknown>) => string, routing: TunRouting) {
+function customSummary(uiT: TFunction<'ui'>, routing: TunRouting) {
     const countries = (routing.geoipCountries ?? []).join(', ');
     const parts: string[] = [];
     if (routing.includeCidrs?.length) parts.push(uiT('tunRouting.custom.summaryCidrs', { count: routing.includeCidrs.length }));
