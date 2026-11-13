@@ -48,7 +48,7 @@ export function LANLinkClients({ id }: { id: string }) {
     return <FormSection title={t("lanLink.clients")} description={t("lanLink.clientsHelp")}>
         <div className="grid min-w-0 gap-3">
             {data && !data.running && <p role="status" className="text-sm text-ui-muted">{t("lanLink.inactive")}</p>}
-            {data?.running && data.publicEndpoint && <p className="break-all text-sm text-ui-muted">{t("lanLink.publicAddress", { address: data.publicEndpoint })}</p>}
+            {data?.running && data.publicEndpoint && <p className="break-all text-sm text-ui-muted">{t("lanLink.publicAddress", { address: data.publicEndpoints?.length ? data.publicEndpoints.join(", ") : data.publicEndpoint })}</p>}
             {data?.running && !data.publicEndpoint && data.publicError && <p role="alert" className="text-sm text-ui-danger">{t("lanLink.publicEndpointMissing")}</p>}
             <div className="flex min-w-0 flex-wrap items-end gap-2">
                 <div className="min-w-0 flex-1 basis-56">

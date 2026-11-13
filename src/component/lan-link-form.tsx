@@ -45,6 +45,7 @@ export function LANLinkInboundForm({ value, onChange }: {
             <div className="mt-3 grid gap-4">
                 <SettingInputVertical label={t("lanLink.listen")} value={value.listen ?? ""} onChange={listen => onChange({ listen })} placeholder=":51821" />
                 <SettingInputVertical label={t("lanLink.publicEndpoint")} value={value.publicEndpoint ?? ""} onChange={publicEndpoint => onChange({ publicEndpoint })} placeholder="link.example.net:51821" />
+                <SettingInputVertical label={t("lanLink.publicEndpoint6")} value={value.publicEndpoint6 ?? ""} onChange={publicEndpoint6 => onChange({ publicEndpoint6 })} placeholder="[2001:db8::1]:51821" />
                 <SettingInputVertical label={t("lanLink.stunServer")} value={value.stunServer ?? ""} onChange={stunServer => onChange({ stunServer })} placeholder="stun.l.google.com:19302" />
                 <p className="text-sm text-ui-muted">{t("lanLink.publicEndpointHelp")}</p>
             </div>
