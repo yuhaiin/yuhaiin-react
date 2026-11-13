@@ -57,3 +57,13 @@ export function LANLinkOutboundForm({ value, onChange, disabled }: {
     const { t } = useTranslation("ui");
     return <SettingInputVertical secret type="password" label={t("lanLink.invitation")} value={value.invitation ?? ""} onChange={onChange} disabled={disabled} />;
 }
+
+/** Shows a peer UDP address with whether it is a LAN or a public address. */
+export function LANLinkPath({ endpoint, path }: { endpoint?: string; path?: string }) {
+    const { t } = useTranslation("ui");
+    if (!endpoint) return null;
+    return <span className="inline-flex min-w-0 flex-wrap items-center gap-2">
+        <span className="break-all font-mono">{endpoint}</span>
+        {path && <Badge variant={path === "lan" ? "success" : "muted"}>{t(`lanLink.path.${path}`, { defaultValue: path })}</Badge>}
+    </span>;
+}

@@ -83,8 +83,8 @@ export async function saveInboundConfig(config: InboundConfig): Promise<InboundC
 }
 
 
-export function createLANLinkInvitation(id: string): Promise<Go.inbound.LANLinkInvitationResponse> {
-    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/invite`, undefined, undefined, undefined, { revealSecrets: true });
+export function createLANLinkInvitation(id: string, name?: string): Promise<Go.inbound.LANLinkInvitationResponse> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/invite`, name ? { name } : undefined, undefined, undefined, { revealSecrets: true });
 }
 
 export function revokeLANLinkClient(id: string, clientId: string): Promise<void> {
@@ -97,6 +97,10 @@ export function listLANLinkClients(id: string): Promise<Go.inbound.LANLinkClient
 
 export function updateLANLinkClient(id: string, clientId: string, action: "kick" | "block" | "unblock"): Promise<void> {
     return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/action`, { clientId, action });
+}
+
+export function renameLANLinkClient(id: string, clientId: string, name: string): Promise<void> {
+    return requestJSON("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/lan-link/action`, { clientId, action: "rename", name });
 }
 
 export function listLANLinkNetworks(): Promise<Go.inbound.LANLinkNetworks> {

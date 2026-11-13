@@ -1218,7 +1218,26 @@
     "revokeConfirm": "このクライアントの招待を取り消して切断しますか？",
     "actionFailed": "LAN Link クライアントを更新できませんでした。",
     "copyInvitation": "招待をコピー",
-    "invitationCopied": "招待をコピーしました"
+    "invitationCopied": "招待をコピーしました",
+    "clientName": "クライアント名",
+    "clientNamePlaceholder": "例: 会社のノートPC",
+    "unnamed": "名前なし",
+    "rename": "名前を変更",
+    "issuedFor": "{{name}} 用に発行",
+    "peerEndpoint": "使用中の接続先アドレス",
+    "path": {
+      "lan": "内部ネットワーク",
+      "public": "パブリック"
+    },
+    "thisDevice": "このデバイス",
+    "localListen": "ローカル UDP アドレス",
+    "gatewayAddress": "ゲートウェイアドレス",
+    "linkState": {
+      "idle": "未開始",
+      "connecting": "接続中",
+      "connected": "接続済み"
+    },
+    "idleHelp": "このノードが初めて通信に使われたときに接続を開始します。"
   },
   "peerTunnel": {
     "peers": "ピアトンネル",
