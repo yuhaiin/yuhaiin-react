@@ -40,7 +40,7 @@
   "platform": {
     "linux": "Linux: rules use a dedicated policy-routing table owned by Yuhaiin. Interfaces of other programs are never changed.",
     "darwin": "macOS: rules are added to the system routing table. There is no policy routing, so a destination that another program already routes keeps that route and is shown as a conflict.",
-    "windows": "Windows: rules are added to the system routing table per interface. Advanced policy routing and forwarding are not available.",
+    "windows": "Windows: rules are added to the system routing table per interface. Policy routing is not available.",
     "android": "Android: rules decide which destinations the Yuhaiin VPN captures. Other interfaces and forwarding are not available. Without rules, the route profile chosen in the app applies.",
     "none": "This device cannot manage system routes."
   },
@@ -190,7 +190,7 @@
     }
   },
   "forwarding": {
-    "unsupported": "Forwarding is only available on Linux. On this device Yuhaiin cannot route traffic for other devices.",
+    "unsupported": "Forwarding is not available on this device.",
     "introTitle": "Use this host as a side router",
     "introHelp": "Forwarding lets other devices on your LAN send their traffic through this host, for example into a Yuhaiin TUN.",
     "step1": "On the LAN device (or your DHCP server), set the gateway to this host's LAN address.",
@@ -209,7 +209,7 @@
     "ingress": "LAN interface",
     "ingressHelp": "The interface the LAN devices are connected to.",
     "sources": "LAN devices",
-    "sourcesHelp": "Addresses of the devices to forward, one per line. Example: 192.168.20.0/24 for the whole LAN, or 192.168.20.50 for one device. Other devices on this interface are not forwarded.",
+    "sourcesHelp": "Addresses of the devices to forward, one per line. Example: 192.168.20.0/24 for the whole LAN, or 192.168.20.50 for one device. Leave empty to forward every device on this interface. Other devices are not forwarded.",
     "destinations": "Only these destinations",
     "destinationsHelp": "Optional. Leave empty to forward all internet traffic of these devices.",
     "egress": "Send through",
@@ -224,9 +224,16 @@
     "summary": "{{sources}} from {{ingress}} → {{egress}}",
     "error": {
       "ingress": "Choose the LAN interface.",
-      "sources": "Add at least one LAN device address.",
       "cidr": "Fix the invalid networks.",
       "target": "Choose where traffic goes."
+    },
+    "egressRoutes": "Routing table",
+    "egressRoutesHelp": "Forwards through the normal routing table, which already includes your route rules.",
+    "allDevices": "all devices",
+    "noSourceFilter": "On this platform every device on the LAN interface is forwarded; limiting it to some devices is not available.",
+    "platform": {
+      "darwin": "macOS: forwarding uses PF through Yuhaiin's own anchor (com.apple/yuhaiin). Your pf.conf and other anchors are not changed. TProxy interception is not available.",
+      "windows": "Windows: forwarding is turned on per interface and follows the routing table, including your route rules. Limiting it to some devices, choosing an egress per rule and NAT are not available."
     }
   },
   "interfaces": {

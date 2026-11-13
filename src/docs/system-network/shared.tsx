@@ -27,6 +27,7 @@ export function describeMatch(t: TFunction<'systemNetwork'>, match: RouteMatch):
 
 /** Human name of a target: the TUN inbound's name or the interface name. */
 export function describeTarget(t: TFunction<'systemNetwork'>, target: RouteTarget, interfaces?: SystemNetworkInterfaces): string {
+    if (target.type === 'routes') return t('forwarding.egressRoutes');
     if (target.type === 'tproxy') return t('forwarding.egressTProxy') + ' ' + (interfaces?.tproxyInbounds?.find(i => i.id === target.inboundId)?.name ?? target.inboundId ?? '');
     if (target.type === 'tun_inbound') {
         const tun = interfaces?.tunInbounds.find(i => i.id === target.inboundId);

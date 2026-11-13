@@ -72,11 +72,11 @@ export function targetError(target: RouteTarget): 'target' | undefined {
     return target.inboundId ? undefined : 'target';
 }
 
-export function forwardRuleError(rule: ForwardRule): 'ingress' | 'sources' | 'cidr' | 'target' | undefined {
+/** Empty sources forward every device on the ingress; "routes" follows the routing table. */
+export function forwardRuleError(rule: ForwardRule): 'ingress' | 'cidr' | 'target' | undefined {
     if (!rule.ingressInterface) return 'ingress';
-    if (!rule.sourceCidrs.length) return 'sources';
     if (analyzeCidrs(rule.sourceCidrs).errors.length || analyzeCidrs(rule.destinationCidrs ?? []).errors.length) return 'cidr';
-    return targetError(rule.egress);
+    return rule.egress.type === 'routes' ? undefined : targetError(rule.egress);
 }
 
 export function configHasErrors(config: SystemNetworkConfig): boolean {

@@ -6,7 +6,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import Switch from '@/component/v2/switch';
 import { cn, ui } from '@/component/v2/styles';
 import { forwardRuleError, newID, type ForwardRule, type SystemNetworkCapabilities, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkStatus } from '@/contract/system-network';
-import { ArrowRight, CircleAlert, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, CircleAlert, Info, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CidrListEditor } from './match-editor';
@@ -29,7 +29,9 @@ export function ForwardingTab({ value, onChange, capabilities, interfaces, statu
         return <p role="note" className={cn(ui.softPanel, 'p-4 text-sm leading-relaxed text-ui-fg')}>{t('forwarding.unsupported')}</p>;
     const add = () => setEditing({ isNew: true, rule: {
         id: newID('forward'), name: '', enabled: true, ingressInterface: '', sourceCidrs: [],
-        egress: { type: 'tun_inbound', inboundId: interfaces?.tunInbounds.length === 1 ? interfaces.tunInbounds[0].id : undefined },
+        egress: capabilities.forwardTargets.includes('tun_inbound')
+            ? { type: 'tun_inbound', inboundId: interfaces?.tunInbounds.length === 1 ? interfaces.tunInbounds[0].id : undefined }
+            : { type: capabilities.forwardTargets[0] ?? 'routes' },
     } });
     const save = (rule: ForwardRule) => {
         onChange({ ...value, rules: value.rules.some(r => r.id === rule.id) ? value.rules.map(r => r.id === rule.id ? rule : r) : [...value.rules, rule] });
@@ -37,6 +39,8 @@ export function ForwardingTab({ value, onChange, capabilities, interfaces, statu
     };
     const runtime = (id: string) => dirty ? undefined : status?.forwarding.rules.find(r => r.id === id);
     return <div className="grid min-w-0 gap-5">
+        {['darwin', 'windows'].includes(capabilities.platform) && <p className="flex gap-2 text-xs leading-relaxed text-ui-muted">
+            <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{t(`forwarding.platform.${capabilities.platform}`)}</p>}
         <section className={cn(ui.softPanel, 'grid gap-2 p-4')}>
             <h2 className={ui.sectionTitle}>{t('forwarding.introTitle')}</h2>
             <p className="text-sm leading-relaxed text-ui-fg">{t('forwarding.introHelp')}</p>
@@ -75,7 +79,7 @@ export function ForwardingTab({ value, onChange, capabilities, interfaces, statu
                                         <StateBadge state={rule.enabled ? (dirty ? 'pending' : r?.state) : 'disabled'} />
                                         {rule.masquerade && <span className={ui.chip}>NAT</span>}</span>
                                     <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm text-ui-fg">
-                                        <span className="min-w-0 break-words font-mono text-xs">{rule.sourceCidrs.join(', ') || '—'}</span>
+                                        <span className="min-w-0 break-words font-mono text-xs">{rule.sourceCidrs.join(', ') || t('forwarding.allDevices')}</span>
                                         <span className="text-ui-muted">@ {rule.ingressInterface || '—'}</span>
                                         <ArrowRight size={14} className="shrink-0 text-ui-muted" aria-hidden="true" />
                                         <span className="font-medium">{describeTarget(t, rule.egress, interfaces)}</span>
@@ -119,14 +123,16 @@ function ForwardRuleEditor({ rule, isNew, capabilities, interfaces, onSave, onCl
                         onChange={ingressInterface => setDraft({ ...draft, ingressInterface })} />
                     <p className="text-xs text-ui-muted">{t('forwarding.ingressHelp')}</p>
                 </div>
-                <CidrListEditor id="sources" label={t('forwarding.sources')} help={t('forwarding.sourcesHelp')} placeholder={'192.168.20.0/24\n192.168.20.50'}
-                    value={draft.sourceCidrs} onChange={sourceCidrs => setDraft({ ...draft, sourceCidrs })} />
+                {capabilities.forwardSourceFilter
+                    ? <CidrListEditor id="sources" label={t('forwarding.sources')} help={t('forwarding.sourcesHelp')} placeholder={'192.168.20.0/24\n192.168.20.50'}
+                        value={draft.sourceCidrs} onChange={sourceCidrs => setDraft({ ...draft, sourceCidrs })} />
+                    : <p className="text-xs leading-relaxed text-ui-muted">{t('forwarding.noSourceFilter')}</p>}
                 <section className="grid gap-2">
                     <h3 className={ui.cardTitle}>{t('forwarding.egress')}</h3>
                     <TargetPicker value={draft.egress} types={capabilities.forwardTargets} interfaces={interfaces} tproxy
-                        onChange={egress => setDraft({ ...draft, egress, masquerade: egress.type === 'tproxy' ? false : draft.masquerade })} />
+                        onChange={egress => setDraft({ ...draft, egress, masquerade: ['tproxy', 'routes'].includes(egress.type) ? false : draft.masquerade })} />
                 </section>
-                {draft.egress.type !== 'tproxy' && capabilities.nat && <SwitchCard label={t('forwarding.masquerade')} description={t('forwarding.masqueradeHelp')}
+                {!['tproxy', 'routes'].includes(draft.egress.type) && capabilities.nat && <SwitchCard label={t('forwarding.masquerade')} description={t('forwarding.masqueradeHelp')}
                     checked={draft.masquerade ?? false} onCheckedChange={masquerade => setDraft({ ...draft, masquerade })} />}
                 <details>
                     <summary className="cursor-pointer text-sm text-ui-muted">{t('editor.advanced')}</summary>

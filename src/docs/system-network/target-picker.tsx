@@ -19,6 +19,7 @@ export function TargetPicker({ value, onChange, types, interfaces, tproxy = fals
         tun_inbound: [t('editor.targetTun'), t('editor.targetTunHelp')],
         interface: [t('editor.targetInterface'), t('editor.targetInterfaceHelp')],
         tproxy: [t('forwarding.egressTProxy'), t('forwarding.egressTProxyHelp')],
+        routes: [t('forwarding.egressRoutes'), t('forwarding.egressRoutesHelp')],
     };
     const choose = (type: string) => onChange({ type });
     const tuns = interfaces?.tunInbounds ?? [];

@@ -20,7 +20,7 @@ export default function SystemNetworkPage() {
     if (config.error && !config.data) return <Loading onRetry={() => void config.mutate()}>{String((config.error as { msg?: string })?.msg ?? config.error)}</Loading>;
     if (!config.data) return <Loading />;
     const capabilities = status.data?.capabilities ?? { platform: '', routeManagement: false, multipleTargets: false, externalInterfaces: false, gateways: false,
-        policyRouting: false, ipv4Forwarding: false, ipv6Forwarding: false, nat: false, tproxy: false, routeTargets: [], forwardTargets: [] };
+        policyRouting: false, ipv4Forwarding: false, ipv6Forwarding: false, nat: false, tproxy: false, forwardSourceFilter: false, routeTargets: [], forwardTargets: [] };
     const actions = <div className="flex flex-wrap items-center justify-end gap-2">
         <Button variant="outline-secondary" disabled={!dirty || saving} onClick={discard}>{t('discard')}</Button>
         <Button variant="primary" permission="settings:write" loading={saving} disabled={!dirty || saving || invalid} onClick={() => void save()}><Save size={16} />{t('save')}</Button>

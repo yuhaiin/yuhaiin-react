@@ -2459,6 +2459,7 @@ export namespace Go {
       ipv4Forwarding: boolean;
       ipv6Forwarding: boolean;
       nat: boolean;
+      forwardSourceFilter: boolean;
       tproxy: boolean;
       routeTargets: string[];
       forwardTargets: string[];

@@ -26,10 +26,11 @@ vi.mock('@/component/v2/confirmation', () => confirm);
 vi.mock('@/auth/context', () => ({ usePermission: () => true, useSession: () => ({ principal: { permissions: ['settings:write'] } }) }));
 
 const linux: SystemNetworkCapabilities = { platform: 'linux', routeManagement: true, multipleTargets: true, externalInterfaces: true, gateways: true,
-    policyRouting: true, ipv4Forwarding: true, ipv6Forwarding: true, nat: true, tproxy: true,
-    routeTargets: ['tun_inbound', 'interface'], forwardTargets: ['tun_inbound', 'interface', 'tproxy'] };
+    policyRouting: true, ipv4Forwarding: true, ipv6Forwarding: true, nat: true, tproxy: true, forwardSourceFilter: true,
+    routeTargets: ['tun_inbound', 'interface'], forwardTargets: ['tun_inbound', 'interface', 'routes', 'tproxy'] };
 const android: SystemNetworkCapabilities = { ...linux, platform: 'android', multipleTargets: false, externalInterfaces: false, gateways: false, policyRouting: false,
-    ipv4Forwarding: false, ipv6Forwarding: false, nat: false, tproxy: false, routeTargets: ['tun_inbound'], forwardTargets: [] };
+    ipv4Forwarding: false, ipv6Forwarding: false, nat: false, tproxy: false, forwardSourceFilter: false, routeTargets: ['tun_inbound'], forwardTargets: [] };
+const windows: SystemNetworkCapabilities = { ...linux, platform: 'windows', policyRouting: false, nat: false, tproxy: false, forwardSourceFilter: false, forwardTargets: ['routes'] };
 
 const rule = (id: string, priority: number, fields: Partial<RouteRule> = {}): RouteRule => ({ id, name: id, enabled: true, priority,
     match: { mode: 'global' }, target: { type: 'tun_inbound', inboundId: 'tun-a' }, ...fields });
@@ -201,6 +202,23 @@ it('configures a side-router forwarding rule with NAT', async () => {
     await click('editor.apply');
     await click('save');
     expect(saved[0].forwarding).toMatchObject({ ipv4: true, ipv6: false, rules: [{ ingressInterface: 'eth0', sourceCidrs: ['192.168.20.0/24'], masquerade: true, egress: { type: 'tun_inbound', inboundId: 'tun-a' } }] });
+});
+
+it('offers Windows forwarding that follows the routing table, without sources or NAT', async () => {
+    setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } }, windows);
+    await render();
+    const tab = [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(b => b.textContent === 'tabs.forwarding')!;
+    await act(async () => { tab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); tab.click(); });
+    await vi.waitFor(() => expect(host.textContent).toContain('forwarding.platform.windows'));
+    await click('forwarding.add');
+    expect(document.body.textContent).toContain('forwarding.noSourceFilter');
+    expect(document.body.textContent).toContain('forwarding.egressRoutesHelp');
+    expect(document.body.textContent).not.toContain('forwarding.masquerade');
+    expect(buttons().some(b => b.textContent === 'editor.targetTun')).toBe(false);
+    await choose('forwarding.ingress', 'eth0');
+    await click('editor.apply');
+    await click('save');
+    expect(saved[0].forwarding.rules).toMatchObject([{ ingressInterface: 'eth0', sourceCidrs: [], egress: { type: 'routes' } }]);
 });
 
 it('renumbers priorities when moving rules', () => {
