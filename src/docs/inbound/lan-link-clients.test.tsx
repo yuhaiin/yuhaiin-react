@@ -14,7 +14,7 @@ vi.mock("@/auth/context", async importOriginal => ({ ...await importOriginal<typ
 vi.mock("@/component/v2/confirmation", () => ({ confirmAction: vi.fn() }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-const client = { id: "000102030405060708090a0b0c0d0e0f", address: "10.20.0.3", pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200", name: "Office laptop", peerEndpoint: "192.168.1.20:40200", path: "lan" };
+const client = { id: "000102030405060708090a0b0c0d0e0f", address: "10.20.0.3", pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200", name: "Office laptop", path: "lan" };
 
 it("generates an invitation and manages a client without exposing credentials", async () => {
     authorizeTest();
@@ -37,7 +37,6 @@ it("generates an invitation and manages a client without exposing credentials", 
         expect(host.textContent).toContain("lanLink.online");
         expect(host.textContent).not.toContain("registration");
         expect(host.textContent).toContain("Office laptop");
-        expect(host.textContent).toContain("192.168.1.20:40200");
         expect(host.textContent).toContain("lanLink.path.lan");
 
         await click("lanLink.rename");

@@ -106,9 +106,8 @@ export function LANLinkClients({ id }: { id: string }) {
                     <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
                         <dt className="text-ui-muted">{t("lanLink.tunnelAddress")}</dt><dd className="break-all font-mono">{client.address}</dd>
                         <dt className="text-ui-muted">{t("lanLink.pairingId")}</dt><dd className="break-all font-mono" title={client.pairingId}>{client.pairingId.slice(0, 12)}</dd>
-                        <dt className="text-ui-muted">{t("peerTunnel.dialer")}</dt><dd className="break-all font-mono">{client.dialerEndpoint ?? t("peerTunnel.peerState.offline")}</dd>
+                        <dt className="text-ui-muted">{t("peerTunnel.dialer")}</dt><dd className="min-w-0">{client.dialerEndpoint ? <LANLinkPath endpoint={client.dialerEndpoint} path={client.path} /> : t("peerTunnel.peerState.offline")}</dd>
                         <dt className="text-ui-muted">{t("peerTunnel.publisher")}</dt><dd className="break-all font-mono">{client.publisherEndpoint ?? t("peerTunnel.peerState.offline")}</dd>
-                        {client.peerEndpoint && <><dt className="text-ui-muted">{t("lanLink.peerEndpoint")}</dt><dd className="min-w-0"><LANLinkPath endpoint={client.peerEndpoint} path={client.path} /></dd></>}
                     </dl>
                     <div className="flex flex-wrap gap-2">
                         {!client.blocked && <Button permission="inbounds:write" size="sm" disabled={pending || !data.running || !client.online} onClick={() => act(client, "kick")}>{t("peerTunnel.kick")}</Button>}

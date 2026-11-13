@@ -582,7 +582,6 @@ export namespace Go {
       retryAt?: number;
       dialerEndpoint?: string;
       publisherEndpoint?: string;
-      peerEndpoint?: string;
       path?: string;
       createdAt?: number;
     }
@@ -1090,9 +1089,7 @@ export namespace Go {
       name: string;
       state: string;
       endpoint?: string;
-      tunnelIp: string;
       routes: string[];
-      link?: Go.transport.LANLinkStatus;
     }
     export interface PeerTunnelPeers {
       items: PeerTunnelPeer[];

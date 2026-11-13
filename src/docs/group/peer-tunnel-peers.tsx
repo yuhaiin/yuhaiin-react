@@ -36,7 +36,6 @@ export function PeerTunnelPeers() {
                             </div>
                             <dl className="mt-2 grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
                                 {peer.endpoint && <><dt className="text-ui-muted">{uiT("peerTunnel.udpEndpoint")}</dt><dd className="break-all font-mono">{peer.endpoint}</dd></>}
-                                {peer.tunnelIp && <><dt className="text-ui-muted">{uiT("peerTunnel.peerIp")}</dt><dd className="break-all font-mono">{peer.tunnelIp}</dd></>}
                                 <dt className="text-ui-muted">{uiT("peerTunnel.routes")}</dt><dd className="break-words font-mono">{peer.routes.join(", ")}</dd>
                             </dl>
                         </li>)}

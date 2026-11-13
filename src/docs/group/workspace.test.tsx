@@ -212,7 +212,7 @@ afterEach(() => { clearHashSearch(); resetTestAuth(); });
 
 it('looks up configured peer addresses when the peer directory is opened', async () => {
     api.listPeerTunnelPeers.mockResolvedValue({
-        items: [{ nodeId: 'publisher', name: 'Office publisher', state: 'online', endpoint: '192.0.2.10:51821', tunnelIp: '10.88.1.1', routes: ['192.168.10.0/24'] }],
+        items: [{ nodeId: 'publisher', name: 'Office publisher', state: 'online', endpoint: '192.0.2.10:51821', routes: ['192.168.10.0/24'] }],
         page: { page: 1, pageSize: 16, total: 1 },
     });
     await render();
@@ -220,7 +220,7 @@ it('looks up configured peer addresses when the peer directory is opened', async
     await click('peerTunnel.peers');
     expect(api.listPeerTunnelPeers).toHaveBeenCalledWith(1);
     const contents = document.querySelector('[role="dialog"]')?.textContent;
-    for (const value of ['Office publisher', 'peerTunnel.peerState.online', '192.0.2.10:51821', '10.88.1.1', '192.168.10.0/24']) {
+    for (const value of ['Office publisher', 'peerTunnel.peerState.online', '192.0.2.10:51821', '192.168.10.0/24']) {
         expect(contents).toContain(value);
     }
 });
