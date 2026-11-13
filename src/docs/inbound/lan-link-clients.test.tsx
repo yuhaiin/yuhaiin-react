@@ -1,4 +1,4 @@
-import { createLANLinkInvitation, listLANLinkClients, revokeLANLinkClient, updateLANLinkClient } from "@/api/inbounds";
+import { createLANLinkInvitation, listLANLinkClients, renameLANLinkClient, revokeLANLinkClient, updateLANLinkClient } from "@/api/inbounds";
 import { confirmAction } from "@/component/v2/confirmation";
 import { authorizeTest } from "@/test/auth";
 import { act } from "react";
@@ -8,13 +8,13 @@ import { expect, it, vi } from "vitest";
 import { LANLinkClients } from "./lan-link-clients";
 
 vi.mock("@/api/inbounds", () => ({
-    createLANLinkInvitation: vi.fn(), listLANLinkClients: vi.fn(), revokeLANLinkClient: vi.fn(), updateLANLinkClient: vi.fn(),
+    createLANLinkInvitation: vi.fn(), listLANLinkClients: vi.fn(), renameLANLinkClient: vi.fn(), revokeLANLinkClient: vi.fn(), updateLANLinkClient: vi.fn(),
 }));
 vi.mock("@/auth/context", async importOriginal => ({ ...await importOriginal<typeof import("@/auth/context")>(), usePermission: () => true }));
 vi.mock("@/component/v2/confirmation", () => ({ confirmAction: vi.fn() }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-const client = { id: "000102030405060708090a0b0c0d0e0f", address: "10.20.0.3", pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200" };
+const client = { id: "000102030405060708090a0b0c0d0e0f", address: "10.20.0.3", pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200", name: "Office laptop", peerEndpoint: "192.168.1.20:40200", path: "lan" };
 
 it("generates an invitation and manages a client without exposing credentials", async () => {
     authorizeTest();
@@ -36,9 +36,18 @@ it("generates an invitation and manages a client without exposing credentials", 
         expect(host.textContent).toContain(client.pairingId.slice(0, 12));
         expect(host.textContent).toContain("lanLink.online");
         expect(host.textContent).not.toContain("registration");
+        expect(host.textContent).toContain("Office laptop");
+        expect(host.textContent).toContain("192.168.1.20:40200");
+        expect(host.textContent).toContain("lanLink.path.lan");
+
+        await click("lanLink.rename");
+        const input = host.querySelector('input[aria-label="lanLink.clientName"]') as HTMLInputElement;
+        expect(input.value).toBe("Office laptop");
+        await act(async () => input.form?.requestSubmit());
+        expect(renameLANLinkClient).toHaveBeenCalledWith("gateway", client.id, "Office laptop");
 
         await click("lanLink.generateInvitation");
-        expect(createLANLinkInvitation).toHaveBeenCalledWith("gateway");
+        expect(createLANLinkInvitation).toHaveBeenCalledWith("gateway", undefined);
         expect((host.querySelector("input[readonly]") as HTMLInputElement).value).toBe("lan-link:v1:abc");
 
         await click("peerTunnel.kick");

@@ -1218,7 +1218,26 @@
     "revokeConfirm": "Revoke this client's invitation and disconnect it?",
     "actionFailed": "Could not update LAN Link clients.",
     "copyInvitation": "Copy invitation",
-    "invitationCopied": "Invitation copied"
+    "invitationCopied": "Invitation copied",
+    "clientName": "Client name",
+    "clientNamePlaceholder": "e.g. Office laptop",
+    "unnamed": "Unnamed client",
+    "rename": "Rename",
+    "issuedFor": "Issued for {{name}}",
+    "peerEndpoint": "Peer address in use",
+    "path": {
+      "lan": "LAN",
+      "public": "Public"
+    },
+    "thisDevice": "This device",
+    "localListen": "Local UDP address",
+    "gatewayAddress": "Gateway address",
+    "linkState": {
+      "idle": "Not started",
+      "connecting": "Connecting",
+      "connected": "Connected"
+    },
+    "idleHelp": "The link starts the first time a connection uses this node."
   },
   "peerTunnel": {
     "peers": "Peer tunnels",

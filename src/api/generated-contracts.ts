@@ -545,15 +545,21 @@ export namespace Go {
     }
     export interface LANLinkClient {
       id: string;
+      name?: string;
       slot: number;
       token: string;
       registration: string;
       blocked?: boolean;
       createdAt?: number;
     }
+    export interface LANLinkInvitationRequest {
+      id: string;
+      name?: string;
+    }
     export interface LANLinkInvitationResponse {
       invitation: string;
       clientId: string;
+      name?: string;
       address: string;
     }
     export interface LANLinkClientRequest {
@@ -564,9 +570,11 @@ export namespace Go {
       id: string;
       clientId: string;
       action: string;
+      name?: string;
     }
     export interface LANLinkClientStatus {
       id: string;
+      name?: string;
       address: string;
       pairingId: string;
       online: boolean;
@@ -574,6 +582,8 @@ export namespace Go {
       retryAt?: number;
       dialerEndpoint?: string;
       publisherEndpoint?: string;
+      peerEndpoint?: string;
+      path?: string;
       createdAt?: number;
     }
     export interface LANLinkClients {
@@ -1082,6 +1092,7 @@ export namespace Go {
       endpoint?: string;
       tunnelIp: string;
       routes: string[];
+      link?: Go.transport.LANLinkStatus;
     }
     export interface PeerTunnelPeers {
       items: PeerTunnelPeer[];
@@ -2531,6 +2542,17 @@ export namespace Go {
       registration: string;
       token: string;
       routes: string[];
+    }
+    export interface LANLinkStatus {
+      pairingId: string;
+      state: string;
+      error?: string;
+      coordinator?: string;
+      localIp?: string;
+      peerIp?: string;
+      listen?: string;
+      peerEndpoint?: string;
+      path?: string;
     }
     export interface TCPSettings {
       congestionControl?: string;
