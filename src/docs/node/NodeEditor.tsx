@@ -60,6 +60,10 @@ const NodeEditor: FC<{
                 <div className="@xl:col-span-2">
                     <SwitchCard label={uiT("enabled")} checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
+                {value.chain.some((protocol) => autoConnectProtocols.some((type) => containsProtocol(protocol, type))) && <div className="@xl:col-span-2">
+                    <SwitchCard label={uiT("nodeAutoConnect")} description={uiT("nodeAutoConnectHelp")} checked={value.autoConnect ?? false}
+                        onCheckedChange={(autoConnect) => onChange({ autoConnect })} disabled={!editable} />
+                </div>}
                 <details className="@xl:col-span-2 rounded-ui-md border border-ui-border/70 px-4 py-3 [--field-margin:0px]"><summary className="cursor-pointer text-sm font-medium">{t("nodeAdvancedSettings")}</summary>
                 <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs text-ui-muted">
                     <dt>{uiT("nodeProtocol.identity")}</dt><dd className="break-all font-mono">{value.id}</dd>
@@ -152,7 +156,10 @@ export function protocolSummary(protocol: NodeProtocol, labels: { noAuth: string
     return parts.join(" · ");
 }
 
-function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3" | "lan_link"): boolean {
+/** Protocols that hold a session and can connect before any traffic. */
+const autoConnectProtocols = ["lan_link", "wireguard", "tailscale"] as const;
+
+function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3" | (typeof autoConnectProtocols)[number]): boolean {
     if (protocol.type === type) return true;
     if (protocol.type !== "network_split") return false;
     return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsProtocol(child, type) : false);

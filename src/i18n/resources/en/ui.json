@@ -163,6 +163,8 @@
   "name": "Name",
   "nodeIPVersion": "Destination IP family",
   "nodeIPVersionHelp": "Applies to normal traffic and latency checks. Single-family modes resolve destination hostnames only in that family and reject IP addresses from the other family. Automatic keeps the existing dual-stack behavior.",
+  "nodeAutoConnect": "Auto connect",
+  "nodeAutoConnectHelp": "Connect this node when the service starts or the node is saved, instead of on its first connection, and keep it connected while idle. Applies to LAN Link, WireGuard and Tailscale.",
   "nodeIPVersionAuto": "Automatic (dual stack)",
   "nodeIPVersionIPv4": "IPv4 only",
   "nodeIPVersionIPv6": "IPv6 only",
@@ -1188,13 +1190,13 @@
   },
   "lanLink": {
     "networks": "LAN networks",
-    "networksHelp": "Choose the networks this gateway shares. Nothing is shared until you select it.",
+    "networksHelp": "Choose the networks this gateway shares; IPv4 and IPv6 networks can be mixed. Nothing is shared until you select it.",
     "detectedNetworks": "Detected networks",
     "manualNetworks": "Other networks (CIDR)",
     "detectionUnsupported": "Network detection is not available here ({{reason}}). Enter the networks manually.",
     "noDetectedNetworks": "No shareable network was detected. Enter the networks manually.",
     "detectionFailed": "Could not detect networks. Enter them manually.",
-    "subnet": "Tunnel subnet",
+    "subnet": "Tunnel subnets",
     "autoSubnet": "Chosen automatically on save",
     "advanced": "Advanced",
     "listen": "UDP listen address",
@@ -1240,9 +1242,10 @@
       "connecting": "Connecting",
       "connected": "Connected"
     },
-    "idleHelp": "The link starts the first time a connection uses this node.",
+    "idleHelp": "The link starts the first time a connection uses this node. Turn on Auto connect to start it right away.",
     "status": "Connection status",
-    "statusUnavailable": "Save and enable this node to see its connection status."
+    "statusUnavailable": "Save and enable this node to see its connection status.",
+    "peers": "Other clients ({{count}})"
   },
   "peerTunnel": {
     "peers": "Peer tunnels",

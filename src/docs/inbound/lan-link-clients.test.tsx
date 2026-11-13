@@ -14,7 +14,7 @@ vi.mock("@/auth/context", async importOriginal => ({ ...await importOriginal<typ
 vi.mock("@/component/v2/confirmation", () => ({ confirmAction: vi.fn() }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-const client = { id: "000102030405060708090a0b0c0d0e0f", address: "10.20.0.3", pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200", name: "Office laptop", path: "lan" };
+const client = { id: "000102030405060708090a0b0c0d0e0f", addresses: ["10.20.0.3", "fd20::3"], pairingId: "ffeeddccbbaa99887766554433221100", online: true, blocked: false, dialerEndpoint: "192.0.2.1:40200", name: "Office laptop", path: "lan" };
 
 it("generates an invitation and manages a client without exposing credentials", async () => {
     authorizeTest();
@@ -23,7 +23,7 @@ it("generates an invitation and manages a client without exposing credentials", 
     const root = createRoot(host);
     vi.mocked(listLANLinkClients).mockResolvedValue({ running: true, publicEndpoint: "198.51.100.7:51821", items: [client] });
     vi.mocked(confirmAction).mockResolvedValue(true);
-    vi.mocked(createLANLinkInvitation).mockResolvedValue({ invitation: "lan-link:v1:abc", clientId: client.id, address: client.address });
+    vi.mocked(createLANLinkInvitation).mockResolvedValue({ invitation: "lan-link:v1:abc", clientId: client.id, addresses: client.addresses });
     const click = async (key: string) => {
         const button = [...host.querySelectorAll("button")].find(element => element.textContent === key);
         expect(button, key).toBeDefined();
@@ -32,7 +32,7 @@ it("generates an invitation and manages a client without exposing credentials", 
     try {
         await act(async () => root.render(<SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}><LANLinkClients id="gateway" /></SWRConfig>));
         await act(async () => { await Promise.resolve(); });
-        expect(host.textContent).toContain(client.address);
+        expect(host.textContent).toContain("10.20.0.3, fd20::3");
         expect(host.textContent).toContain(client.pairingId.slice(0, 12));
         expect(host.textContent).toContain("lanLink.online");
         expect(host.textContent).not.toContain("registration");

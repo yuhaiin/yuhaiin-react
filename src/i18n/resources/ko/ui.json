@@ -163,6 +163,8 @@
   "name": "이름",
   "nodeIPVersion": "대상 IP 계열",
   "nodeIPVersionHelp": "일반 트래픽과 지연 시간 측정에 적용됩니다. 단일 계열 모드에서는 대상 호스트 이름을 선택한 계열로만 해석하고 다른 계열의 IP 주소 연결을 거부합니다. 자동은 기존 듀얼 스택 동작을 유지합니다.",
+  "nodeAutoConnect": "자동 연결",
+  "nodeAutoConnectHelp": "첫 연결을 기다리지 않고 서비스 시작 시나 노드 저장 시 연결하며, 트래픽이 없어도 연결을 유지합니다. LAN Link, WireGuard, Tailscale에 적용됩니다.",
   "nodeIPVersionAuto": "자동(듀얼 스택)",
   "nodeIPVersionIPv4": "IPv4 전용",
   "nodeIPVersionIPv6": "IPv6 전용",
@@ -1188,7 +1190,7 @@
   },
   "lanLink": {
     "networks": "LAN 네트워크",
-    "networksHelp": "이 게이트웨이가 공유할 네트워크를 선택합니다. 선택하기 전에는 아무것도 공유되지 않습니다.",
+    "networksHelp": "이 게이트웨이가 공유할 네트워크를 선택합니다. IPv4와 IPv6 네트워크를 함께 쓸 수 있습니다. 선택하기 전에는 아무것도 공유되지 않습니다.",
     "detectedNetworks": "감지된 네트워크",
     "manualNetworks": "기타 네트워크 (CIDR)",
     "detectionUnsupported": "이 환경에서는 네트워크를 감지할 수 없습니다 ({{reason}}). 직접 입력하세요.",
@@ -1240,9 +1242,10 @@
       "connecting": "연결 중",
       "connected": "연결됨"
     },
-    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다.",
+    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다. 바로 시작하려면 자동 연결을 켜세요.",
     "status": "연결 상태",
-    "statusUnavailable": "이 노드를 저장하고 활성화하면 연결 상태가 표시됩니다."
+    "statusUnavailable": "이 노드를 저장하고 활성화하면 연결 상태가 표시됩니다.",
+    "peers": "다른 클라이언트 ({{count}})"
   },
   "peerTunnel": {
     "peers": "피어 터널",
