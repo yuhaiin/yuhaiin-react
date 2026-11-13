@@ -163,6 +163,7 @@ export function normalizeNode(value: Partial<Node> | undefined): Node {
       : [createDefaultProtocol("direct")],
     ...(ipVersion === "auto" ? {} : { ip_version: ipVersion }),
     ...(node.latency ? { latency: { ...node.latency } } : {}),
+    ...(node.autoConnect ? { autoConnect: true } : {}),
   };
 }
 

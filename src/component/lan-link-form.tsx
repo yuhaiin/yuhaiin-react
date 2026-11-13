@@ -37,7 +37,7 @@ export function LANLinkInboundForm({ value, onChange }: {
                 <InputList title={t("lanLink.manualNetworks")} data={networks} onChange={next => onChange({ networks: next })} placeholder="192.168.50.0/24" />
             </div>
         </FormSection>
-        <SettingValue label={t("lanLink.subnet")} value={value.subnet || t("lanLink.autoSubnet")} />
+        <SettingValue label={t("lanLink.subnet")} value={[value.subnet, value.subnet6].filter(Boolean).join(", ") || t("lanLink.autoSubnet")} />
         <SwitchCard label={t("lanLink.clientToClient")} description={t("lanLink.clientToClientHelp")}
             checked={value.clientToClient ?? false} onCheckedChange={clientToClient => onChange({ clientToClient })} />
         <details className="min-w-0 rounded-ui-md border border-ui-border px-3 py-2">
@@ -45,6 +45,7 @@ export function LANLinkInboundForm({ value, onChange }: {
             <div className="mt-3 grid gap-4">
                 <SettingInputVertical label={t("lanLink.listen")} value={value.listen ?? ""} onChange={listen => onChange({ listen })} placeholder=":51821" />
                 <SettingInputVertical label={t("lanLink.publicEndpoint")} value={value.publicEndpoint ?? ""} onChange={publicEndpoint => onChange({ publicEndpoint })} placeholder="link.example.net:51821" />
+                <SettingInputVertical label={t("lanLink.publicEndpoint6")} value={value.publicEndpoint6 ?? ""} onChange={publicEndpoint6 => onChange({ publicEndpoint6 })} placeholder="[2001:db8::1]:51821" />
                 <SettingInputVertical label={t("lanLink.stunServer")} value={value.stunServer ?? ""} onChange={stunServer => onChange({ stunServer })} placeholder="stun.l.google.com:19302" />
                 <p className="text-sm text-ui-muted">{t("lanLink.publicEndpointHelp")}</p>
             </div>
@@ -89,14 +90,30 @@ export function LANLinkRuntimeInfo({ nodeId }: { nodeId: string }) {
         </div>
         {!link && (error || data) && <p role="status" className="text-sm text-ui-muted">{t("lanLink.statusUnavailable")}</p>}
         {link && <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
-            {link.localIp && <><dt className="text-ui-muted">{t("peerTunnel.localIp")}</dt><dd className="break-all font-mono">{link.localIp}</dd></>}
-            {link.peerIp && <><dt className="text-ui-muted">{t("peerTunnel.peerIp")}</dt><dd className="break-all font-mono">{link.peerIp}</dd></>}
+            {!!link.localIps?.length && <><dt className="text-ui-muted">{t("peerTunnel.localIp")}</dt><dd className="break-all font-mono">{link.localIps.join(", ")}</dd></>}
+            {!!link.peerIps?.length && <><dt className="text-ui-muted">{t("peerTunnel.peerIp")}</dt><dd className="break-all font-mono">{link.peerIps.join(", ")}</dd></>}
             {link.listen && <><dt className="text-ui-muted">{t("lanLink.localListen")}</dt><dd className="break-all font-mono">{link.listen}</dd></>}
             {link.pairingId && <><dt className="text-ui-muted">{t("lanLink.pairingId")}</dt><dd className="break-all font-mono" title={link.pairingId}>{link.pairingId.slice(0, 12)}</dd></>}
             {link.coordinator && <><dt className="text-ui-muted">{t("lanLink.gatewayAddress")}</dt><dd className="break-all font-mono">{link.coordinator}</dd></>}
             {link.peerEndpoint && <><dt className="text-ui-muted">{t("lanLink.peerEndpoint")}</dt><dd className="min-w-0"><LANLinkPath endpoint={link.peerEndpoint} path={link.path} /></dd></>}
         </dl>}
+        {!!link?.peers?.length && <LANLinkPeers peers={link.peers} />}
         {link?.state === "idle" && <p className="text-xs text-ui-muted">{t("lanLink.idleHelp")}</p>}
         {link && link.state !== "connected" && link.error && <p role="alert" className="break-words text-xs text-ui-danger">{link.error}</p>}
     </section>;
+}
+
+/** Other clients of the same gateway, reachable by their tunnel addresses. */
+function LANLinkPeers({ peers }: { peers: Go.transport.LANLinkPeer[] }) {
+    const { t } = useTranslation("ui");
+    return <div className="grid min-w-0 gap-2">
+        <h4 className="mb-0 text-sm font-semibold">{t("lanLink.peers", { count: peers.length })}</h4>
+        <ul className="grid gap-2" aria-label={t("lanLink.peers", { count: peers.length })}>
+            {peers.map(peer => <li key={peer.addresses.join(",")} className="flex min-w-0 flex-wrap items-center gap-2 rounded-ui-md border border-ui-border px-3 py-2 text-sm">
+                <span className={`min-w-0 break-all font-medium ${peer.name ? "text-ui-heading" : "text-ui-muted"}`}>{peer.name || t("lanLink.unnamed")}</span>
+                <Badge variant={peer.online ? "success" : "muted"} dot>{t(peer.online ? "lanLink.online" : "peerTunnel.peerState.offline")}</Badge>
+                <span className="min-w-0 basis-full break-all font-mono text-xs text-ui-muted">{peer.addresses.join(", ")}</span>
+            </li>)}
+        </ul>
+    </div>;
 }

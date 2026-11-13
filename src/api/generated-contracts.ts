@@ -537,8 +537,10 @@ export namespace Go {
     export interface LANLinkGateway {
       networks: string[];
       subnet?: string;
+      subnet6?: string;
       listen?: string;
       publicEndpoint?: string;
+      publicEndpoint6?: string;
       stunServer?: string;
       clientToClient?: boolean;
       privateKey?: string;
@@ -561,7 +563,7 @@ export namespace Go {
       invitation: string;
       clientId: string;
       name?: string;
-      address: string;
+      addresses: string[];
     }
     export interface LANLinkClientRequest {
       id: string;
@@ -576,7 +578,7 @@ export namespace Go {
     export interface LANLinkClientStatus {
       id: string;
       name?: string;
-      address: string;
+      addresses: string[];
       pairingId: string;
       online: boolean;
       blocked: boolean;
@@ -589,7 +591,9 @@ export namespace Go {
     export interface LANLinkClients {
       running: boolean;
       subnet?: string;
+      subnet6?: string;
       publicEndpoint?: string;
+      publicEndpoints?: string[];
       publicError?: string;
       items: LANLinkClientStatus[];
     }
@@ -1165,6 +1169,7 @@ export namespace Go {
       ip_version?: IPVersion;
       chain: Protocol[];
       latency?: LatencyConfig;
+      autoConnect?: boolean;
     }
     export interface LatencyConfig {
       url?: string;
@@ -2539,21 +2544,29 @@ export namespace Go {
     }
     export interface LANLinkInvitation {
       coordinator: string;
+      coordinators?: string[];
       registration: string;
       token: string;
       routes: string[];
       subnet?: string;
+      subnets?: string[];
     }
     export interface LANLinkStatus {
       pairingId: string;
       state: string;
       error?: string;
       coordinator?: string;
-      localIp?: string;
-      peerIp?: string;
+      localIps?: string[];
+      peerIps?: string[];
       listen?: string;
       peerEndpoint?: string;
       path?: string;
+      peers?: LANLinkPeer[];
+    }
+    export interface LANLinkPeer {
+      name?: string;
+      addresses: string[];
+      online: boolean;
     }
     export interface TCPSettings {
       congestionControl?: string;

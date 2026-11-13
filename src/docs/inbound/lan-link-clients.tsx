@@ -48,7 +48,7 @@ export function LANLinkClients({ id }: { id: string }) {
     return <FormSection title={t("lanLink.clients")} description={t("lanLink.clientsHelp")}>
         <div className="grid min-w-0 gap-3">
             {data && !data.running && <p role="status" className="text-sm text-ui-muted">{t("lanLink.inactive")}</p>}
-            {data?.running && data.publicEndpoint && <p className="break-all text-sm text-ui-muted">{t("lanLink.publicAddress", { address: data.publicEndpoint })}</p>}
+            {data?.running && data.publicEndpoint && <p className="break-all text-sm text-ui-muted">{t("lanLink.publicAddress", { address: data.publicEndpoints?.length ? data.publicEndpoints.join(", ") : data.publicEndpoint })}</p>}
             {data?.running && !data.publicEndpoint && data.publicError && <p role="alert" className="text-sm text-ui-danger">{t("lanLink.publicEndpointMissing")}</p>}
             <div className="flex min-w-0 flex-wrap items-end gap-2">
                 <div className="min-w-0 flex-1 basis-56">
@@ -71,7 +71,7 @@ export function LANLinkClients({ id }: { id: string }) {
                         setCopied(true);
                     })}>{t(copied ? "lanLink.invitationCopied" : "lanLink.copyInvitation")}</Button>
                 {issued.name && <p className="break-all text-sm text-ui-muted">{t("lanLink.issuedFor", { name: issued.name })}</p>}
-                <p className="text-sm text-ui-muted">{t("lanLink.assignedAddress", { address: issued.address })}</p>
+                <p className="text-sm text-ui-muted">{t("lanLink.assignedAddress", { address: (issued.addresses ?? []).join(", ") })}</p>
             </div>}
             {error && <p role="alert" className="text-sm text-ui-danger">{t("lanLink.loadFailed")} <Button size="sm" onClick={() => void mutate()}>{t("refresh")}</Button></p>}
             {data && total === 0 && <p className="text-sm text-ui-muted">{t("lanLink.noClients")}</p>}
@@ -104,7 +104,7 @@ export function LANLinkClients({ id }: { id: string }) {
                         </Badge>
                     </div>
                     <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
-                        <dt className="text-ui-muted">{t("lanLink.tunnelAddress")}</dt><dd className="break-all font-mono">{client.address}</dd>
+                        <dt className="text-ui-muted">{t("lanLink.tunnelAddress")}</dt><dd className="break-all font-mono">{(client.addresses ?? []).join(", ")}</dd>
                         <dt className="text-ui-muted">{t("lanLink.pairingId")}</dt><dd className="break-all font-mono" title={client.pairingId}>{client.pairingId.slice(0, 12)}</dd>
                         <dt className="text-ui-muted">{t("peerTunnel.dialer")}</dt><dd className="min-w-0">{client.dialerEndpoint ? <LANLinkPath endpoint={client.dialerEndpoint} path={client.path} /> : t("peerTunnel.peerState.offline")}</dd>
                         <dt className="text-ui-muted">{t("peerTunnel.publisher")}</dt><dd className="break-all font-mono">{client.publisherEndpoint ?? t("peerTunnel.peerState.offline")}</dd>

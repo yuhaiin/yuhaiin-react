@@ -60,16 +60,24 @@ it("shows the outbound's own addresses and the peer path in the node editor", as
     document.body.append(host);
     vi.mocked(getNodeExtraInfo).mockResolvedValue({ lan_link: {
         pairingId: "ffeeddccbbaa99887766554433221100", state: "connected", coordinator: "198.51.100.7:51821",
-        localIp: "10.20.0.3", peerIp: "10.20.0.1", listen: "192.168.1.5:40200", peerEndpoint: "203.0.113.9:51821", path: "public",
+        localIps: ["10.20.0.3", "fd20::3"], peerIps: ["10.20.0.1", "fd20::1"], listen: "192.168.1.5:40200", peerEndpoint: "203.0.113.9:51821", path: "public",
+        peers: [{ name: "Office NAS", addresses: ["10.20.0.4", "fd20::4"], online: true }, { addresses: ["10.20.0.5"], online: false }],
     } });
     const root = createRoot(host);
     try {
         await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><LANLinkRuntimeInfo nodeId="node" /></SWRConfig>));
         await act(async () => { await Promise.resolve(); });
         expect(getNodeExtraInfo).toHaveBeenCalledWith("node");
-        for (const text of ["lanLink.linkState.connected", "10.20.0.3", "10.20.0.1", "192.168.1.5:40200", "ffeeddccbbaa", "198.51.100.7:51821", "203.0.113.9:51821", "lanLink.path.public"]) {
+        for (const text of ["lanLink.linkState.connected", "10.20.0.3, fd20::3", "10.20.0.1, fd20::1", "192.168.1.5:40200", "ffeeddccbbaa", "198.51.100.7:51821", "203.0.113.9:51821", "lanLink.path.public"]) {
             expect(host.textContent).toContain(text);
         }
+        const peers = host.querySelector('ul[aria-label="lanLink.peers"]');
+        expect(peers?.querySelectorAll("li")).toHaveLength(2);
+        expect(peers?.textContent).toContain("Office NAS");
+        expect(peers?.textContent).toContain("10.20.0.4, fd20::4");
+        expect(peers?.textContent).toContain("lanLink.online");
+        expect(peers?.textContent).toContain("lanLink.unnamed");
+        expect(peers?.textContent).toContain("peerTunnel.peerState.offline");
     } finally {
         await act(async () => root.unmount());
         host.remove();

@@ -163,6 +163,8 @@
   "name": "이름",
   "nodeIPVersion": "대상 IP 계열",
   "nodeIPVersionHelp": "일반 트래픽과 지연 시간 측정에 적용됩니다. 단일 계열 모드에서는 대상 호스트 이름을 선택한 계열로만 해석하고 다른 계열의 IP 주소 연결을 거부합니다. 자동은 기존 듀얼 스택 동작을 유지합니다.",
+  "nodeAutoConnect": "자동 연결",
+  "nodeAutoConnectHelp": "첫 연결을 기다리지 않고 서비스 시작 시나 노드 저장 시 연결하며, 트래픽이 없어도 연결을 유지합니다. LAN Link, WireGuard, Tailscale에 적용됩니다.",
   "nodeIPVersionAuto": "자동(듀얼 스택)",
   "nodeIPVersionIPv4": "IPv4 전용",
   "nodeIPVersionIPv6": "IPv6 전용",
@@ -1188,7 +1190,7 @@
   },
   "lanLink": {
     "networks": "LAN 네트워크",
-    "networksHelp": "이 게이트웨이가 공유할 네트워크를 선택합니다. 선택하기 전에는 아무것도 공유되지 않습니다.",
+    "networksHelp": "이 게이트웨이가 공유할 네트워크를 선택합니다. IPv4와 IPv6 네트워크를 함께 쓸 수 있습니다. 선택하기 전에는 아무것도 공유되지 않습니다.",
     "detectedNetworks": "감지된 네트워크",
     "manualNetworks": "기타 네트워크 (CIDR)",
     "detectionUnsupported": "이 환경에서는 네트워크를 감지할 수 없습니다 ({{reason}}). 직접 입력하세요.",
@@ -1199,12 +1201,13 @@
     "advanced": "고급 설정",
     "listen": "UDP 수신 주소",
     "publicEndpoint": "공개 엔드포인트",
+    "publicEndpoint6": "두 번째 공개 엔드포인트(선택)",
     "stunServer": "STUN 서버",
     "clientToClient": "클라이언트 간 통신",
     "clientToClientHelp": "터널 주소로 접근할 수 있게 합니다. 이 게이트웨이의 터널 주소로 가는 연결은 루프백의 같은 포트로, 다른 클라이언트 주소로 가는 연결은 해당 클라이언트로 중계되며 그 클라이언트가 '수신 허용'을 켠 경우에만 받아들여집니다. 루프백 전용 서비스에도 접근할 수 있으므로 신뢰하는 클라이언트에만 사용하세요.",
     "allowIncoming": "수신 허용",
     "allowIncomingHelp": "게이트웨이가 클라이언트 간 통신을 켠 경우 이 클라이언트의 터널 주소로 오는 연결을 루프백의 같은 포트로 전달합니다. 링크는 처음 사용할 때가 아니라 시작 시 연결됩니다. 다른 클라이언트를 신뢰할 때만 켜세요.",
-    "publicEndpointHelp": "클라이언트는 공개 엔드포인트(host:port)로 연결합니다. 비워 두면 STUN으로 자동 감지합니다. NAT 뒤에서는 UDP 수신 포트(기본 51821)를 이 장치로 포트 포워딩하거나 고정 호스트 이름을 지정하세요. 그렇지 않으면 주소가 바뀔 때 초대가 동작하지 않습니다.",
+    "publicEndpointHelp": "클라이언트는 공개 엔드포인트(host:port)로 연결합니다. 비워 두면 STUN으로 IPv4와 IPv6 엔드포인트를 모두 감지하고 같은 수신 포트에서 두 계열의 클라이언트를 받습니다. NAT 뒤에서는 UDP 수신 포트(기본 51821)를 이 장치로 포트 포워딩하거나 고정 호스트 이름을 지정하세요. A와 AAAA 레코드가 모두 있는 호스트 이름은 두 계열을 모두 지원합니다. IPv4 주소와 함께 IPv6 주소를 지정하려면 두 번째 엔드포인트를 사용하세요. 그렇지 않으면 주소가 바뀔 때 초대가 동작하지 않습니다.",
     "clients": "클라이언트",
     "clientsHelp": "초대마다 독립된 자격 증명과 터널 주소가 할당됩니다.",
     "inactive": "초대를 생성하고 클라이언트 상태를 보려면 이 게이트웨이를 활성화하세요.",
@@ -1240,9 +1243,10 @@
       "connecting": "연결 중",
       "connected": "연결됨"
     },
-    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다.",
+    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다. 바로 시작하려면 자동 연결을 켜세요.",
     "status": "연결 상태",
-    "statusUnavailable": "이 노드를 저장하고 활성화하면 연결 상태가 표시됩니다."
+    "statusUnavailable": "이 노드를 저장하고 활성화하면 연결 상태가 표시됩니다.",
+    "peers": "다른 클라이언트 ({{count}})"
   },
   "peerTunnel": {
     "peers": "피어 터널",

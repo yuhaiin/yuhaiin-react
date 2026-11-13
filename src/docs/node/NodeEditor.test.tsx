@@ -89,3 +89,33 @@ it('edits a per-node latency URL and its HTTPS verification option', () => {
         host.remove();
     }
 });
+
+it('offers auto connect only for outbounds that hold a session', () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const noop = () => {};
+    let saved = normalizeNode({ chain: [{ type: 'wireguard', wireguard: {} }] });
+    const render = () => root.render(<NodeEditor value={saved} editable groups={[]}
+        onChange={(patch) => { saved = normalizeNode({ ...saved, ...patch }); }}
+        onProtocolChange={noop} onMoveProtocol={noop} onRemoveProtocol={noop} onAddProtocol={noop} />);
+    const autoConnect = () => [...host.querySelectorAll<HTMLButtonElement>('[role="switch"]')].find((button) => {
+        const labelId = button.getAttribute('aria-labelledby');
+        return labelId !== null && document.getElementById(labelId)?.textContent === 'nodeAutoConnect';
+    });
+    try {
+        act(render);
+        expect(autoConnect()?.getAttribute('aria-checked')).toBe('false');
+        act(() => autoConnect()!.click());
+        act(render);
+        expect(saved.autoConnect).toBe(true);
+        expect(autoConnect()?.getAttribute('aria-checked')).toBe('true');
+
+        saved = normalizeNode({ chain: [{ type: 'direct', direct: {} }] });
+        act(render);
+        expect(autoConnect()).toBeUndefined();
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
+});
