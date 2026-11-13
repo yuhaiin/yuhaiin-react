@@ -501,7 +501,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "zerotier":
             return <ZeroTierForm config={protocol.zerotier} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "lan_link":
-            return <LANLinkOutboundForm value={protocol.lan_link} disabled={!editable} onChange={invitation => patch(protocol, { invitation })} />;
+            return <LANLinkOutboundForm value={protocol.lan_link} disabled={!editable} onChange={patchValue => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
