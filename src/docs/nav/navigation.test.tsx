@@ -20,7 +20,7 @@ it('uses the rendered menu order for page transitions and keeps every route reac
         }
         const visiblePaths = [...host.querySelectorAll<HTMLAnchorElement>('nav a[href]')].map(link => link.getAttribute('href')!.slice(1));
         expect(visiblePaths).toEqual(navigationOrder.filter(path => path !== '/login'));
-        expect(new Set(visiblePaths).size).toBe(35);
+        expect(new Set(visiblePaths).size).toBe(36);
         expect([...navigationOrder].sort()).toEqual(appRoutes.map(route => route.path).sort());
     } finally { act(() => root.unmount()); host.remove(); }
 });
@@ -36,7 +36,7 @@ it('shows the Android page only to the in-app WebView session', async () => {
         }
         const visiblePaths = [...host.querySelectorAll<HTMLAnchorElement>('nav a[href]')].map(link => link.getAttribute('href')!.slice(1));
         expect(visiblePaths).not.toContain('/docs/android');
-        expect(visiblePaths).toHaveLength(31);
+        expect(visiblePaths).toHaveLength(32);
     } finally { android = { platform: 'android', session: true }; act(() => root.unmount()); host.remove(); }
 });
 

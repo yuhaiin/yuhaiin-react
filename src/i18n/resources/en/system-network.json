@@ -1,0 +1,278 @@
+{
+  "title": "System Network",
+  "description": "Choose which destinations the operating system sends through Yuhaiin TUNs or other interfaces, and let other devices use this host as their gateway.",
+  "sections": "System Network sections",
+  "tabs": {
+    "routing": "Routing",
+    "forwarding": "Forwarding",
+    "interfaces": "Interfaces"
+  },
+  "state": {
+    "active": "Active",
+    "pending": "Pending",
+    "degraded": "Degraded",
+    "conflict": "Conflict",
+    "unavailable": "Unavailable",
+    "unsupported": "Unsupported",
+    "disabled": "Off",
+    "failed": "Failed"
+  },
+  "stateHelp": {
+    "active": "Applied to the operating system.",
+    "pending": "Saved, not applied yet.",
+    "degraded": "Partly applied. Earlier routes may still be in use.",
+    "conflict": "Some destinations are already routed by another program; its routes keep priority.",
+    "unavailable": "The target interface or TUN does not exist right now. Routes come back automatically when it returns.",
+    "unsupported": "This device cannot apply this rule.",
+    "disabled": "Turned off.",
+    "failed": "Could not be applied. The previous working routes are kept."
+  },
+  "save": "Save and apply",
+  "discard": "Discard",
+  "saved": "Saved and applied.",
+  "savedWithProblems": "Saved. Some rules could not be applied; see their status.",
+  "unsaved": "Unsaved changes. The operating system still uses the last applied rules.",
+  "invalid": "Fix the highlighted rules before saving.",
+  "applied": "{{count}} routes applied",
+  "applied_one": "1 route applied",
+  "applied_other": "{{count}} routes applied",
+  "lastApplied": "Last applied {{time}}",
+  "platform": {
+    "linux": "Linux: rules use a dedicated policy-routing table owned by Yuhaiin. Interfaces of other programs are never changed.",
+    "darwin": "macOS: rules are added to the system routing table. There is no policy routing, so a destination that another program already routes keeps that route and is shown as a conflict.",
+    "windows": "Windows: rules are added to the system routing table per interface. Policy routing is not available.",
+    "android": "Android: rules decide which destinations the Yuhaiin VPN captures. Other interfaces and forwarding are not available. Without rules, the route profile chosen in the app applies.",
+    "none": "This device cannot manage system routes."
+  },
+  "routing": {
+    "title": "Route rules",
+    "help": "Rules are checked from top to bottom. The first rule that matches a destination wins, so put specific rules above broad ones.",
+    "add": "Add rule",
+    "emptyTitle": "No route rules yet",
+    "emptyHelp": "Without rules, Yuhaiin does not change where the operating system sends traffic. Add a rule to send, for example, all internet traffic through a Yuhaiin TUN, or one network through WireGuard.",
+    "unnamed": "Unnamed rule",
+    "order": "Rule {{n}}",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "edit": "Edit {{name}}",
+    "remove": "Delete {{name}}",
+    "enable": "Turn {{name}} on or off",
+    "removeConfirm": "Delete the rule {{name}}?",
+    "to": "to",
+    "routes": "{{v4}} IPv4 / {{v6}} IPv6 routes",
+    "previewRoutes": "After saving: {{v4}} IPv4 / {{v6}} IPv6 routes",
+    "overriddenBy": "Some destinations are already taken by: {{names}}",
+    "shadowed": "Every destination is already taken by rules above it ({{names}}), so this rule has no effect.",
+    "conflicts": "Already routed by another program: {{prefixes}}",
+    "stale": "Using the routes from the last successful update.",
+    "destination": {
+      "global": "All internet traffic",
+      "non_private": "Internet except private networks",
+      "custom": "Selected destinations",
+      "cidrs": "{{count}} networks",
+      "countries": "countries {{countries}}",
+      "except": "all countries except {{countries}}",
+      "bypass": "{{count}} bypassed",
+      "cidrs_one": "{{count}} network",
+      "cidrs_other": "{{count}} networks",
+      "bypass_one": "{{count}} bypassed",
+      "bypass_other": "{{count}} bypassed"
+    },
+    "target": {
+      "tun_inbound": "Yuhaiin TUN",
+      "interface": "Interface",
+      "missing": "{{name}} (not found)"
+    },
+    "required": "TUN requirements",
+    "requiredHelp": "Routes a running TUN needs to work, such as its FakeIP pool. They are installed before any rule.",
+    "migration": "Moved from TUN settings",
+    "migrationHelp": "Route settings that used to be part of TUN inbounds now live here. Review the rules below.",
+    "migrationItem": "{{inbound}}: {{source}}"
+  },
+  "editor": {
+    "titleNew": "New route rule",
+    "titleEdit": "Edit route rule",
+    "name": "Name",
+    "namePlaceholder": "For example: Internet via VPN",
+    "stepTarget": "Where should traffic go?",
+    "stepMatch": "Which destinations?",
+    "targetTun": "Yuhaiin TUN",
+    "targetTunHelp": "A TUN created by one of your Yuhaiin inbounds.",
+    "targetInterface": "Other interface",
+    "targetInterfaceHelp": "WireGuard, Tailscale, another VPN, Ethernet or Wi-Fi.",
+    "chooseTun": "TUN inbound",
+    "chooseInterface": "Interface",
+    "noTuns": "No TUN inbound exists yet. Create one in Inbounds first.",
+    "noInterfaces": "No usable interface was found.",
+    "stopped": "stopped",
+    "running": "running",
+    "interfaceNotFound": "{{name}} is not present right now. The rule waits until it appears.",
+    "advanced": "Advanced settings",
+    "gateway": "IPv4 gateway",
+    "gatewayV6": "IPv6 gateway",
+    "gatewayHelp": "Ethernet and Wi-Fi need a router address. Leave empty to use the detected one.",
+    "gatewayDetected": "Detected: {{gateway}}",
+    "gatewayNone": "None detected: enter the router address of this network.",
+    "gatewayNotNeeded": "Point-to-point interfaces such as VPNs need no gateway.",
+    "priority": "Priority",
+    "priorityHelp": "Lower numbers are checked first. You can also use the arrows in the list.",
+    "enabled": "Rule is on",
+    "apply": "Done",
+    "cancel": "Cancel",
+    "error": {
+      "target": "Choose where traffic goes.",
+      "cidr": "Fix the invalid networks.",
+      "empty": "Add at least one network or country, or turn on reverse selection."
+    }
+  },
+  "match": {
+    "modeLabel": "Destinations",
+    "recommended": "Recommended",
+    "modes": {
+      "global": {
+        "title": "Global",
+        "description": "All normal internet traffic.",
+        "example": "Example: websites, games and apps all use this route. Local-only traffic such as multicast and link-local stays on your network."
+      },
+      "non_private": {
+        "title": "Non-private",
+        "description": "Internet traffic, except private networks and LAN traffic.",
+        "example": "Example: google.com uses this route, while your router (192.168.1.1), a NAS and Tailscale devices (100.x.x.x) are reached directly."
+      },
+      "custom": {
+        "title": "Custom",
+        "description": "Only the networks or countries you choose.",
+        "example": "Example: only 10.0.0.0/8 and addresses in Japan (JP)."
+      }
+    },
+    "defaults": {
+      "title": "Private networks are excluded automatically",
+      "help": "LAN devices, Tailscale (100.64.0.0/10 and its fd7a:115c:a1e0::/48 IPv6 range) and other private addresses are not routed. You normally do not need to change this.",
+      "show": "Show excluded networks",
+      "private": "Private, shared (CGNAT / Tailscale) and unique local IPv6",
+      "local": "Loopback, link-local, multicast and reserved"
+    },
+    "include": {
+      "label": "Also include",
+      "help": "Private networks that should still use this rule, one per line. Example: 10.8.0.0/16 for an office network you can only reach through this target."
+    },
+    "bypass": {
+      "label": "Bypass",
+      "helpGlobal": "Networks that keep using your normal network, one per line. Example: 192.168.1.0/24 to reach your LAN directly.",
+      "helpNonPrivate": "Networks that keep using your normal network, one per line. If you reach a network through a Tailscale subnet router, add it here: advertised subnets are not always private addresses (for example 203.0.113.0/24).",
+      "helpCustom": "Addresses inside the networks or countries above that keep using your normal network."
+    },
+    "priority": "If a network is in both lists, bypass wins.",
+    "custom": {
+      "cidrTitle": "Networks",
+      "cidrLabel": "Route these networks",
+      "cidrHelp": "One IPv4 or IPv6 network per line. A single address such as 8.8.8.8 is also accepted.",
+      "countriesTitle": "GeoIP countries",
+      "countriesHelp": "Uses the GeoIP database set in Routing lists. Routes update automatically when the database is refreshed; while it is missing, the last routes stay in place.",
+      "invertTitle": "Reverse selection",
+      "invertLabel": "All countries except the selected ones",
+      "invertOff": "Off: only the selected countries use this rule.",
+      "invertOn": "On: everything except the selected countries uses this rule. Private networks still stay on your network.",
+      "invertWithoutCountries": "No country is selected, so all internet traffic uses this rule.",
+      "bypassTitle": "Bypass"
+    },
+    "cidr": {
+      "cidr": "Line {{line}}: \"{{value}}\" is not a valid IP address or CIDR.",
+      "prefix": "Line {{line}}: \"{{value}}\" has an invalid prefix length (IPv4 0–32, IPv6 0–128).",
+      "zone": "Line {{line}}: \"{{value}}\" contains an interface zone, which routes cannot use.",
+      "more": "…and {{count}} more invalid lines.",
+      "more_one": "…and {{count}} more invalid line.",
+      "more_other": "…and {{count}} more invalid lines.",
+      "count": "{{count}} networks (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_one": "{{count}} network (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_other": "{{count}} networks (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "hint": "Empty. Examples: 192.168.20.0/24, 2001:db8::/32 or 8.8.8.8"
+    }
+  },
+  "forwarding": {
+    "unsupported": "Forwarding is not available on this device.",
+    "introTitle": "Use this host as a side router",
+    "introHelp": "Forwarding lets other devices on your LAN send their traffic through this host, for example into a Yuhaiin TUN.",
+    "step1": "On the LAN device (or your DHCP server), set the gateway to this host's LAN address.",
+    "step2": "Turn on IPv4 forwarding below and add a rule for the LAN devices.",
+    "step3": "Turn on NAT only if the next router has no route back to your LAN.",
+    "ipv4": "IPv4 forwarding",
+    "ipv4Help": "Turns on net.ipv4.ip_forward. Yuhaiin restores the previous value when it stops, unless another service changed it meanwhile.",
+    "ipv6": "IPv6 forwarding",
+    "ipv6Help": "Turns on net.ipv6.conf.all.forwarding. Note: Linux then ignores router advertisements, so a host that gets its IPv6 default route that way may lose it.",
+    "rulesTitle": "Forwarding rules",
+    "add": "Add forwarding rule",
+    "empty": "No forwarding rules. Without a rule, traffic from other devices is not sent to a Yuhaiin target.",
+    "offNote": "Rules are inactive while forwarding is off for their IP version.",
+    "titleNew": "New forwarding rule",
+    "titleEdit": "Edit forwarding rule",
+    "ingress": "LAN interface",
+    "ingressHelp": "The interface the LAN devices are connected to.",
+    "sources": "LAN devices",
+    "sourcesHelp": "Addresses of the devices to forward, one per line. Example: 192.168.20.0/24 for the whole LAN, or 192.168.20.50 for one device. Leave empty to forward every device on this interface. Other devices are not forwarded.",
+    "destinations": "Only these destinations",
+    "destinationsHelp": "Optional. Leave empty to forward all internet traffic of these devices.",
+    "egress": "Send through",
+    "egressTun": "Yuhaiin TUN",
+    "egressInterface": "Other interface",
+    "egressTProxy": "TProxy inbound",
+    "egressTProxyHelp": "Intercepts TCP and UDP of these devices into a TProxy inbound on this host instead of routing it.",
+    "chooseTProxy": "TProxy inbound",
+    "noTProxy": "No TProxy inbound exists. Create one in Inbounds first.",
+    "masquerade": "NAT (masquerade)",
+    "masqueradeHelp": "Replaces the devices' addresses with this host's address on the way out. Needed when the next router does not know how to reach your LAN. Off by default.",
+    "summary": "{{sources}} from {{ingress}} → {{egress}}",
+    "error": {
+      "ingress": "Choose the LAN interface.",
+      "cidr": "Fix the invalid networks.",
+      "target": "Choose where traffic goes."
+    },
+    "egressRoutes": "Routing table",
+    "egressRoutesHelp": "Forwards through the normal routing table, which already includes your route rules.",
+    "allDevices": "all devices",
+    "noSourceFilter": "On this platform every device on the LAN interface is forwarded; limiting it to some devices is not available.",
+    "platform": {
+      "darwin": "macOS: forwarding uses PF through Yuhaiin's own anchor (com.apple/yuhaiin). Your pf.conf and other anchors are not changed. TProxy interception is not available.",
+      "windows": "Windows: forwarding is turned on per interface and follows the routing table, including your route rules. Limiting it to some devices, choosing an egress per rule and NAT are not available."
+    }
+  },
+  "interfaces": {
+    "title": "Interfaces",
+    "help": "Interfaces present on this host right now. Yuhaiin never deletes or reconfigures interfaces it does not own.",
+    "refresh": "Refresh",
+    "addresses": "Addresses",
+    "gateway": "Gateway",
+    "mtu": "MTU",
+    "noAddress": "No address",
+    "up": "Up",
+    "down": "Down",
+    "ownership": {
+      "yuhaiin": "Yuhaiin",
+      "external": "External",
+      "system": "System"
+    },
+    "ownershipHelp": {
+      "yuhaiin": "Created by the inbound {{name}}.",
+      "external": "A tunnel created by another program, such as WireGuard or Tailscale.",
+      "system": "Managed by the operating system."
+    },
+    "types": {
+      "loopback": "Loopback",
+      "ethernet": "Ethernet",
+      "wifi": "Wi-Fi",
+      "tunnel": "Tunnel",
+      "bridge": "Bridge",
+      "virtual": "Virtual",
+      "other": "Other"
+    },
+    "routable": "Can be a route target",
+    "notRoutable": "Not a route target here",
+    "missingTitle": "Saved targets that are missing",
+    "missingHelp": "These interfaces or TUNs are used by rules but do not exist now. Their rules are paused and resume automatically.",
+    "usedBy": "Used by: {{rules}}",
+    "tunTitle": "TUN inbounds",
+    "tunStopped": "Not running",
+    "tunRunning": "Running as {{name}}",
+    "viaTun": "Choose it as a Yuhaiin TUN in route rules."
+  }
+}

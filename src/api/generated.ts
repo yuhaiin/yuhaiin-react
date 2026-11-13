@@ -151,6 +151,11 @@ export type RPCOperation =
   | "subscriptions.get"
   | "subscriptions.put"
   | "subscriptions.update"
+  | "systemNetwork.config.get"
+  | "systemNetwork.config.put"
+  | "systemNetwork.interfaces"
+  | "systemNetwork.preview"
+  | "systemNetwork.status"
   | "tools.diagnostics"
   | "tools.interfaces"
   | "tools.licenses"
@@ -257,6 +262,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },
+  { method: "GET", pattern: "/api/v2/system-network/config", operation: "systemNetwork.config.get" },
+  { method: "PUT", pattern: "/api/v2/system-network/config", operation: "systemNetwork.config.put" },
+  { method: "GET", pattern: "/api/v2/system-network/status", operation: "systemNetwork.status" },
+  { method: "GET", pattern: "/api/v2/system-network/interfaces", operation: "systemNetwork.interfaces" },
+  { method: "POST", pattern: "/api/v2/system-network/preview", operation: "systemNetwork.preview" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },

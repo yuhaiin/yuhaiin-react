@@ -1,0 +1,278 @@
+{
+  "title": "시스템 네트워크",
+  "description": "운영체제가 어떤 대상을 Yuhaiin TUN이나 다른 인터페이스로 보낼지 정하고, 다른 기기가 이 호스트를 게이트웨이로 사용할 수 있게 합니다.",
+  "sections": "시스템 네트워크 섹션",
+  "tabs": {
+    "routing": "라우팅",
+    "forwarding": "포워딩",
+    "interfaces": "인터페이스"
+  },
+  "state": {
+    "active": "적용됨",
+    "pending": "대기",
+    "degraded": "일부 적용",
+    "conflict": "충돌",
+    "unavailable": "사용 불가",
+    "unsupported": "지원 안 함",
+    "disabled": "끔",
+    "failed": "실패"
+  },
+  "stateHelp": {
+    "active": "운영체제에 적용되었습니다.",
+    "pending": "저장되었지만 아직 적용되지 않았습니다.",
+    "degraded": "일부만 적용되었습니다. 이전 라우트가 사용될 수 있습니다.",
+    "conflict": "일부 대상은 다른 프로그램이 이미 라우팅하고 있으며 그 라우트가 우선합니다.",
+    "unavailable": "대상 인터페이스나 TUN이 지금 없습니다. 다시 나타나면 라우트도 자동으로 복원됩니다.",
+    "unsupported": "이 기기에서는 이 규칙을 적용할 수 없습니다.",
+    "disabled": "꺼져 있습니다.",
+    "failed": "적용하지 못했습니다. 이전에 정상이던 라우트를 유지합니다."
+  },
+  "save": "저장 및 적용",
+  "discard": "취소",
+  "saved": "저장하고 적용했습니다.",
+  "savedWithProblems": "저장했습니다. 일부 규칙은 적용하지 못했습니다. 각 규칙의 상태를 확인하세요.",
+  "unsaved": "저장하지 않은 변경 사항이 있습니다. 운영체제는 마지막으로 적용된 규칙을 계속 사용합니다.",
+  "invalid": "강조 표시된 규칙을 수정한 뒤 저장하세요.",
+  "applied": "라우트 {{count}}개 적용됨",
+  "applied_one": "라우트 {{count}}개 적용됨",
+  "applied_other": "라우트 {{count}}개 적용됨",
+  "lastApplied": "마지막 적용 {{time}}",
+  "platform": {
+    "linux": "Linux: 규칙은 Yuhaiin 전용 정책 라우팅 테이블을 사용합니다. 다른 프로그램의 인터페이스는 변경하지 않습니다.",
+    "darwin": "macOS: 규칙은 시스템 라우팅 테이블에 추가됩니다. 정책 라우팅이 없으므로 다른 프로그램이 이미 라우팅하는 대상은 그 라우트가 유지되고 충돌로 표시됩니다.",
+    "windows": "Windows: 규칙은 인터페이스별로 시스템 라우팅 테이블에 추가됩니다. 정책 라우팅은 사용할 수 없습니다.",
+    "android": "Android: 규칙은 Yuhaiin VPN이 처리할 대상을 정합니다. 다른 인터페이스와 포워딩은 사용할 수 없습니다. 규칙이 없으면 앱에서 고른 라우트 프로필이 적용됩니다.",
+    "none": "이 기기에서는 시스템 라우트를 관리할 수 없습니다."
+  },
+  "routing": {
+    "title": "라우트 규칙",
+    "help": "규칙은 위에서부터 확인되며 대상에 처음 일치한 규칙이 사용됩니다. 구체적인 규칙을 넓은 규칙보다 위에 두세요.",
+    "add": "규칙 추가",
+    "emptyTitle": "라우트 규칙이 없습니다",
+    "emptyHelp": "규칙이 없으면 Yuhaiin은 운영체제가 트래픽을 보내는 곳을 바꾸지 않습니다. 예를 들어 모든 인터넷 트래픽을 Yuhaiin TUN으로, 특정 네트워크를 WireGuard로 보내는 규칙을 추가하세요.",
+    "unnamed": "이름 없는 규칙",
+    "order": "규칙 {{n}}",
+    "moveUp": "{{name}} 위로 이동",
+    "moveDown": "{{name}} 아래로 이동",
+    "edit": "{{name}} 편집",
+    "remove": "{{name}} 삭제",
+    "enable": "{{name}} 켜기/끄기",
+    "removeConfirm": "{{name}} 규칙을 삭제할까요?",
+    "to": "→",
+    "routes": "IPv4 {{v4}} / IPv6 {{v6}}개 라우트",
+    "previewRoutes": "저장 후: IPv4 {{v4}} / IPv6 {{v6}}개 라우트",
+    "overriddenBy": "일부 대상은 다음 규칙이 먼저 사용합니다: {{names}}",
+    "shadowed": "모든 대상이 위의 규칙({{names}})에서 이미 사용되므로 이 규칙은 효과가 없습니다.",
+    "conflicts": "다른 프로그램이 이미 라우팅함: {{prefixes}}",
+    "stale": "마지막으로 성공한 업데이트의 라우트를 사용 중입니다.",
+    "destination": {
+      "global": "모든 인터넷 트래픽",
+      "non_private": "사설망을 제외한 인터넷",
+      "custom": "지정한 대상",
+      "cidrs": "네트워크 {{count}}개",
+      "countries": "국가 {{countries}}",
+      "except": "{{countries}}를 제외한 모든 국가",
+      "bypass": "{{count}}개 우회",
+      "cidrs_one": "네트워크 {{count}}개",
+      "cidrs_other": "네트워크 {{count}}개",
+      "bypass_one": "{{count}}개 우회",
+      "bypass_other": "{{count}}개 우회"
+    },
+    "target": {
+      "tun_inbound": "Yuhaiin TUN",
+      "interface": "인터페이스",
+      "missing": "{{name}} (찾을 수 없음)"
+    },
+    "required": "TUN 필수 라우트",
+    "requiredHelp": "실행 중인 TUN에 필요한 라우트(FakeIP 풀 등)입니다. 모든 규칙보다 먼저 설치됩니다.",
+    "migration": "TUN 설정에서 이동됨",
+    "migrationHelp": "예전에 TUN 인바운드에 있던 라우트 설정이 이곳으로 이동했습니다. 아래 규칙을 확인하세요.",
+    "migrationItem": "{{inbound}}: {{source}}"
+  },
+  "editor": {
+    "titleNew": "새 라우트 규칙",
+    "titleEdit": "라우트 규칙 편집",
+    "name": "이름",
+    "namePlaceholder": "예: VPN을 통한 인터넷",
+    "stepTarget": "트래픽을 어디로 보낼까요?",
+    "stepMatch": "어떤 대상을 보낼까요?",
+    "targetTun": "Yuhaiin TUN",
+    "targetTunHelp": "Yuhaiin 인바운드가 만든 TUN.",
+    "targetInterface": "다른 인터페이스",
+    "targetInterfaceHelp": "WireGuard, Tailscale, 다른 VPN, 이더넷 또는 Wi-Fi.",
+    "chooseTun": "TUN 인바운드",
+    "chooseInterface": "인터페이스",
+    "noTuns": "TUN 인바운드가 아직 없습니다. 먼저 인바운드에서 만드세요.",
+    "noInterfaces": "사용할 수 있는 인터페이스가 없습니다.",
+    "stopped": "중지됨",
+    "running": "실행 중",
+    "interfaceNotFound": "{{name}}이(가) 지금 없습니다. 나타날 때까지 규칙이 대기합니다.",
+    "advanced": "고급 설정",
+    "gateway": "IPv4 게이트웨이",
+    "gatewayV6": "IPv6 게이트웨이",
+    "gatewayHelp": "이더넷과 Wi-Fi에는 공유기 주소가 필요합니다. 비워 두면 감지된 주소를 사용합니다.",
+    "gatewayDetected": "감지됨: {{gateway}}",
+    "gatewayNone": "감지되지 않음: 이 네트워크의 공유기 주소를 입력하세요.",
+    "gatewayNotNeeded": "VPN 같은 점대점 인터페이스에는 게이트웨이가 필요 없습니다.",
+    "priority": "우선순위",
+    "priorityHelp": "숫자가 작을수록 먼저 확인됩니다. 목록의 화살표로도 바꿀 수 있습니다.",
+    "enabled": "규칙 켜기",
+    "apply": "완료",
+    "cancel": "취소",
+    "error": {
+      "target": "트래픽을 보낼 곳을 선택하세요.",
+      "cidr": "잘못된 네트워크를 수정하세요.",
+      "empty": "네트워크나 국가를 하나 이상 추가하거나 선택 반전을 켜세요."
+    }
+  },
+  "match": {
+    "modeLabel": "대상",
+    "recommended": "추천",
+    "modes": {
+      "global": {
+        "title": "전체",
+        "description": "모든 일반 인터넷 트래픽.",
+        "example": "예: 웹사이트, 게임, 앱 트래픽이 모두 이 라우트를 사용합니다. 멀티캐스트나 링크 로컬 같은 로컬 전용 트래픽은 평소 네트워크를 사용합니다."
+      },
+      "non_private": {
+        "title": "사설망 제외",
+        "description": "사설 네트워크와 LAN 트래픽을 제외한 인터넷 트래픽.",
+        "example": "예: google.com은 이 라우트를 사용하고 공유기(192.168.1.1), NAS, Tailscale 기기(100.x.x.x)에는 직접 연결합니다."
+      },
+      "custom": {
+        "title": "사용자 지정",
+        "description": "선택한 네트워크나 국가만.",
+        "example": "예: 10.0.0.0/8과 일본(JP) 주소만."
+      }
+    },
+    "defaults": {
+      "title": "사설 네트워크는 자동으로 제외됩니다",
+      "help": "LAN 기기, Tailscale(100.64.0.0/10과 IPv6 fd7a:115c:a1e0::/48) 및 기타 사설 주소는 라우팅되지 않습니다. 보통은 바꿀 필요가 없습니다.",
+      "show": "제외되는 네트워크 보기",
+      "private": "사설, 공유 주소(CGNAT / Tailscale), IPv6 고유 로컬",
+      "local": "루프백, 링크 로컬, 멀티캐스트, 예약됨"
+    },
+    "include": {
+      "label": "추가로 포함",
+      "help": "제외되는 네트워크 중 이 규칙을 사용할 것을 한 줄에 하나씩 입력합니다. 예: 이 대상을 통해서만 접근할 수 있는 사내 네트워크 10.8.0.0/16."
+    },
+    "bypass": {
+      "label": "우회",
+      "helpGlobal": "평소 네트워크를 계속 사용할 네트워크를 한 줄에 하나씩 입력합니다. 예: LAN에 직접 접속하기 위한 192.168.1.0/24.",
+      "helpNonPrivate": "평소 네트워크를 계속 사용할 네트워크를 한 줄에 하나씩 입력합니다. Tailscale 서브넷 라우터를 통해 접근하는 네트워크는 여기에 추가하세요. 광고되는 서브넷이 항상 사설 주소인 것은 아닙니다(예: 203.0.113.0/24).",
+      "helpCustom": "위의 네트워크나 국가에 포함되지만 평소 네트워크를 계속 사용할 주소."
+    },
+    "priority": "두 목록에 모두 있는 네트워크는 우회가 우선합니다.",
+    "custom": {
+      "cidrTitle": "네트워크",
+      "cidrLabel": "라우팅할 네트워크",
+      "cidrHelp": "IPv4 또는 IPv6 네트워크를 한 줄에 하나씩 입력합니다. 8.8.8.8 같은 단일 주소도 사용할 수 있습니다.",
+      "countriesTitle": "GeoIP 국가",
+      "countriesHelp": "라우팅 목록에서 설정한 GeoIP 데이터베이스를 사용합니다. 데이터베이스가 갱신되면 라우트도 자동으로 갱신되고, 데이터베이스가 없는 동안에는 마지막 라우트를 유지합니다.",
+      "invertTitle": "선택 반전",
+      "invertLabel": "선택한 국가를 제외한 모든 국가",
+      "invertOff": "끔: 선택한 국가만 이 규칙을 사용합니다.",
+      "invertOn": "켬: 선택한 국가를 제외한 모든 트래픽이 이 규칙을 사용합니다. 사설 네트워크는 계속 평소 네트워크를 사용합니다.",
+      "invertWithoutCountries": "선택한 국가가 없어 모든 인터넷 트래픽이 이 규칙을 사용합니다.",
+      "bypassTitle": "우회"
+    },
+    "cidr": {
+      "cidr": "{{line}}번째 줄: \"{{value}}\"은(는) 올바른 IP 주소나 CIDR이 아닙니다.",
+      "prefix": "{{line}}번째 줄: \"{{value}}\"의 프리픽스 길이가 잘못되었습니다(IPv4 0–32, IPv6 0–128).",
+      "zone": "{{line}}번째 줄: \"{{value}}\"에는 인터페이스 존이 포함되어 라우트에 사용할 수 없습니다.",
+      "more": "…외 잘못된 줄 {{count}}개.",
+      "more_one": "…외 잘못된 줄 {{count}}개.",
+      "more_other": "…외 잘못된 줄 {{count}}개.",
+      "count": "네트워크 {{count}}개 (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_one": "네트워크 {{count}}개 (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "count_other": "네트워크 {{count}}개 (IPv4 {{ipv4}}, IPv6 {{ipv6}})",
+      "hint": "비어 있습니다. 예: 192.168.20.0/24, 2001:db8::/32, 8.8.8.8"
+    }
+  },
+  "forwarding": {
+    "unsupported": "이 기기에서는 포워딩을 사용할 수 없습니다.",
+    "introTitle": "이 호스트를 사이드 라우터로 사용",
+    "introHelp": "포워딩을 사용하면 LAN의 다른 기기가 이 호스트를 통해 트래픽을 보낼 수 있습니다. 예를 들어 Yuhaiin TUN으로 보낼 수 있습니다.",
+    "step1": "LAN 기기(또는 DHCP 서버)에서 게이트웨이를 이 호스트의 LAN 주소로 설정합니다.",
+    "step2": "아래에서 IPv4 포워딩을 켜고 LAN 기기용 규칙을 추가합니다.",
+    "step3": "다음 라우터에 LAN으로 돌아오는 경로가 없을 때만 NAT를 켭니다.",
+    "ipv4": "IPv4 포워딩",
+    "ipv4Help": "net.ipv4.ip_forward를 켭니다. 중지할 때 이전 값으로 되돌립니다(그 사이 다른 서비스가 바꾼 경우는 제외).",
+    "ipv6": "IPv6 포워딩",
+    "ipv6Help": "net.ipv6.conf.all.forwarding을 켭니다. 주의: Linux가 라우터 광고를 무시하게 되므로 이를 통해 IPv6 기본 라우트를 받는 호스트는 라우트를 잃을 수 있습니다.",
+    "rulesTitle": "포워딩 규칙",
+    "add": "포워딩 규칙 추가",
+    "empty": "포워딩 규칙이 없습니다. 규칙이 없으면 다른 기기의 트래픽은 Yuhaiin 대상으로 보내지지 않습니다.",
+    "offNote": "해당 IP 버전의 포워딩이 꺼져 있는 동안 규칙은 동작하지 않습니다.",
+    "titleNew": "새 포워딩 규칙",
+    "titleEdit": "포워딩 규칙 편집",
+    "ingress": "LAN 인터페이스",
+    "ingressHelp": "LAN 기기가 연결된 인터페이스.",
+    "sources": "LAN 기기",
+    "sourcesHelp": "포워딩할 기기의 주소를 한 줄에 하나씩 입력합니다. 예: LAN 전체는 192.168.20.0/24, 기기 하나는 192.168.20.50. 비워 두면 이 인터페이스의 모든 기기를 포워딩합니다. 다른 기기는 포워딩되지 않습니다.",
+    "destinations": "이 대상만",
+    "destinationsHelp": "선택 사항. 비워 두면 이 기기들의 모든 인터넷 트래픽을 포워딩합니다.",
+    "egress": "보낼 곳",
+    "egressTun": "Yuhaiin TUN",
+    "egressInterface": "다른 인터페이스",
+    "egressTProxy": "TProxy 인바운드",
+    "egressTProxyHelp": "이 기기들의 TCP와 UDP를 라우팅하지 않고 이 호스트의 TProxy 인바운드로 가로챕니다.",
+    "chooseTProxy": "TProxy 인바운드",
+    "noTProxy": "TProxy 인바운드가 없습니다. 먼저 인바운드에서 만드세요.",
+    "masquerade": "NAT(마스커레이드)",
+    "masqueradeHelp": "나가는 트래픽의 기기 주소를 이 호스트의 주소로 바꿉니다. 다음 라우터가 LAN으로 가는 경로를 모를 때 필요합니다. 기본값은 꺼짐입니다.",
+    "summary": "{{ingress}}의 {{sources}} → {{egress}}",
+    "error": {
+      "ingress": "LAN 인터페이스를 선택하세요.",
+      "cidr": "잘못된 네트워크를 수정하세요.",
+      "target": "트래픽을 보낼 곳을 선택하세요."
+    },
+    "egressRoutes": "라우팅 테이블",
+    "egressRoutesHelp": "라우트 규칙이 포함된 일반 라우팅 테이블을 따라 포워딩합니다.",
+    "allDevices": "모든 기기",
+    "noSourceFilter": "이 플랫폼에서는 LAN 인터페이스의 모든 기기가 포워딩됩니다. 일부 기기로 제한할 수 없습니다.",
+    "platform": {
+      "darwin": "macOS: 포워딩은 Yuhaiin 전용 PF 앵커(com.apple/yuhaiin)를 사용합니다. pf.conf와 다른 앵커는 변경하지 않습니다. TProxy는 사용할 수 없습니다.",
+      "windows": "Windows: 포워딩은 인터페이스별로 켜지며 라우트 규칙을 포함한 라우팅 테이블을 따릅니다. 기기 제한, 규칙별 보낼 곳, NAT는 사용할 수 없습니다."
+    }
+  },
+  "interfaces": {
+    "title": "인터페이스",
+    "help": "현재 이 호스트에 있는 인터페이스입니다. Yuhaiin은 자신이 소유하지 않은 인터페이스를 삭제하거나 다시 설정하지 않습니다.",
+    "refresh": "새로 고침",
+    "addresses": "주소",
+    "gateway": "게이트웨이",
+    "mtu": "MTU",
+    "noAddress": "주소 없음",
+    "up": "켜짐",
+    "down": "꺼짐",
+    "ownership": {
+      "yuhaiin": "Yuhaiin",
+      "external": "외부",
+      "system": "시스템"
+    },
+    "ownershipHelp": {
+      "yuhaiin": "{{name}} 인바운드가 만들었습니다.",
+      "external": "WireGuard나 Tailscale 등 다른 프로그램이 만든 터널.",
+      "system": "운영체제가 관리합니다."
+    },
+    "types": {
+      "loopback": "루프백",
+      "ethernet": "이더넷",
+      "wifi": "Wi-Fi",
+      "tunnel": "터널",
+      "bridge": "브리지",
+      "virtual": "가상",
+      "other": "기타"
+    },
+    "routable": "라우트 대상으로 사용 가능",
+    "notRoutable": "여기서는 라우트 대상으로 사용할 수 없음",
+    "missingTitle": "찾을 수 없는 저장된 대상",
+    "missingHelp": "이 인터페이스나 TUN은 규칙에서 사용되지만 지금 없습니다. 해당 규칙은 일시 중지되었다가 다시 나타나면 자동으로 재개됩니다.",
+    "usedBy": "사용하는 규칙: {{rules}}",
+    "tunTitle": "TUN 인바운드",
+    "tunStopped": "실행 안 함",
+    "tunRunning": "{{name}}(으)로 실행 중",
+    "viaTun": "라우트 규칙에서 Yuhaiin TUN으로 선택합니다."
+  }
+}

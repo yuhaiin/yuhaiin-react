@@ -135,7 +135,7 @@
   "tunInterface": "TUN interface (tun://name or fd://number)",
   "tunAdvancedHelp": "Address ranges, routes, MTU and driver options are preserved. Open the advanced editor to adjust them.",
   "entryInstructions": "How to connect",
-  "tunInstructions": "TUN requires device permissions or an Android VPN device descriptor. Enable it and check the listener status. The preset uses the Non-private routing mode: internet traffic goes through the TUN while LAN and Tailscale networks stay direct. Change the mode or add bypass networks in the advanced editor.",
+  "tunInstructions": "TUN requires device permissions or an Android VPN device descriptor. Enable it and check the listener status. Choose which destinations go through it in System Network.",
   "localEntryInstructions": "Configure applications on the managed device to use this proxy address. This entry accepts local connections.",
   "lanEntryInstructions": "Configure other devices to use the managed device’s reachable IP and this port. Replace your-device-ip with that IP.",
   "entryAuthInstructions": "Configure the username and password entered above in your client.",

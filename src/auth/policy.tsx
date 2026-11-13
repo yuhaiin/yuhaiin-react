@@ -12,6 +12,7 @@ export const routePermissions: Record<string, { read: string | string[]; write?:
     '/docs/gateway': { read: 'gateway:read', write: 'gateway:write' },
     '/docs/certificates': { read: 'certificates:read', write: 'certificates:manage' },
     '/docs/traffic-control': { read: 'settings:read', write: 'settings:write' },
+    '/docs/system-network': { read: 'settings:read', write: 'settings:write' },
     '/docs/inbound': { read: 'inbounds:read', write: 'inbounds:write' },
     '/docs/bypass': { read: 'routes:read', write: 'routes:write' },
     '/docs/bypass/list': { read: 'routes:read', write: 'routes:write' },

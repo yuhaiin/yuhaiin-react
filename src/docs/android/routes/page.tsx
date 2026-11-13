@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { AndroidOnly, errorText } from '../AndroidOnly';
 
-/** Android route profiles: the IP ranges the VPN captures when the TUN inbound has no routes. */
+/** Android route profiles: the IP ranges the VPN captures when no System Network rule targets it. */
 export default function AndroidRoutesPage() {
     const { t } = useTranslation('android');
     return <AndroidOnly title={t('routes.title')} description={t('routes.description')}><RouteProfiles /></AndroidOnly>;
