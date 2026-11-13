@@ -1,6 +1,4 @@
 import { listPeerTunnelPeers } from "@/api/nodes";
-import { LANLinkPath } from "@/component/lan-link-form";
-import type { Go } from "@/api/generated-contracts";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle, ModalTrigger } from "@/component/v2/modal";
@@ -38,10 +36,8 @@ export function PeerTunnelPeers() {
                             </div>
                             <dl className="mt-2 grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
                                 {peer.endpoint && <><dt className="text-ui-muted">{uiT("peerTunnel.udpEndpoint")}</dt><dd className="break-all font-mono">{peer.endpoint}</dd></>}
-                                {peer.tunnelIp && <><dt className="text-ui-muted">{uiT("peerTunnel.peerIp")}</dt><dd className="break-all font-mono">{peer.tunnelIp}</dd></>}
                                 <dt className="text-ui-muted">{uiT("peerTunnel.routes")}</dt><dd className="break-words font-mono">{peer.routes.join(", ")}</dd>
                             </dl>
-                            {peer.link && <LocalLink link={peer.link} />}
                         </li>)}
                     </ul>}
             </ModalBody>
@@ -53,23 +49,3 @@ export function PeerTunnelPeers() {
     </Modal>;
 }
 
-/** The local side of a LAN Link: this node's addresses and the path in use. */
-function LocalLink({ link }: { link: Go.transport.LANLinkStatus }) {
-    const { t } = useTranslation("ui");
-    const variant = link.state === "connected" ? "success" : link.state === "connecting" ? "warning" : "muted";
-    return <div className="mt-3 grid min-w-0 gap-2 border-t border-ui-border pt-3">
-        <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-ui-heading">{t("lanLink.thisDevice")}</span>
-            <Badge variant={variant}>{t(`lanLink.linkState.${link.state}`, { defaultValue: link.state })}</Badge>
-        </div>
-        <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
-            {link.localIp && <><dt className="text-ui-muted">{t("peerTunnel.localIp")}</dt><dd className="break-all font-mono">{link.localIp}</dd></>}
-            {link.listen && <><dt className="text-ui-muted">{t("lanLink.localListen")}</dt><dd className="break-all font-mono">{link.listen}</dd></>}
-            {link.pairingId && <><dt className="text-ui-muted">{t("lanLink.pairingId")}</dt><dd className="break-all font-mono" title={link.pairingId}>{link.pairingId.slice(0, 12)}</dd></>}
-            {link.coordinator && <><dt className="text-ui-muted">{t("lanLink.gatewayAddress")}</dt><dd className="break-all font-mono">{link.coordinator}</dd></>}
-            {link.peerEndpoint && <><dt className="text-ui-muted">{t("lanLink.peerEndpoint")}</dt><dd className="min-w-0"><LANLinkPath endpoint={link.peerEndpoint} path={link.path} /></dd></>}
-        </dl>
-        {link.state === "idle" && <p className="text-xs text-ui-muted">{t("lanLink.idleHelp")}</p>}
-        {link.state !== "connected" && link.error && <p role="alert" className="break-words text-xs text-ui-danger">{link.error}</p>}
-    </div>;
-}

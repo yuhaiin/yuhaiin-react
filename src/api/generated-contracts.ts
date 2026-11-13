@@ -582,7 +582,6 @@ export namespace Go {
       retryAt?: number;
       dialerEndpoint?: string;
       publisherEndpoint?: string;
-      peerEndpoint?: string;
       path?: string;
       createdAt?: number;
     }
@@ -1090,9 +1089,7 @@ export namespace Go {
       name: string;
       state: string;
       endpoint?: string;
-      tunnelIp: string;
       routes: string[];
-      link?: Go.transport.LANLinkStatus;
     }
     export interface PeerTunnelPeers {
       items: PeerTunnelPeer[];
@@ -1388,6 +1385,7 @@ export namespace Go {
       l2tpv3?: L2TPInfo;
       openvpn?: OpenVPNInfo;
       globalprotect?: GlobalProtectInfo;
+      lan_link?: Go.transport.LANLinkStatus;
     }
     export interface GlobalProtectInfo {
       tunnel_prefix?: string;

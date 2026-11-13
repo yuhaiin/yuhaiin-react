@@ -1229,7 +1229,6 @@
       "lan": "내부 네트워크",
       "public": "공인"
     },
-    "thisDevice": "이 기기",
     "localListen": "로컬 UDP 주소",
     "gatewayAddress": "게이트웨이 주소",
     "linkState": {
@@ -1237,7 +1236,9 @@
       "connecting": "연결 중",
       "connected": "연결됨"
     },
-    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다."
+    "idleHelp": "이 노드가 처음 연결에 사용될 때 링크가 시작됩니다.",
+    "status": "연결 상태",
+    "statusUnavailable": "이 노드를 저장하고 활성화하면 연결 상태가 표시됩니다."
   },
   "peerTunnel": {
     "peers": "피어 터널",

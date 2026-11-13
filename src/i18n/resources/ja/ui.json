@@ -1229,7 +1229,6 @@
       "lan": "内部ネットワーク",
       "public": "パブリック"
     },
-    "thisDevice": "このデバイス",
     "localListen": "ローカル UDP アドレス",
     "gatewayAddress": "ゲートウェイアドレス",
     "linkState": {
@@ -1237,7 +1236,9 @@
       "connecting": "接続中",
       "connected": "接続済み"
     },
-    "idleHelp": "このノードが初めて通信に使われたときに接続を開始します。"
+    "idleHelp": "このノードが初めて通信に使われたときに接続を開始します。",
+    "status": "接続状態",
+    "statusUnavailable": "このノードを保存して有効にすると接続状態が表示されます。"
   },
   "peerTunnel": {
     "peers": "ピアトンネル",
