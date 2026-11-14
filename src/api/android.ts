@@ -226,5 +226,5 @@ export interface AndroidUpdate {
     currentVersion: string;
 }
 export const getAndroidUpdate = () => request<AndroidUpdate>('GET', 'update');
-export const androidUpdateAction = (action: 'check' | 'apply' | 'permission' | 'channel', channel?: string) =>
+export const androidUpdateAction = (action: 'check' | 'apply' | 'permission' | 'cancel' | 'channel', channel?: string) =>
     request<AndroidUpdate>('POST', 'update', { action, channel });

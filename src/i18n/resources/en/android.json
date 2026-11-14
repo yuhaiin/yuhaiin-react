@@ -179,6 +179,7 @@
     "check": "Check for updates",
     "install": "Download and install",
     "grant": "Allow installing",
+    "cancelInstall": "Cancel installation",
     "permission": "Allow this app to install updates.",
     "stages": {
       "CHECKING": "Checking…",
