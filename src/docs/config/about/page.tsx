@@ -279,6 +279,23 @@ export default function About() {
                             )}
                         </div>
 
+                        {recovery.active && (
+                            <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                                <div className="flex items-center justify-between gap-3 font-semibold text-ui-heading">
+                                    <span>{uiT(recovery.phase === 'restarting' ? 'updateWaitingForRestart' : 'updateInProgress')}</span>
+                                    <span>{(updateStatus?.progress ?? 0) > 0 ? `${(updateStatus?.progress ?? 0)}%` : "..."}</span>
+                                </div>
+                                <div className="relative mt-3 h-2 overflow-hidden rounded-full bg-ui-border" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(updateStatus?.progress ?? 0) > 0 ? updateStatus?.progress : undefined}>
+                                    {(updateStatus?.progress ?? 0) > 0 && recovery.phase !== 'restarting'
+                                        ? <div className="h-full rounded-full bg-ui-primary transition-[width] duration-1000 ease-linear motion-reduce:transition-none" style={{ width: `${Math.max(2, (updateStatus?.progress ?? 0))}%` }} />
+                                        : <div className="progress-indeterminate absolute inset-y-0 w-2/5 rounded-full bg-ui-primary" />}
+                                </div>
+                                {(updateStatus?.totalBytes ?? 0) > 0 && (
+                                    <div className="mt-2 text-xs text-ui-muted">
+                                        {formatBytes((updateStatus?.bytesDownloaded ?? 0))} / {formatBytes((updateStatus?.totalBytes ?? 0))}
+                                    </div>
+                                )}
+
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
                                 {update.updateAvailable ? (
@@ -307,20 +324,6 @@ export default function About() {
                             void cancelUpdate(id).then(() => recovery.retry()).catch(failure => ctx.Error(updateErrorMessage(failure))).finally(() => setCancelling(false));
                         }} />
 
-                        {recovery.active && (
-                            <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
-                                <div className="flex items-center justify-between gap-3 font-semibold text-ui-heading">
-                                    <span>{uiT(recovery.phase === 'restarting' ? 'updateWaitingForRestart' : 'updateInProgress')}</span>
-                                    <span>{(updateStatus?.progress ?? 0) > 0 ? `${(updateStatus?.progress ?? 0)}%` : "..."}</span>
-                                </div>
-                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-ui-border" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(updateStatus?.progress ?? 0)}>
-                                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${Math.max(2, (updateStatus?.progress ?? 0))}%` }} />
-                                </div>
-                                {(updateStatus?.totalBytes ?? 0) > 0 && (
-                                    <div className="mt-2 text-xs text-ui-muted">
-                                        {formatBytes((updateStatus?.bytesDownloaded ?? 0))} / {formatBytes((updateStatus?.totalBytes ?? 0))}
-                                    </div>
-                                )}
                             </div>
                         )}
 

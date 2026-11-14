@@ -12,13 +12,15 @@ import { formatBytes } from '@/common/format';
 
 const busyStages = new Set(['CHECKING', 'DOWNLOADING', 'VERIFYING', 'INSTALLING']);
 export const updateBusy = (u: AndroidUpdate) => u.checking || busyStages.has(u.stage);
+/** Keep polling while the system permission screen is open: the app resumes the install on return. */
+export const updatePolling = (u: AndroidUpdate) => updateBusy(u) || u.stage === 'WAITING_PERMISSION';
 
 /** App update for the Android app, shown on About in place of the desktop self-update. */
 export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
     const { t } = useTranslation('android');
     const { data: app } = useSWR('android/app', getAndroidApp);
     const { data, error, mutate } = useSWR('android/update', getAndroidUpdate, {
-        refreshInterval: current => current && updateBusy(current) ? 1000 : 0,
+        refreshInterval: current => current && updatePolling(current) ? 1000 : 0,
     });
     const [actionError, setActionError] = useState<string>();
     if (error) return <Card className={className}><CardBody><p className="m-0 text-sm text-ui-danger">{errorText(error)}</p></CardBody></Card>;
@@ -29,9 +31,11 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
         catch (e) { setActionError(errorText(e)); }
     };
     const busy = updateBusy(data);
-    const percent = data.totalBytes > 0 ? Math.round(data.downloadedBytes * 100 / data.totalBytes) : data.progress;
-    const showBar = data.stage === 'DOWNLOADING' || data.stage === 'VERIFYING' || data.stage === 'INSTALLING';
-    const barPercent = data.stage === 'DOWNLOADING' ? Math.min(100, Math.max(0, percent)) : 100;
+    // The core reports at most 99% until the APK is in place; match it so the bar never looks finished early.
+    const percent = Math.min(99, Math.max(0, data.totalBytes > 0 ? Math.floor(data.downloadedBytes * 100 / data.totalBytes) : data.progress));
+    const downloading = data.stage === 'DOWNLOADING';
+    // Verifying and installing have no measurable progress: show motion rather than a full, finished-looking bar.
+    const indeterminate = data.stage === 'VERIFYING' || data.stage === 'INSTALLING';
     return <Card className={className}>
         <CardHeader className="py-3">
             <IconBox icon={Smartphone} tone="success" title={t('update.software')} description={t('update.description')} />
@@ -57,14 +61,20 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
                     {data.release.notes && <pre className="m-0 max-h-60 overflow-auto whitespace-pre-wrap rounded-ui-md bg-ui-surface-muted p-2 text-xs">{data.release.notes}</pre>}
                 </div>
                 : data.stage === 'IDLE' && !data.checking && <span>{t('update.none')}</span>}
-            {busy && <div className="flex flex-col gap-1.5">
-                <p className="m-0 text-ui-info">{t(`update.stages.${data.stage}`)}{data.stage === 'DOWNLOADING' ? ` ${percent}%` : ''}</p>
-                {showBar && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={barPercent}
-                    className="h-2 w-full overflow-hidden rounded-full bg-ui-surface-muted">
-                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${barPercent}%` }} />
+            {busy && <div role="status" className="flex flex-col gap-1.5 rounded-ui-md border border-ui-border bg-ui-surface-muted p-3">
+                <div className="flex items-center justify-between gap-3 font-medium text-ui-heading">
+                    <span>{t(`update.stages.${data.stage}`)}</span>
+                    {downloading && <span className="tabular-nums">{percent}%</span>}
+                </div>
+                {(downloading || indeterminate) && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={downloading ? percent : undefined}
+                    className="relative h-2 w-full overflow-hidden rounded-full bg-ui-border">
+                    {downloading
+                        ? <div className="h-full rounded-full bg-ui-primary transition-[width] duration-1000 ease-linear motion-reduce:transition-none" style={{ width: `${Math.max(2, percent)}%` }} />
+                        : <div className="progress-indeterminate absolute inset-y-0 w-2/5 rounded-full bg-ui-primary" />}
                 </div>}
-                {data.stage === 'DOWNLOADING' && data.totalBytes > 0 &&
-                    <span className="text-xs text-ui-muted">{formatBytes(data.downloadedBytes)} / {formatBytes(data.totalBytes)}</span>}
+                {downloading && data.totalBytes > 0 &&
+                    <span className="text-xs tabular-nums text-ui-muted">{formatBytes(data.downloadedBytes)} / {formatBytes(data.totalBytes)}</span>}
+                {data.stage === 'INSTALLING' && data.reason && <span className="text-xs text-ui-muted">{data.reason}</span>}
             </div>}
             {data.stage === 'WAITING_PERMISSION' && <p className="m-0 text-ui-warning">{data.reason ?? t('update.permission')}</p>}
             {data.stage === 'COMPLETED' && <p className="m-0 text-ui-success">{data.reason ?? t('update.stages.COMPLETED')}</p>}

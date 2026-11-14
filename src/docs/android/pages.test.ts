@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { previewAndroidBackup, startDownload } from '@/api/android';
 import { routeLines } from './routes/page';
-import { updateBusy } from './update/app-update';
+import { updateBusy, updatePolling } from './update/app-update';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 afterEach(() => vi.unstubAllGlobals());
@@ -16,6 +16,12 @@ it('treats only in-flight update stages as busy', () => {
     expect(updateBusy({ ...base, stage: 'IDLE', checking: true })).toBe(true);
     expect(updateBusy({ ...base, stage: 'WAITING_PERMISSION' })).toBe(false);
     expect(updateBusy({ ...base, stage: 'ERROR' })).toBe(false);
+});
+
+it('keeps polling while the install permission screen is open', () => {
+    const base = { channel: 'stable', channels: [], checking: false, progress: 0, downloadedBytes: 0, totalBytes: 0, currentVersion: 'v' };
+    expect(updatePolling({ ...base, stage: 'WAITING_PERMISSION' })).toBe(true);
+    expect(updatePolling({ ...base, stage: 'IDLE' })).toBe(false);
 });
 
 it('sends backups verbatim, not JSON-encoded twice', async () => {

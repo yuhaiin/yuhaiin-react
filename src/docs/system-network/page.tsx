@@ -2,6 +2,7 @@ import { Button } from '@/component/v2/button';
 import { MainContainer } from '@/component/v2/card';
 import Loading from '@/component/v2/loading';
 import { PageHeader } from '@/component/v2/page-header';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { PageTabs } from '@/component/v2/page-tabs';
 import { useLocaleFormat } from '@/i18n/useLocaleFormat';
 import { Save } from 'lucide-react';
@@ -17,6 +18,9 @@ export default function SystemNetworkPage() {
     const { t } = useTranslation('systemNetwork');
     const format = useLocaleFormat();
     const editor = useSystemNetwork();
+    // lg+ puts the actions on the status row so the long description does not push them onto a row of their own;
+    // below lg they stay in the header, which keeps them sticky under the App Bar.
+    const wide = useMediaQuery('(min-width: 1024px)');
     const { config, status, interfaces, draft, dirty, saving, saved, failure, invalid, patch, save, discard, preview } = editor;
     if (config.error && !config.data) return <Loading onRetry={() => void config.mutate()}>{String((config.error as { msg?: string })?.msg ?? config.error)}</Loading>;
     if (!config.data) return <Loading />;
@@ -28,14 +32,17 @@ export default function SystemNetworkPage() {
     </div>;
     return <MainContainer className="max-w-[1440px]">
         <div className="@container pb-8">
-            <PageHeader title={t('title')} description={t('description')} actions={actions} stickyActions />
-            <div className="mb-5 grid gap-2" aria-live="polite">
-                {status.data && <p className="flex flex-wrap items-center gap-2 text-sm text-ui-fg">
-                    <StateBadge state={status.data.state} />
-                    <span>{t('applied', { count: status.data.routes })}</span>
-                    {status.data.appliedAt ? <span className="text-xs text-ui-muted">{t('lastApplied', { time: format.time(new Date(status.data.appliedAt * 1000)) })}</span> : null}
-                    {status.data.error && <span className="text-ui-danger">{status.data.error}</span>}
-                </p>}
+            <PageHeader title={t('title')} description={t('description')} actions={wide ? undefined : actions} stickyActions className="lg:mb-3" />
+            <div className="mb-5 grid gap-2">
+                {(status.data || wide) && <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    {status.data ? <p className="m-0 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ui-fg" aria-live="polite">
+                        <StateBadge state={status.data.state} />
+                        <span>{t('applied', { count: status.data.routes })}</span>
+                        {status.data.appliedAt ? <span className="text-xs text-ui-muted">{t('lastApplied', { time: format.time(new Date(status.data.appliedAt * 1000)) })}</span> : null}
+                        {status.data.error && <span className="text-ui-danger">{status.data.error}</span>}
+                    </p> : <span />}
+                    {wide && actions}
+                </div>}
                 {dirty && <p role="status" className="text-sm text-ui-warning">{t('unsaved')}</p>}
                 {dirty && invalid && <p role="alert" className="text-sm text-ui-danger">{t('invalid')}</p>}
                 {saved && <p role="status" className={saved === 'ok' ? 'text-sm text-ui-success' : 'text-sm text-ui-warning'}>{t(saved === 'ok' ? 'saved' : 'savedWithProblems')}</p>}
