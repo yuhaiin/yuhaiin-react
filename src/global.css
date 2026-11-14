@@ -441,6 +441,9 @@ details:not([open]) > summary { margin-block-end: 0; }
 
 /* Phone list ↔ detail: the directory slides back in from the left when a
    record closes. A CSS animation restarts when display:none ends. */
+@keyframes progress-indeterminate { from { left: -40%; } to { left: 100%; } }
+.progress-indeterminate { animation: progress-indeterminate 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .progress-indeterminate { animation: none; left: 0; width: 100%; opacity: .6; } }
 @keyframes workspace-return { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
 @media (max-width: 767.98px) {
     .workspace-directory { animation: workspace-return var(--motion-slow) var(--ease-standard); }
