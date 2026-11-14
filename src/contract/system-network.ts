@@ -15,6 +15,9 @@ export type SystemNetworkPreview = Go.sysnet.Preview;
 export type SystemNetworkSaveResult = Go.sysnet.SaveResult;
 export type SystemRoutes = Go.sysnet.SystemRoutes;
 export type SystemRouteEntry = Go.sysnet.SystemRouteEntry;
+export type OutboundRouting = Go.sysnet.OutboundRouting;
+export type OutboundInterface = Go.sysnet.OutboundInterface;
+export type OutboundScopedRoute = Go.sysnet.OutboundScopedRoute;
 export type MatchMode = 'global' | 'non_private' | 'custom';
 
 export function blankSystemNetworkConfig(): SystemNetworkConfig {

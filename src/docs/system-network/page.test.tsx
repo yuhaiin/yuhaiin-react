@@ -2,7 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { moveRule, orderedRules, type RouteRule, type SystemNetworkCapabilities, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkStatus } from '@/contract/system-network';
+import { moveRule, orderedRules, type OutboundRouting, type RouteRule, type SystemNetworkCapabilities, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkStatus } from '@/contract/system-network';
 import en from '@/i18n/resources/en/system-network.json';
 import ja from '@/i18n/resources/ja/system-network.json';
 import ko from '@/i18n/resources/ko/system-network.json';
@@ -15,7 +15,8 @@ const api = vi.hoisted(() => ({
     getSystemNetworkInterfaces: vi.fn(),
     previewSystemNetwork: vi.fn(),
     getSystemNetworkRoutes: vi.fn(),
-    systemNetworkKeys: { config: 'sn/config', status: 'sn/status', interfaces: 'sn/interfaces', routes: 'sn/routes' },
+    getSystemNetworkOutbound: vi.fn(),
+    systemNetworkKeys: { config: 'sn/config', status: 'sn/status', interfaces: 'sn/interfaces', routes: 'sn/routes', outbound: 'sn/outbound' },
 }));
 vi.mock('@/api/system-network', () => api);
 vi.mock('@/api/route', () => ({ listGeoIPCountries: vi.fn().mockResolvedValue({ codes: ['JP', 'US'], loaded: true }) }));
@@ -219,7 +220,7 @@ it('offers only Android-supported targets and hides forwarding there', async () 
     setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } }, android);
     await render();
     expect(host.textContent).toContain('platform.android');
-    expect([...host.querySelectorAll('[role="tab"]')].map(t => t.textContent)).toEqual(['tabs.routing', 'tabs.interfaces', 'tabs.routes']);
+    expect([...host.querySelectorAll('[role="tab"]')].map(t => t.textContent)).toEqual(['tabs.routing', 'tabs.interfaces', 'tabs.outbound', 'tabs.routes']);
     await click('routing.add');
     expect(buttons().some(b => b.textContent === 'editor.targetInterface')).toBe(false);
     expect(document.body.textContent).toContain('editor.chooseTun');
@@ -275,6 +276,75 @@ it('stacks rule and interface layouts on narrow screens', async () => {
     expect(item.className).toContain('grid');
     expect(item.querySelector('.flex-wrap')).not.toBeNull();
     for (const b of item.querySelectorAll('button')) expect(b.className).not.toContain('w-[');
+});
+
+const linuxOutbound: OutboundRouting = {
+    platform: 'linux', state: 'active', method: 'SO_MARK', mark: 0x500, protectionActive: true, egressMode: 'kernel', ownTuns: ['tun0'],
+    successes: 42, failures: 0,
+    rules: [{ ipv6: false, priority: 30001, selector: 'not fwmark 0x500 lookup 63', table: 63, state: 'active' },
+        { ipv6: true, priority: 30002, selector: 'not fwmark 0x500 lookup 63', table: 63, state: 'active' }],
+    egress: [{ ipv6: false, interface: 'eth0', gateway: '192.168.1.1', prefix: '0.0.0.0/0' }, { ipv6: true, error: 'no route outside Yuhaiin\'s TUN' }],
+    interfaces: [
+        { name: 'eth0', index: 2, type: 'ethernet', up: true, ownership: 'system', addresses: ['192.168.1.20/24', 'fd00::20/64'], gateway: '192.168.1.1' },
+        { name: 'tun0', index: 9, type: 'tunnel', up: true, ownership: 'yuhaiin', addresses: ['172.19.0.1/30'], excluded: true },
+    ],
+};
+
+async function openTab(name: string) {
+    const tab = [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(b => b.textContent === name)!;
+    await act(async () => { tab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); tab.click(); });
+}
+
+it('explains how Yuhaiin\'s own Linux connections avoid the TUN', async () => {
+    setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } });
+    api.getSystemNetworkOutbound.mockResolvedValue(structuredClone(linuxOutbound));
+    await render();
+    await openTab('tabs.outbound');
+    await vi.waitFor(() => expect(host.textContent).toContain('outbound.headline.active'));
+    // Values come from the API: the mark is formatted from it, not hard-coded.
+    expect(host.textContent).toContain('outbound.protection.linux:{"mark":"0x500"}');
+    expect(host.textContent).toContain('outbound.egressMode.kernel');
+    expect(host.textContent).toContain('outbound.otherAppsHelp');
+    expect(host.textContent).toContain('eth0');
+    expect(host.textContent).toContain('outbound.excluded');
+    expect(host.textContent).toContain('no route outside');
+    // The scoped-route rows are macOS only.
+    expect(host.textContent).not.toContain('outbound.scopedV4');
+    // Rules and counters live in the details.
+    expect(host.textContent).not.toContain('not fwmark 0x500 lookup 63');
+    await click('outbound.details');
+    expect(host.textContent).toContain('not fwmark 0x500 lookup 63');
+    expect(host.textContent).toContain('outbound.socketsValue:{"ok":42,"failed":0}');
+});
+
+it('shows macOS scoped routes and never calls a degraded or failed state active', async () => {
+    setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } });
+    api.getSystemNetworkOutbound.mockResolvedValue({
+        platform: 'darwin', state: 'degraded', method: 'IP_BOUND_IF / IPV6_BOUND_IF', protectionActive: true, egressMode: 'bound', ownTuns: ['utun5'],
+        successes: 0, failures: 0, problems: ['could not install the scoped default route on en5: permission denied'],
+        egress: [{ ipv6: false, interface: 'en0', gateway: '192.168.2.1' }, { ipv6: true, interface: 'en0' }],
+        interfaces: [
+            { name: 'en0', index: 11, type: 'wifi', up: true, ownership: 'system', addresses: ['192.168.2.184/24'], gateway: '192.168.2.1',
+                scoped: { state: 'primary', gateway: '192.168.2.1' }, scopedV6: { state: 'unavailable', reason: 'no router known for this interface' } },
+            { name: 'en5', index: 15, type: 'ethernet', up: true, ownership: 'system', addresses: ['192.168.20.100/24'],
+                scoped: { state: 'failed', reason: 'permission denied' } },
+        ],
+    } satisfies OutboundRouting);
+    await render();
+    await openTab('tabs.outbound');
+    await vi.waitFor(() => expect(host.textContent).toContain('outbound.headline.degraded'));
+    expect(host.textContent).not.toContain('outbound.headline.active');
+    const alert = host.querySelector('[role="alert"]')!;
+    expect(alert.textContent).toContain('permission denied');
+    expect(host.textContent).toContain('outbound.scoped.primary');
+    expect(host.textContent).toContain('outbound.scoped.unavailable');
+    expect(host.textContent).toContain('outbound.scoped.failed');
+    expect(host.textContent).toContain('outbound.protection.darwin');
+
+    api.getSystemNetworkOutbound.mockResolvedValue({ ...linuxOutbound, state: 'failed', protectionActive: false, problems: ['the TUN policy rule does not exclude marked sockets'] });
+    await click('outbound.refresh');
+    await vi.waitFor(() => expect(host.textContent).toContain('outbound.headline.failed'));
+    expect(host.textContent).toContain('state.failed');
 });
 
 it('keeps the three languages in sync', () => {

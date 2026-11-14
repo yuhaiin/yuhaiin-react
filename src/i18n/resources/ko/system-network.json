@@ -6,7 +6,8 @@
     "routing": "라우팅",
     "forwarding": "포워딩",
     "interfaces": "인터페이스",
-    "routes": "시스템 라우트"
+    "routes": "시스템 라우트",
+    "outbound": "자체 연결"
   },
   "state": {
     "active": "적용됨",
@@ -316,5 +317,90 @@
     "lookup": "{{table}} 조회",
     "androidNote": "Android에서는 앱이 커널 라우팅 테이블을 읽을 수 없습니다. Android가 네트워크별로 보고하는 라우트를 표시하며, Yuhaiin VPN의 라우트를 표시합니다.",
     "androidVpnOnly": "이 앱 버전은 Android 네트워크 라우트를 읽을 수 없습니다. Yuhaiin VPN에 전달된 라우트만 표시합니다."
+  },
+  "outbound": {
+    "title": "Yuhaiin 자체 연결",
+    "help": "Yuhaiin이 직접 만드는 연결(프록시, DNS, QUIC, Hysteria 2, WireGuard, VPN 클라이언트)은 자체 TUN에 들어가지 않고 실제 네트워크 인터페이스로 나갑니다. 라우트 규칙은 이 연결을 바꾸지 않습니다.",
+    "refresh": "새로 고침",
+    "loading": "불러오는 중…",
+    "headline": {
+      "active": "보호됨: Yuhaiin 자체 트래픽은 TUN으로 되돌아가지 않습니다",
+      "degraded": "제한된 상태로 보호됨",
+      "unavailable": "보호를 사용할 수 없음(Yuhaiin TUN이 실행 중이 아니면 필요 없음)",
+      "unsupported": "이 플랫폼에서는 Yuhaiin 자체 소켓을 보호할 수 없습니다",
+      "failed": "보호되지 않음: 연결이 실패할 수 있습니다",
+      "other": "알 수 없는 상태"
+    },
+    "problems": "확인이 필요한 항목",
+    "whyNoLoop": "루프가 생기지 않는 이유",
+    "protection": {
+      "linux": "각 소켓에 마크 {{mark}}를 붙입니다. TUN 정책 규칙은 마크된 패킷을 건너뛰므로 일반 라우팅 테이블을 사용합니다. 그 테이블에 경로가 없으면 TUN에 들어가지 않고 연결이 실패합니다.",
+      "darwin": "각 소켓을 TUN이 아닌 물리 인터페이스에 바인딩합니다(IP_BOUND_IF / IPV6_BOUND_IF). VPN이 기본 경로를 가져가도 인터페이스 전용 기본 경로 덕분에 바인딩된 소켓이 통신할 수 있습니다.",
+      "windows": "각 소켓을 TUN을 제외하고 Windows가 목적지에 사용할 인터페이스에 바인딩합니다(IP_UNICAST_IF / IPV6_UNICAST_IF).",
+      "android": "각 소켓을 VpnService.protect로 보호해 Android가 VPN 밖으로 보냅니다.",
+      "other": "이 플랫폼에는 보호 방법이 없습니다."
+    },
+    "whichInterface": "사용하는 인터페이스",
+    "egressMode": {
+      "kernel": "다른 프로그램과 마찬가지로 패킷마다 커널이 고릅니다. 두 번째 네트워크 카드의 LAN과 인터넷 모두 같은 연결에서 접근할 수 있습니다.",
+      "bound": "Yuhaiin TUN을 제외하고 OS가 목적지로 라우팅하는 인터페이스입니다. 여러 목적지로 가는 UDP는 인터페이스마다 소켓을 엽니다.",
+      "explicit": "항상 {{name}}: 설정에서 네트워크 인터페이스가 지정되어 있습니다.",
+      "system": "Yuhaiin TUN이 실행 중이 아니므로 연결은 시스템 라우팅 테이블을 그대로 따릅니다."
+    },
+    "otherApps": "다른 애플리케이션",
+    "otherAppsHelp": "영향 없음: 트래픽은 라우팅 탭의 라우트 규칙을 따릅니다.",
+    "egressTitle": "인터넷 출구",
+    "internetV4": "IPv4 인터넷",
+    "internetV6": "IPv6 인터넷",
+    "via": "{{gateway}} 경유",
+    "metric": "메트릭 {{metric}}",
+    "flowsTitle": "서로 다른 두 경로",
+    "flowApps": "다른 애플리케이션",
+    "flowYuhaiin": "Yuhaiin 자체",
+    "flow": {
+      "apps": "브라우저, 게임, 시스템 서비스 등",
+      "osRouting": "라우트 규칙이 적용된 OS 라우팅",
+      "targets": "Yuhaiin TUN, 다른 터널 또는 물리 네트워크",
+      "yuhaiin": "프록시, DNS, QUIC, Hysteria 2, VPN 연결",
+      "protection": "소켓 보호({{method}})",
+      "egress": "출구 선택: TUN은 사용하지 않음",
+      "nic": "물리 또는 다른 네트워크 인터페이스"
+    },
+    "ownTuns": "Yuhaiin TUN 인터페이스: {{names}}",
+    "interfacesTitle": "인터페이스",
+    "interfacesHelp": "Yuhaiin 연결이 나갈 수 있는 인터페이스와 그 게이트웨이, 기본 경로 메트릭입니다.",
+    "interfacesHelpDarwin": "인터페이스에 바인딩된 소켓은 그 인터페이스 전용 경로나, 기본 인터페이스라면 기본 경로만 사용합니다. 각 인터페이스의 전용 기본 경로를 표시합니다.",
+    "noInterfaces": "인터페이스가 없습니다.",
+    "excluded": "Yuhaiin TUN: Yuhaiin 자체 연결에는 사용하지 않습니다.",
+    "scopedV4": "전용 IPv4",
+    "scopedV6": "전용 IPv6",
+    "scoped": {
+      "primary": "기본",
+      "borrowed": "시스템",
+      "owned": "Yuhaiin",
+      "unavailable": "라우터 없음",
+      "failed": "실패"
+    },
+    "scopedHelp": {
+      "primary": "전역 기본 경로가 이 인터페이스에 있어 바인딩된 소켓이 이를 바로 사용합니다.",
+      "borrowed": "macOS나 다른 프로그램이 추가한 전용 기본 경로입니다. Yuhaiin은 사용만 하고 바꾸지 않습니다.",
+      "owned": "이 인터페이스에서 마지막으로 본 라우터로 Yuhaiin이 추가했으며, 필요 없어지면 삭제합니다.",
+      "unavailable": "이 인터페이스의 라우터를 알 수 없습니다. 바인딩된 소켓은 직접 연결된 네트워크에만 닿습니다.",
+      "failed": "Yuhaiin이 전용 기본 경로를 추가하지 못했습니다."
+    },
+    "scopedLink": "인터페이스 직접 연결",
+    "details": "세부 정보",
+    "platform": "플랫폼",
+    "method": "방식",
+    "mark": "소켓 마크",
+    "protectionActive": "보호 동작",
+    "yes": "예",
+    "no": "아니요",
+    "egressModeLabel": "출구 모드",
+    "sockets": "보호된 소켓",
+    "socketsValue": "성공 {{ok}}, 실패 {{failed}}",
+    "lastError": "마지막 오류",
+    "rulesTitle": "정책 규칙",
+    "rulesHelp": "마크된 패킷은 Yuhaiin TUN 테이블을 건너뛰고 메인 라우팅 테이블을 사용합니다."
   }
 }

@@ -9,6 +9,7 @@ import { Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ForwardingTab } from './forwarding';
 import { InterfacesTab } from './interfaces';
+import { OutboundTab } from './outbound';
 import { RoutesTab } from './routes';
 import { RoutingTab } from './routing';
 import { StateBadge } from './shared';
@@ -55,6 +56,7 @@ export default function SystemNetworkPage() {
                     onChange={forwarding => patch(c => ({ ...c, forwarding }))} capabilities={capabilities} interfaces={interfaces.data} status={status.data} dirty={dirty} /> }]),
                 { value: 'interfaces', label: t('tabs.interfaces'), content: <InterfacesTab interfaces={interfaces.data} rules={[...draft.routes, ...draft.forwarding.rules]}
                     onRefresh={() => void interfaces.mutate()} error={interfaces.error ? String((interfaces.error as { msg?: string })?.msg ?? interfaces.error) : undefined} /> },
+                { value: 'outbound', label: t('tabs.outbound'), content: <OutboundTab /> },
                 { value: 'routes', label: t('tabs.routes'), content: <RoutesTab /> },
             ]} />
         </div>

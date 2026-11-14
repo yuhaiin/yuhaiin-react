@@ -2449,6 +2449,60 @@ export namespace Go {
     }
   }
   export namespace sysnet {
+    export interface OutboundRouting {
+      platform: string;
+      state: string;
+      method: string;
+      mark?: number;
+      protectionActive: boolean;
+      egressMode: string;
+      explicitInterface?: string;
+      ownTuns: string[];
+      successes: number;
+      failures: number;
+      lastError?: string;
+      problems?: string[];
+      rules?: OutboundPolicyRule[];
+      egress: OutboundEgress[];
+      interfaces: OutboundInterface[];
+    }
+    export interface OutboundPolicyRule {
+      ipv6: boolean;
+      priority: number;
+      selector: string;
+      table: number;
+      state: string;
+      error?: string;
+    }
+    export interface OutboundEgress {
+      ipv6: boolean;
+      interface?: string;
+      gateway?: string;
+      prefix?: string;
+      metric?: number;
+      error?: string;
+    }
+    export interface OutboundInterface {
+      name: string;
+      index: number;
+      type: string;
+      up: boolean;
+      ownership: string;
+      addresses: string[];
+      gateway?: string;
+      gatewayV6?: string;
+      excluded?: boolean;
+      defaultMetric?: number;
+      defaultMetricV6?: number;
+      scoped?: OutboundScopedRoute;
+      scopedV6?: OutboundScopedRoute;
+    }
+    export interface OutboundScopedRoute {
+      state: string;
+      gateway?: string;
+      link?: boolean;
+      reason?: string;
+    }
     export interface Capabilities {
       platform: string;
       routeManagement: boolean;
