@@ -1,11 +1,12 @@
 import { requestJSON } from './client';
-import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus, type SystemRoutes } from '@/contract/system-network';
+import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus, type SystemRoutes, type OutboundRouting } from '@/contract/system-network';
 
 export const systemNetworkKeys = {
     config: '/api/v2/system-network/config',
     status: '/api/v2/system-network/status',
     interfaces: '/api/v2/system-network/interfaces',
     routes: '/api/v2/system-network/routes',
+    outbound: '/api/v2/system-network/outbound',
 };
 
 export async function getSystemNetworkConfig(): Promise<SystemNetworkConfig> {
@@ -33,4 +34,9 @@ export function previewSystemNetwork(config: SystemNetworkConfig): Promise<Syste
 /** The operating system's routing table, with the routes Yuhaiin owns marked. */
 export function getSystemNetworkRoutes(): Promise<SystemRoutes> {
     return requestJSON<SystemRoutes>('GET', systemNetworkKeys.routes);
+}
+
+/** How Yuhaiin's own outbound sockets stay out of its TUN and which interfaces they use. Read-only. */
+export function getSystemNetworkOutbound(): Promise<OutboundRouting> {
+    return requestJSON<OutboundRouting>('GET', systemNetworkKeys.outbound);
 }

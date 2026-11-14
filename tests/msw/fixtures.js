@@ -160,6 +160,26 @@ const androidHandlers=androidPreview?[
   http.get('/android/v1/privacy',()=>HttpResponse.json({title:'Privacy policy',effectiveDate:'2026-01-01',sections:[{title:'VPN data',body:'Traffic stays on the device unless a configured node forwards it.'},{title:'Installed apps',body:'The app list is read only for per-app routing.'}],contactUrl:'https://example.invalid/contact',withdrawBody:'Withdrawing stops the VPN.',consents:{vpn:true,installedApps:true}})),
   http.get('/android/v1/update',()=>HttpResponse.json({channel:'stable',channels:['stable','beta'],checking:false,stage:'IDLE',progress:0,downloadedBytes:0,totalBytes:0,release:{version:'2.0.1',tag:'v2.0.1',notes:'Synthetic release notes.',publishedAt:'2026-11-01T00:00:00Z',assetSize:31457280},currentVersion:'2.0.0'})),
 ]:[];
+// Outbound routing preview: Linux by default, ?scenario=darwin for macOS.
+const systemNetworkOutbound=scenario==='darwin'?{
+    platform:'darwin',state:'degraded',method:'IP_BOUND_IF / IPV6_BOUND_IF',protectionActive:true,egressMode:'bound',ownTuns:['utun5'],successes:0,failures:0,
+    problems:['could not install the scoped default route on en5: permission denied'],
+    egress:[{ipv6:false,interface:'en0',gateway:'192.168.2.1',prefix:'0.0.0.0/0'},{ipv6:true,interface:'en0',gateway:'fe80::8ac3:97ff:fe41:b927',prefix:'::/0'}],
+    interfaces:[
+      {name:'en0',index:11,type:'wifi',up:true,ownership:'system',addresses:['192.168.2.184/24','2001:db8:2::184/64'],gateway:'192.168.2.1',gatewayV6:'fe80::8ac3:97ff:fe41:b927',scoped:{state:'primary',gateway:'192.168.2.1'},scopedV6:{state:'primary',gateway:'fe80::8ac3:97ff:fe41:b927'}},
+      {name:'en5',index:15,type:'ethernet',up:true,ownership:'system',addresses:['192.168.20.100/24'],scoped:{state:'failed',reason:'permission denied'}},
+      {name:'bridge100',index:23,type:'bridge',up:true,ownership:'system',addresses:['10.211.55.2/24'],scoped:{state:'borrowed',link:true}},
+      {name:'utun5',index:30,type:'tunnel',up:true,ownership:'yuhaiin',addresses:['172.19.0.1/24'],excluded:true},
+    ]}:{
+    platform:'linux',state:'active',method:'SO_MARK',mark:0x500,protectionActive:true,egressMode:'kernel',ownTuns:['tun0'],successes:1284,failures:0,
+    rules:[{ipv6:false,priority:30001,selector:'not fwmark 0x500 lookup 63',table:63,state:'active'},{ipv6:true,priority:30002,selector:'not fwmark 0x500 lookup 63',table:63,state:'active'}],
+    egress:[{ipv6:false,interface:'eth0',gateway:'192.168.1.1',prefix:'0.0.0.0/0'},{ipv6:true,interface:'eth0',gateway:'fe80::1',prefix:'::/0'}],
+    interfaces:[
+      {name:'eth0',index:2,type:'ethernet',up:true,ownership:'system',addresses:['192.168.1.20/24','2001:db8:1::20/64'],gateway:'192.168.1.1',gatewayV6:'fe80::1',defaultMetric:100},
+      {name:'wlan0',index:3,type:'wifi',up:true,ownership:'system',addresses:['192.168.20.5/24'],gateway:'192.168.20.1',defaultMetric:600},
+      {name:'wg0',index:5,type:'tunnel',up:true,ownership:'external',addresses:['10.8.0.2/32']},
+      {name:'tun0',index:9,type:'tunnel',up:true,ownership:'yuhaiin',addresses:['172.19.0.1/30'],excluded:true},
+    ]};
 const worker=setupWorker(
   ...androidHandlers,
   http.post('/api/v2/backup/recovery/imports',()=>{
@@ -337,6 +357,7 @@ const worker=setupWorker(
     else if(op==='systemNetwork.status')result=systemNetworkStatus();
     else if(op==='systemNetwork.interfaces')result=systemNetworkInterfaces;
     else if(op==='systemNetwork.routes')result=systemNetworkRoutes;
+    else if(op==='systemNetwork.outbound')result=systemNetworkOutbound;
     else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;

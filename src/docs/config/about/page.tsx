@@ -295,6 +295,8 @@ export default function About() {
                                         {formatBytes((updateStatus?.bytesDownloaded ?? 0))} / {formatBytes((updateStatus?.totalBytes ?? 0))}
                                     </div>
                                 )}
+                            </div>
+                        )}
 
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
@@ -323,9 +325,6 @@ export default function About() {
                             setCancelling(true);
                             void cancelUpdate(id).then(() => recovery.retry()).catch(failure => ctx.Error(updateErrorMessage(failure))).finally(() => setCancelling(false));
                         }} />
-
-                            </div>
-                        )}
 
                         {recovery.phase === 'error' && (
                             <div className="rounded-ui-md border border-ui-danger/40 bg-ui-danger-soft p-4 text-sm text-ui-danger">

@@ -6,7 +6,8 @@
     "routing": "Routing",
     "forwarding": "Forwarding",
     "interfaces": "Interfaces",
-    "routes": "System routes"
+    "routes": "System routes",
+    "outbound": "Outbound"
   },
   "state": {
     "active": "Active",
@@ -316,5 +317,90 @@
     "lookup": "lookup {{table}}",
     "androidNote": "Android does not let apps read the kernel routing table. These are the routes Android reports for each network; Yuhaiin's VPN routes are marked.",
     "androidVpnOnly": "This app version cannot read Android's network routes. Only the routes passed to the Yuhaiin VPN are shown."
+  },
+  "outbound": {
+    "title": "Yuhaiin's own connections",
+    "help": "Connections Yuhaiin makes itself — proxies, DNS, QUIC, Hysteria 2, WireGuard, VPN clients — are kept out of its own TUN and leave through a real network interface. Route rules do not change them.",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "headline": {
+      "active": "Protected: Yuhaiin's own traffic cannot loop into its TUN",
+      "degraded": "Protected with limitations",
+      "unavailable": "Protection unavailable (not needed while no Yuhaiin TUN is running)",
+      "unsupported": "This platform cannot protect Yuhaiin's own sockets",
+      "failed": "Not protected: connections may fail",
+      "other": "Unknown state"
+    },
+    "problems": "What needs attention",
+    "whyNoLoop": "Why it does not loop",
+    "protection": {
+      "linux": "Each socket carries the mark {{mark}}. The TUN policy rule skips marked packets, so they use the normal routing table. If that table has no route, the connection fails instead of entering the TUN.",
+      "darwin": "Each socket is bound to a physical interface (IP_BOUND_IF / IPV6_BOUND_IF), never to the TUN. Interface-scoped default routes keep bound sockets routable when a VPN takes over the default route.",
+      "windows": "Each socket is bound to the interface Windows would use for its destination with the TUN left out (IP_UNICAST_IF / IPV6_UNICAST_IF).",
+      "android": "Each socket is protected with VpnService.protect, so Android sends it outside the VPN.",
+      "other": "No protection mechanism on this platform."
+    },
+    "whichInterface": "Which interface is used",
+    "egressMode": {
+      "kernel": "Chosen by the kernel for every packet, as for any other program. A LAN on a second network card and the Internet both work from the same connection.",
+      "bound": "The interface the operating system routes the destination to, with Yuhaiin's TUN excluded. UDP to many destinations opens one socket per interface.",
+      "explicit": "Always {{name}}: a network interface is set in the settings.",
+      "system": "No Yuhaiin TUN is running, so connections follow the system routing table unchanged."
+    },
+    "otherApps": "Other applications",
+    "otherAppsHelp": "Not affected: their traffic follows the route rules on the Routing tab.",
+    "egressTitle": "Internet egress",
+    "internetV4": "IPv4 Internet",
+    "internetV6": "IPv6 Internet",
+    "via": "via {{gateway}}",
+    "metric": "metric {{metric}}",
+    "flowsTitle": "Two separate paths",
+    "flowApps": "Other applications",
+    "flowYuhaiin": "Yuhaiin itself",
+    "flow": {
+      "apps": "Browser, games, system services…",
+      "osRouting": "Operating system routing with the route rules",
+      "targets": "Yuhaiin TUN, another tunnel or the physical network",
+      "yuhaiin": "Proxy, DNS, QUIC, Hysteria 2 and VPN connections",
+      "protection": "Socket Protection ({{method}})",
+      "egress": "Egress Selection — never the TUN",
+      "nic": "Physical or other network interface"
+    },
+    "ownTuns": "Yuhaiin's TUN interfaces: {{names}}",
+    "interfacesTitle": "Interfaces",
+    "interfacesHelp": "Interfaces Yuhaiin's connections can leave through, with their gateways and default-route metrics.",
+    "interfacesHelpDarwin": "A socket bound to an interface uses only that interface's scoped routes or, on the primary interface, the default route. The scoped default of each interface is shown.",
+    "noInterfaces": "No interfaces found.",
+    "excluded": "Yuhaiin's TUN: never used for Yuhaiin's own connections.",
+    "scopedV4": "Scoped IPv4",
+    "scopedV6": "Scoped IPv6",
+    "scoped": {
+      "primary": "Primary",
+      "borrowed": "System",
+      "owned": "Yuhaiin",
+      "unavailable": "No router",
+      "failed": "Failed"
+    },
+    "scopedHelp": {
+      "primary": "The global default route is on this interface, so bound sockets use it directly.",
+      "borrowed": "A scoped default installed by macOS or another program. Yuhaiin uses it and never changes it.",
+      "owned": "Installed by Yuhaiin from the router last seen on this interface; removed when no longer needed.",
+      "unavailable": "No router is known for this interface. Sockets bound to it reach only directly connected networks.",
+      "failed": "Yuhaiin could not install the scoped default route."
+    },
+    "scopedLink": "through the interface",
+    "details": "Details",
+    "platform": "Platform",
+    "method": "Method",
+    "mark": "Socket mark",
+    "protectionActive": "Protection working",
+    "yes": "Yes",
+    "no": "No",
+    "egressModeLabel": "Egress mode",
+    "sockets": "Protected sockets",
+    "socketsValue": "{{ok}} protected, {{failed}} failed",
+    "lastError": "Last error",
+    "rulesTitle": "Policy rules",
+    "rulesHelp": "Marked packets skip Yuhaiin's TUN table and use the main routing table."
   }
 }
