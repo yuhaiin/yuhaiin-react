@@ -121,8 +121,7 @@
     "saved": "Saved",
     "preset": {
       "All (Default)": "All (default)",
-      "Non-Local IPs": "Non-local IPs",
-      "Non-Chinese IPs": "Non-Chinese IPs"
+      "Non-Local IPs": "Non-local IPs"
     },
     "edit": "Edit",
     "close": "Close"
