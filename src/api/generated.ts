@@ -155,6 +155,7 @@ export type RPCOperation =
   | "systemNetwork.config.put"
   | "systemNetwork.interfaces"
   | "systemNetwork.preview"
+  | "systemNetwork.routes"
   | "systemNetwork.status"
   | "tools.diagnostics"
   | "tools.interfaces"
@@ -267,6 +268,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/system-network/status", operation: "systemNetwork.status" },
   { method: "GET", pattern: "/api/v2/system-network/interfaces", operation: "systemNetwork.interfaces" },
   { method: "POST", pattern: "/api/v2/system-network/preview", operation: "systemNetwork.preview" },
+  { method: "GET", pattern: "/api/v2/system-network/routes", operation: "systemNetwork.routes" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },

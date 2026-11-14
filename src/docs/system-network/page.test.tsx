@@ -14,7 +14,8 @@ const api = vi.hoisted(() => ({
     getSystemNetworkStatus: vi.fn(),
     getSystemNetworkInterfaces: vi.fn(),
     previewSystemNetwork: vi.fn(),
-    systemNetworkKeys: { config: 'sn/config', status: 'sn/status', interfaces: 'sn/interfaces' },
+    getSystemNetworkRoutes: vi.fn(),
+    systemNetworkKeys: { config: 'sn/config', status: 'sn/status', interfaces: 'sn/interfaces', routes: 'sn/routes' },
 }));
 vi.mock('@/api/system-network', () => api);
 vi.mock('@/api/route', () => ({ listGeoIPCountries: vi.fn().mockResolvedValue({ codes: ['JP', 'US'], loaded: true }) }));
@@ -174,11 +175,51 @@ it('shows missing interfaces, ownership and unavailable rules', async () => {
     expect(host.textContent).toContain('192.168.1.1');
 });
 
+it('shows the system routes with Yuhaiin routes marked by their rule', async () => {
+    setup({ routes: [rule('office', 100)], forwarding: { ipv4: false, ipv6: false, rules: [] } });
+    api.getSystemNetworkRoutes.mockResolvedValue({ platform: 'linux', readable: true, total: 3, yuhaiinRoutes: 2, routes: [
+        { destination: '0.0.0.0/0', gateway: '192.168.1.1', interface: 'eth0', table: 254, metric: 100, type: 'unicast', yuhaiin: false },
+        { destination: '10.10.0.0/16', interface: 'wg0', table: 63, type: 'unicast', yuhaiin: true, source: 'rule', ruleId: 'office', ruleName: 'Office' },
+        { destination: '203.0.113.0/24', interface: 'utun8', table: 63, type: 'unicast', yuhaiin: true, source: 'stale' },
+    ], rules: [{ priority: 30001, family: 2, selector: 'all', table: 63, yuhaiin: true }, { priority: 32766, family: 2, selector: 'all', table: 254, yuhaiin: false }] });
+    await render();
+    const tab = [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(b => b.textContent === 'tabs.routes')!;
+    await act(async () => { tab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); tab.click(); });
+    await vi.waitFor(() => expect(host.textContent).toContain('10.10.0.0/16'));
+    const rows = () => [...host.querySelectorAll('ul[aria-label="routes.title"] > li:not([role="presentation"])')];
+    const row = (dst: string) => rows().find(li => li.textContent?.includes(dst))!;
+    expect(row('10.10.0.0/16').textContent).toContain('routes.yuhaiin');
+    expect(row('10.10.0.0/16').textContent).toContain('routes.source.rule: Office');
+    expect(row('203.0.113.0/24').textContent).toContain('routes.source.stale');
+    expect(row('0.0.0.0/0').textContent).not.toContain('routes.yuhaiin');
+    expect(row('0.0.0.0/0').textContent).toContain('routes.via:{"gateway":"192.168.1.1"}');
+    // Linux groups by table and lists the policy rules.
+    expect(host.textContent).toContain('routes.tables.main');
+    expect(host.textContent).toContain('routes.tables.yuhaiin');
+    expect(host.textContent).toContain('routes.rulesTitle');
+
+    const toggle = host.querySelector<HTMLButtonElement>('[role="switch"]')!;
+    await act(async () => toggle.click());
+    expect(rows().map(li => li.textContent?.match(/^[\d.:/a-f]+/)?.[0])).toEqual(['10.10.0.0/16', '203.0.113.0/24']);
+});
+
+it('explains the Android route view', async () => {
+    setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } }, android);
+    api.getSystemNetworkRoutes.mockResolvedValue({ platform: 'android', readable: false, total: 1, yuhaiinRoutes: 1, rules: [],
+        routes: [{ destination: '10.0.0.0/8', interface: 'VPN', yuhaiin: true, source: 'vpn', ruleId: 'corp', ruleName: 'Corp' }] });
+    await render();
+    const tab = [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(b => b.textContent === 'tabs.routes')!;
+    await act(async () => { tab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); tab.click(); });
+    await vi.waitFor(() => expect(host.textContent).toContain('routes.androidVpnOnly'));
+    expect(host.textContent).toContain('routes.source.vpn: Corp');
+    expect(host.textContent).not.toContain('routes.rulesTitle');
+});
+
 it('offers only Android-supported targets and hides forwarding there', async () => {
     setup({ routes: [], forwarding: { ipv4: false, ipv6: false, rules: [] } }, android);
     await render();
     expect(host.textContent).toContain('platform.android');
-    expect([...host.querySelectorAll('[role="tab"]')].map(t => t.textContent)).toEqual(['tabs.routing', 'tabs.interfaces']);
+    expect([...host.querySelectorAll('[role="tab"]')].map(t => t.textContent)).toEqual(['tabs.routing', 'tabs.interfaces', 'tabs.routes']);
     await click('routing.add');
     expect(buttons().some(b => b.textContent === 'editor.targetInterface')).toBe(false);
     expect(document.body.textContent).toContain('editor.chooseTun');

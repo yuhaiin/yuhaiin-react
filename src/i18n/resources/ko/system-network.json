@@ -5,7 +5,8 @@
   "tabs": {
     "routing": "라우팅",
     "forwarding": "포워딩",
-    "interfaces": "인터페이스"
+    "interfaces": "인터페이스",
+    "routes": "시스템 라우트"
   },
   "state": {
     "active": "적용됨",
@@ -274,5 +275,46 @@
     "tunStopped": "실행 안 함",
     "tunRunning": "{{name}}(으)로 실행 중",
     "viaTun": "라우트 규칙에서 Yuhaiin TUN으로 선택합니다."
+  },
+  "routes": {
+    "title": "시스템 라우트",
+    "help": "운영 체제가 현재 사용하는 라우팅 테이블입니다. Yuhaiin이 설치한 라우트에는 해당 규칙이 표시됩니다. 나머지는 시스템이나 다른 프로그램의 라우트이며 변경되지 않습니다.",
+    "refresh": "새로 고침",
+    "loading": "라우팅 테이블을 읽는 중…",
+    "empty": "일치하는 라우트가 없습니다.",
+    "summary": "라우트 {{total}}개, 그중 Yuhaiin이 설치한 라우트 {{yuhaiin}}개",
+    "truncated": "처음 {{count}}개만 표시합니다.",
+    "onlyYuhaiin": "Yuhaiin만",
+    "more": "{{count}}개 더 보기",
+    "yuhaiin": "Yuhaiin",
+    "via": "경유 {{gateway}}",
+    "dev": "장치 {{name}}",
+    "metric": "메트릭 {{metric}}",
+    "source": {
+      "rule": "라우트 규칙",
+      "required": "TUN 필수 라우트",
+      "forwarding": "포워딩 규칙",
+      "vpn": "VPN 라우트 규칙",
+      "stale": "남은 라우트"
+    },
+    "sourceHelp": {
+      "rule": "라우트 규칙으로 설치되었습니다.",
+      "required": "TUN 서브넷이나 FakeIP 풀처럼 Yuhaiin TUN 동작에 필요한 라우트입니다.",
+      "forwarding": "포워딩 규칙으로 설치되었습니다.",
+      "vpn": "라우트 규칙에 따라 Android VPN에 전달된 라우트입니다.",
+      "stale": "Yuhaiin 표시가 있지만 현재 설정에 포함되지 않습니다. 다음 시작 시 제거됩니다."
+    },
+    "tables": {
+      "main": "메인 테이블",
+      "default": "기본 테이블",
+      "yuhaiin": "Yuhaiin 테이블 (63)",
+      "forwarding": "포워딩 테이블 {{table}}",
+      "other": "테이블 {{table}}"
+    },
+    "rulesTitle": "정책 규칙",
+    "rulesHelp": "Linux 정책 규칙은 우선순위에 따라 패킷이 조회할 테이블을 결정합니다.",
+    "lookup": "{{table}} 조회",
+    "androidNote": "Android에서는 앱이 커널 라우팅 테이블을 읽을 수 없습니다. Android가 네트워크별로 보고하는 라우트를 표시하며, Yuhaiin VPN의 라우트를 표시합니다.",
+    "androidVpnOnly": "이 앱 버전은 Android 네트워크 라우트를 읽을 수 없습니다. Yuhaiin VPN에 전달된 라우트만 표시합니다."
   }
 }

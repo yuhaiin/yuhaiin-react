@@ -118,6 +118,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "systemNetwork.status": "settings:read",
     "systemNetwork.interfaces": "settings:read",
     "systemNetwork.preview": "settings:read",
+    "systemNetwork.routes": "settings:read",
     "systemNetwork.config.put": "settings:write",
     "resolver.responses.get": "resolver:read",
     "resolver.hosts.get": "resolver:read",

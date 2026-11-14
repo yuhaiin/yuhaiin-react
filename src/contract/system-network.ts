@@ -13,6 +13,8 @@ export type SystemNetworkInterfaces = Go.sysnet.Interfaces;
 export type NetworkInterface = Go.sysnet.Interface;
 export type SystemNetworkPreview = Go.sysnet.Preview;
 export type SystemNetworkSaveResult = Go.sysnet.SaveResult;
+export type SystemRoutes = Go.sysnet.SystemRoutes;
+export type SystemRouteEntry = Go.sysnet.SystemRouteEntry;
 export type MatchMode = 'global' | 'non_private' | 'custom';
 
 export function blankSystemNetworkConfig(): SystemNetworkConfig {

@@ -5,7 +5,8 @@
   "tabs": {
     "routing": "Routing",
     "forwarding": "Forwarding",
-    "interfaces": "Interfaces"
+    "interfaces": "Interfaces",
+    "routes": "System routes"
   },
   "state": {
     "active": "Active",
@@ -274,5 +275,46 @@
     "tunStopped": "Not running",
     "tunRunning": "Running as {{name}}",
     "viaTun": "Choose it as a Yuhaiin TUN in route rules."
+  },
+  "routes": {
+    "title": "System routes",
+    "help": "The routing table the operating system uses right now. Routes Yuhaiin installed are marked with the rule they come from; everything else belongs to the system or other programs and is never changed.",
+    "refresh": "Refresh",
+    "loading": "Reading the routing table…",
+    "empty": "No routes match.",
+    "summary": "{{total}} routes, {{yuhaiin}} installed by Yuhaiin",
+    "truncated": "Only the first {{count}} are shown.",
+    "onlyYuhaiin": "Yuhaiin only",
+    "more": "Show {{count}} more",
+    "yuhaiin": "Yuhaiin",
+    "via": "via {{gateway}}",
+    "dev": "dev {{name}}",
+    "metric": "metric {{metric}}",
+    "source": {
+      "rule": "Route rule",
+      "required": "Required by TUN",
+      "forwarding": "Forwarding rule",
+      "vpn": "VPN route rule",
+      "stale": "Left over"
+    },
+    "sourceHelp": {
+      "rule": "Installed for a route rule.",
+      "required": "Keeps a Yuhaiin TUN working, such as its subnet or a FakeIP pool.",
+      "forwarding": "Installed for a forwarding rule.",
+      "vpn": "Passed to the Android VPN for a route rule.",
+      "stale": "Marked as Yuhaiin's but not part of the current configuration. It is removed on the next start."
+    },
+    "tables": {
+      "main": "Main table",
+      "default": "Default table",
+      "yuhaiin": "Yuhaiin table (63)",
+      "forwarding": "Forwarding table {{table}}",
+      "other": "Table {{table}}"
+    },
+    "rulesTitle": "Policy rules",
+    "rulesHelp": "Linux policy rules decide which table a packet looks up, in priority order.",
+    "lookup": "lookup {{table}}",
+    "androidNote": "Android does not let apps read the kernel routing table. These are the routes Android reports for each network; Yuhaiin's VPN routes are marked.",
+    "androidVpnOnly": "This app version cannot read Android's network routes. Only the routes passed to the Yuhaiin VPN are shown."
   }
 }
