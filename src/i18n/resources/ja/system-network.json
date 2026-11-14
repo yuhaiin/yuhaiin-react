@@ -5,7 +5,8 @@
   "tabs": {
     "routing": "ルーティング",
     "forwarding": "フォワーディング",
-    "interfaces": "インターフェース"
+    "interfaces": "インターフェース",
+    "routes": "システムルート"
   },
   "state": {
     "active": "適用中",
@@ -274,5 +275,46 @@
     "tunStopped": "停止中",
     "tunRunning": "{{name}} として動作中",
     "viaTun": "ルートルールでは Yuhaiin TUN として選びます。"
+  },
+  "routes": {
+    "title": "システムルート",
+    "help": "OS が現在使っているルーティングテーブルです。Yuhaiin が追加したルートには元のルールが表示されます。それ以外はシステムや他のプログラムのルートで、変更されることはありません。",
+    "refresh": "更新",
+    "loading": "ルーティングテーブルを読み込み中…",
+    "empty": "一致するルートはありません。",
+    "summary": "{{total}} 件のルート、うち Yuhaiin が追加したもの {{yuhaiin}} 件",
+    "truncated": "先頭の {{count}} 件のみ表示しています。",
+    "onlyYuhaiin": "Yuhaiin のみ",
+    "more": "さらに {{count}} 件を表示",
+    "yuhaiin": "Yuhaiin",
+    "via": "経由 {{gateway}}",
+    "dev": "デバイス {{name}}",
+    "metric": "メトリック {{metric}}",
+    "source": {
+      "rule": "ルートルール",
+      "required": "TUN の必須ルート",
+      "forwarding": "転送ルール",
+      "vpn": "VPN ルートルール",
+      "stale": "残存ルート"
+    },
+    "sourceHelp": {
+      "rule": "ルートルールによって追加されました。",
+      "required": "TUN のサブネットや FakeIP プールなど、Yuhaiin の TUN の動作に必要なルートです。",
+      "forwarding": "転送ルールによって追加されました。",
+      "vpn": "ルートルールにより Android の VPN に渡されたルートです。",
+      "stale": "Yuhaiin のマークがありますが、現在の設定には含まれていません。次回起動時に削除されます。"
+    },
+    "tables": {
+      "main": "メインテーブル",
+      "default": "デフォルトテーブル",
+      "yuhaiin": "Yuhaiin テーブル (63)",
+      "forwarding": "転送テーブル {{table}}",
+      "other": "テーブル {{table}}"
+    },
+    "rulesTitle": "ポリシールール",
+    "rulesHelp": "Linux のポリシールールは、パケットが参照するテーブルを優先度順に決めます。",
+    "lookup": "{{table}} を参照",
+    "androidNote": "Android ではアプリがカーネルのルーティングテーブルを読めません。ここには Android が各ネットワークについて報告するルートを表示し、Yuhaiin の VPN のルートにマークを付けています。",
+    "androidVpnOnly": "このバージョンのアプリは Android のネットワークルートを読み取れません。Yuhaiin の VPN に渡したルートのみ表示しています。"
   }
 }

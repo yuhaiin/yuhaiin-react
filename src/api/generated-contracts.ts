@@ -2567,6 +2567,36 @@ export namespace Go {
       config: Config;
       status: Status;
     }
+    export interface SystemRoutes {
+      platform: string;
+      readable: boolean;
+      total: number;
+      truncated?: boolean;
+      yuhaiinRoutes: number;
+      routes: SystemRouteEntry[];
+      rules: SystemPolicyRule[];
+      error?: string;
+    }
+    export interface SystemRouteEntry {
+      destination: string;
+      gateway?: string;
+      interface?: string;
+      interfaceIndex?: number;
+      table?: number;
+      metric?: number;
+      type?: string;
+      yuhaiin: boolean;
+      source?: string;
+      ruleId?: string;
+      ruleName?: string;
+    }
+    export interface SystemPolicyRule {
+      priority: number;
+      family: number;
+      selector: string;
+      table: number;
+      yuhaiin: boolean;
+    }
     export interface Config {
       routes: RouteRule[];
       forwarding: Forwarding;

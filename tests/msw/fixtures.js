@@ -95,6 +95,23 @@ const systemNetworkInterfaces={items:[
   {name:'utun8',index:9,type:'tunnel',up:true,mtu:1500,addresses:['172.19.0.1/30','fdfe:dcba:9876::1/126'],pointToPoint:true,ownership:'yuhaiin',inboundId:'tun-a',inboundName:'TUN A',routable:false},
 ],tunInbounds:[{id:'tun-a',name:'TUN A',running:true,interface:'utun8'},{id:'tun-b',name:'TUN B',running:false}],tproxyInbounds:[{id:'tproxy',name:'TProxy',listen:'0.0.0.0:7893'}],
   missing:[{target:{type:'interface',interfaceName:'tailscale0'},ruleIds:['route-tailscale']},{target:{type:'tun_inbound',inboundId:'tun-b'},ruleIds:['route-dns']}]};
+const systemNetworkRoutes={platform:'linux',readable:true,total:9,yuhaiinRoutes:5,routes:[
+  {destination:'0.0.0.0/0',gateway:'192.168.1.1',interface:'eth0',interfaceIndex:2,table:254,metric:100,type:'unicast',yuhaiin:false},
+  {destination:'192.168.1.0/24',interface:'eth0',interfaceIndex:2,table:254,metric:100,type:'unicast',yuhaiin:false},
+  {destination:'100.64.0.0/10',interface:'tailscale0',interfaceIndex:7,table:52,type:'unicast',yuhaiin:false},
+  {destination:'0.0.0.0/1',interface:'utun8',interfaceIndex:9,table:63,type:'unicast',yuhaiin:true,source:'rule',ruleId:'legacy-tun-inbound-local-1a2b',ruleName:'macOS TUN (migrated)'},
+  {destination:'10.10.0.0/16',interface:'wg0',interfaceIndex:5,table:63,type:'unicast',yuhaiin:true,source:'rule',ruleId:'route-office',ruleName:'Office via WireGuard'},
+  {destination:'198.18.0.0/15',interface:'utun8',interfaceIndex:9,table:63,type:'unicast',yuhaiin:true,source:'required',ruleId:'tun-a',ruleName:'TUN A'},
+  {destination:'203.0.113.0/24',interface:'utun8',interfaceIndex:9,table:63,type:'unicast',yuhaiin:true,source:'stale'},
+  {destination:'0.0.0.0/0',interface:'utun8',interfaceIndex:9,table:6300,type:'unicast',yuhaiin:true,source:'forwarding',ruleId:'forward-lan',ruleName:'LAN devices'},
+  {destination:'::/0',gateway:'fe80::1',interface:'eth0',interfaceIndex:2,table:254,metric:1024,type:'unicast',yuhaiin:false},
+],rules:[
+  {priority:0,family:2,selector:'all',table:255,yuhaiin:false},
+  {priority:29000,family:2,selector:'from 192.168.20.0/24 iif eth1',table:6300,yuhaiin:true},
+  {priority:30001,family:2,selector:'all',table:63,yuhaiin:true},
+  {priority:32766,family:2,selector:'all',table:254,yuhaiin:false},
+  {priority:30002,family:10,selector:'all',table:63,yuhaiin:true},
+]};
 const systemNetworkPreview=config=>config.routes.map(r=>({id:r.id,ipv4Routes:r.match.mode==='custom'?(r.match.includeCidrs||[]).length:r.match.mode==='global'?32:58,ipv6Routes:r.match.mode==='custom'?0:16,sample:[]}));
 const systemNetworkStatus=()=>({state:'degraded',generation:7,appliedAt:Math.floor(Date.now()/1000)-30,routes:76,capabilities:sysnetCaps,
   rules:systemNetwork.routes.map(r=>r.id==='route-tailscale'?{id:r.id,state:'unavailable',error:'interface tailscale0 does not exist',ipv4Routes:0,ipv6Routes:0}
@@ -319,6 +336,7 @@ const worker=setupWorker(
     else if(op==='systemNetwork.config.put'){systemNetwork={...p,migrations:systemNetwork.migrations};result={config:systemNetwork,status:systemNetworkStatus()};}
     else if(op==='systemNetwork.status')result=systemNetworkStatus();
     else if(op==='systemNetwork.interfaces')result=systemNetworkInterfaces;
+    else if(op==='systemNetwork.routes')result=systemNetworkRoutes;
     else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;

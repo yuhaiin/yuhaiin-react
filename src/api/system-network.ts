@@ -1,10 +1,11 @@
 import { requestJSON } from './client';
-import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus } from '@/contract/system-network';
+import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus, type SystemRoutes } from '@/contract/system-network';
 
 export const systemNetworkKeys = {
     config: '/api/v2/system-network/config',
     status: '/api/v2/system-network/status',
     interfaces: '/api/v2/system-network/interfaces',
+    routes: '/api/v2/system-network/routes',
 };
 
 export async function getSystemNetworkConfig(): Promise<SystemNetworkConfig> {
@@ -27,4 +28,9 @@ export function getSystemNetworkInterfaces(): Promise<SystemNetworkInterfaces> {
 
 export function previewSystemNetwork(config: SystemNetworkConfig): Promise<SystemNetworkPreview> {
     return requestJSON<SystemNetworkPreview>('POST', '/api/v2/system-network/preview', config);
+}
+
+/** The operating system's routing table, with the routes Yuhaiin owns marked. */
+export function getSystemNetworkRoutes(): Promise<SystemRoutes> {
+    return requestJSON<SystemRoutes>('GET', systemNetworkKeys.routes);
 }
