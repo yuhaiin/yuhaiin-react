@@ -25,7 +25,7 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
     const [actionError, setActionError] = useState<string>();
     if (error) return <Card className={className}><CardBody><p className="m-0 text-sm text-ui-danger">{errorText(error)}</p></CardBody></Card>;
     if (!data) return <Card className={className}><CardBody><Loading /></CardBody></Card>;
-    const act = async (action: 'check' | 'apply' | 'permission' | 'channel', channel?: string) => {
+    const act = async (action: 'check' | 'apply' | 'permission' | 'cancel' | 'channel', channel?: string) => {
         setActionError(undefined);
         try { await mutate(await androidUpdateAction(action, channel), { revalidate: false }); }
         catch (e) { setActionError(errorText(e)); }
@@ -83,6 +83,8 @@ export const AndroidAppUpdate: FC<{ className?: string }> = ({ className }) => {
                 <Button size="sm" variant="outline-primary" disabled={busy} onClick={() => act('check')}>{t('update.check')}</Button>
                 {data.release && <Button size="sm" variant="primary" disabled={busy} onClick={() => act('apply')}>{t('update.install')}</Button>}
                 {data.stage === 'WAITING_PERMISSION' && <Button size="sm" variant="outline-secondary" onClick={() => act('permission')}>{t('update.grant')}</Button>}
+                {/* The system dialog can be dismissed without a result; let the user abandon the session and install again. */}
+                {data.stage === 'INSTALLING' && <Button size="sm" variant="outline-secondary" onClick={() => act('cancel')}>{t('update.cancelInstall')}</Button>}
             </div>
         </CardBody>
     </Card>;

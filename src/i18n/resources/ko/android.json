@@ -179,6 +179,7 @@
     "check": "업데이트 확인",
     "install": "다운로드 및 설치",
     "grant": "설치 허용",
+    "cancelInstall": "설치 취소",
     "permission": "이 앱이 업데이트를 설치하도록 허용하세요.",
     "stages": {
       "CHECKING": "확인 중…",
