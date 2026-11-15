@@ -1,6 +1,6 @@
 import { requestJSON } from "@/api/client";
-import type { Link, LinkList, Publish, PublishList, ResolvePublishResponse } from "@/contract/subscription";
-import { normalizeLink, normalizePublish } from "@/contract/subscription";
+import type { Link, LinkList, ShareFeed, ShareFeedEntry, ShareFeedList, ShareFeedPreview } from "@/contract/subscription";
+import { normalizeLink, normalizeShareFeed, shareFeedDraft } from "@/contract/subscription";
 
 export async function listSubscriptions(): Promise<LinkList> {
   const data = await requestJSON<LinkList>("GET", "/api/v2/subscriptions");
@@ -19,23 +19,40 @@ export async function updateSubscriptions(names: string[]): Promise<void> {
   await requestJSON<void>("POST", "/api/v2/subscriptions/update", { names });
 }
 
-export async function listPublishes(): Promise<PublishList> {
-  const data = await requestJSON<PublishList>("GET", "/api/v2/publishes");
-  return { items: (data.items ?? []).map(item => normalizePublish(item)) };
+export const shareFeedsKey = "/api/v2/share-feeds";
+
+export async function listShareFeeds(): Promise<ShareFeedList> {
+  const data = await requestJSON<ShareFeedList>("GET", shareFeedsKey);
+  return { items: (data.items ?? []).map(item => normalizeShareFeed(item)) };
 }
 
-export async function savePublish(publish: Publish): Promise<void> {
-  const normalized = normalizePublish(publish);
-  await requestJSON<void>("PUT", `/api/v2/publishes/${encodeURIComponent(normalized.name)}`, normalized);
+export async function createShareFeed(feed: ShareFeed): Promise<ShareFeed> {
+  return normalizeShareFeed(await requestJSON<ShareFeed>("POST", shareFeedsKey, shareFeedDraft(feed)));
 }
 
-export async function deletePublish(name: string): Promise<void> {
-  await requestJSON<void>("DELETE", `/api/v2/publishes/${encodeURIComponent(name)}`);
+export async function updateShareFeed(feed: ShareFeed): Promise<ShareFeed> {
+  return normalizeShareFeed(await requestJSON<ShareFeed>("PUT", `${shareFeedsKey}/${encodeURIComponent(feed.id)}`, shareFeedDraft(feed)));
 }
 
-export async function resolvePublish(name: string, password: string, path: string): Promise<ResolvePublishResponse> {
-  const data = await requestJSON<ResolvePublishResponse>("POST", `/api/v2/publishes/${encodeURIComponent(name)}/resolve`, { name, password, path });
-  return { points: (data.points ?? []) };
+export async function deleteShareFeed(id: string): Promise<void> {
+  await requestJSON<void>("DELETE", `${shareFeedsKey}/${encodeURIComponent(id)}`);
+}
+
+export async function rotateShareFeed(id: string): Promise<ShareFeed> {
+  return normalizeShareFeed(await requestJSON<ShareFeed>("POST", `${shareFeedsKey}/${encodeURIComponent(id)}/rotate`));
+}
+
+export async function previewShareFeed(entries: ShareFeedEntry[], signal?: AbortSignal): Promise<ShareFeedPreview> {
+  const data = await requestJSON<ShareFeedPreview>("POST", `${shareFeedsKey}/preview`, { entries }, undefined, signal);
+  return { nodes: data.nodes ?? [], skipped: data.skipped ?? [], missing: data.missing ?? [] };
+}
+
+/** Reads one feed's token; it is masked in ordinary reads for managed sessions. */
+export async function getShareFeedToken(id: string, signal?: AbortSignal): Promise<string> {
+  const data = await requestJSON<ShareFeedList>("GET", shareFeedsKey, undefined, undefined, signal, { revealSecrets: true });
+  const item = (data.items ?? []).find(item => item.id === id);
+  if (!item) throw { code: 404, msg: "Share feed not found" };
+  return item.token;
 }
 
 export async function getSubscriptionSecrets(name: string, signal?: AbortSignal): Promise<Link> {
