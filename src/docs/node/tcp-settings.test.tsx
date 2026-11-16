@@ -8,7 +8,7 @@ import { OutboundTCPSettings } from './tcp-settings';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 const vpnTypes: NodeProtocolType[] = ['wireguard', 'amneziawg', 'openvpn', 'l2tp', 'l2tpv3', 'globalprotect',
-    'softether', 'ikev2', 'anyconnect', 'sstp', 'fortinet', 'nebula', 'zerotier', 'tailscale', 'masque', 'cloudflare_warp_masque'];
+    'softether', 'ikev2', 'anyconnect', 'sstp', 'fortinet', 'nebula', 'zerotier', 'tailscale', 'masque', 'cloudflare_warp_masque', 'lan_link'];
 
 it.each(vpnTypes)('edits shared TCP settings and preserves the %s protocol configuration', (type) => {
     let saved: NodeProtocol = normalizeProtocol({ type, [type]: { ...getProtocolConfig(createDefaultProtocol(type)), mtu: 1370,

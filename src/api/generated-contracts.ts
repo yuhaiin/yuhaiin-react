@@ -543,6 +543,7 @@ export namespace Go {
       publicEndpoint6?: string;
       stunServer?: string;
       clientToClient?: boolean;
+      tcpSettings?: Go.transport.TCPSettings;
       privateKey?: string;
       clients?: LANLinkClient[];
     }
@@ -2804,6 +2805,7 @@ export namespace Go {
       invitation: string;
       privateKey?: string;
       allowIncoming?: boolean;
+      tcpSettings?: TCPSettings;
     }
     export interface LANLinkInvitation {
       coordinator: string;
