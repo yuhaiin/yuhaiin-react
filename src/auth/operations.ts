@@ -54,6 +54,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "connections.history": "connections:read",
     "gateway.workspace.get": "gateway:read",
     "gateway.status": "gateway:read",
+    "gateway.statistics": "gateway:read",
     "gateway.ca.status": "gateway:read",
     "gateway.filters.refresh": "gateway:write",
     "gateway.workspace.put": "gateway:write",

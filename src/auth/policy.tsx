@@ -10,6 +10,7 @@ export const routePermissions: Record<string, { read: string | string[]; write?:
     '/docs/group/publish': { read: 'nodes:read', write: 'nodes:write' },
     '/docs/group/activates': { read: 'nodes:read', write: 'nodes:write' },
     '/docs/gateway': { read: 'gateway:read', write: 'gateway:write' },
+    '/docs/gateway/statistics': { read: 'gateway:read', write: 'gateway:write' },
     '/docs/certificates': { read: 'certificates:read', write: 'certificates:manage' },
     '/docs/traffic-control': { read: 'settings:read', write: 'settings:write' },
     '/docs/system-network': { read: 'settings:read', write: 'settings:write' },

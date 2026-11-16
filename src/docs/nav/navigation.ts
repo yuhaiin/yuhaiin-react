@@ -19,6 +19,7 @@ export const navigationSections: NavigationSection[] = [
             { path: '/docs/connections/failed', label: ui('failedHistory'), icon: FileClock },
             { path: '/docs/bypass/block', label: ui('blockHistory'), icon: ShieldBan },
         ] },
+        { path: '/docs/gateway/statistics', label: nav('gatewayStatistics'), icon: ChartColumn },
     ] },
     { label: nav('trafficConfiguration'), items: [
         { label: routing('destinationsTask'), icon: ExternalLink, items: [

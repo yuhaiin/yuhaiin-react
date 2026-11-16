@@ -494,6 +494,48 @@ export namespace Go {
       rejected: number;
       errors: string[];
     }
+    export interface StatisticsReport {
+      gateways: GatewayStatistics[];
+    }
+    export interface GatewayStatistics {
+      id: string;
+      sinceUnixMs: number;
+      activeRequests: number;
+      bytesIn: number;
+      bytesOut: number;
+      statusClasses: number[];
+      latency: LatencyBucket[];
+      rules: RuleHits[];
+      filterHits: number;
+      defaultHits: number;
+      topHosts: HostHits[];
+      hostCountError: number;
+      history: StatisticsHistory;
+    }
+    export interface LatencyBucket {
+      leMs: number;
+      count: number;
+    }
+    export interface RuleHits {
+      id: string;
+      hits: number;
+    }
+    export interface HostHits {
+      host: string;
+      requests: number;
+      blocked: number;
+    }
+    export interface StatisticsHistory {
+      intervalMs: number;
+      endUnixMs: number;
+      requests: number[];
+      blocked: number[];
+      forwarded: number[];
+      errors: number[];
+      durationNs: number[];
+      bytesIn: number[];
+      bytesOut: number[];
+    }
     export interface Workspace {
       version: number;
       revision: number;
