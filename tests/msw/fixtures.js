@@ -78,6 +78,30 @@ function selectorStatus(id) {
 const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 
+const gatewayAction=(type,extra={})=>({type,status:type==='block'?204:200,outbound:{type:'inherit_route'},preserveHost:false,rewrite:{},...extra});
+const gatewayWorkspace={version:1,revision:1,gateways:[{id:'gw-ads',name:'spotify-adblock',enabled:true,debug:false,revision:1,maxBodyBytes:0,
+  policies:[
+    {id:'ads-path',name:'Ad audio paths',revision:1,enabled:true,priority:10,match:{field:'path',operator:'prefix',values:['/ads/']},action:gatewayAction('block')},
+    {id:'sponsor',name:'Sponsorship JSON',revision:1,enabled:true,priority:20,match:{field:'path',operator:'prefix',values:['/sponsoredplaylist']},action:gatewayAction('respond',{body:'{"sponsorships":[]}'})},
+    {id:'tracking',name:'Telemetry hosts',revision:1,enabled:true,priority:30,match:{field:'host',operator:'domain',values:['log.spotify.example']},action:gatewayAction('block')},
+  ],backendPools:[],filters:[{id:'easylist',name:'EasyList (domains)',revision:1,enabled:true,text:''}],fallback:gatewayAction('forward')}]};
+// Deterministic synthetic hour: a busy evening ramp with periodic ad bursts.
+function gatewayStatisticsFixture(){
+  const n=360, interval=10000, end=Math.ceil(Date.now()/interval)*interval;
+  const col=f=>Array.from({length:n},(_,i)=>Math.max(0,Math.round(f(i))));
+  const base=i=>40+30*Math.sin(i/40)+((i*37)%11);
+  const blocked=col(i=>base(i)*0.66+(i%30<3?60:0)), forwarded=col(i=>base(i)*0.32), errors=col(i=>(i%45===0?12:(i*7)%5===0?1:0));
+  const requests=blocked.map((b,i)=>b+forwarded[i]+errors[i]);
+  return {id:'gw-ads',sinceUnixMs:end-n*interval*3,activeRequests:14,bytesIn:18_400_000,bytesOut:2_870_000_000,
+    statusClasses:[210,180,151230,960,2900,1150],
+    latency:[[10,62000],[50,41000],[100,18000],[250,9200],[500,4100],[1000,2300],[2500,1300],[5000,700],[10000,410],[30000,620],[60000,280],[0,190]].map(([leMs,count])=>({leMs,count})),
+    rules:[{id:'ads-path',hits:98200},{id:'sponsor',hits:12400},{id:'tracking',hits:51800}],filterHits:24150,defaultHits:53080,
+    topHosts:[['spclient.wg.spotify.example',61200,4100],['audio-ak.spotify.example',38800,0],['ads.spotify.example',31500,31500],['log.spotify.example',22900,22900],['i.scdn.example',14100,0],['pubads.g.doubleclick.example',9800,9800],['api-partner.spotify.example',6200,2100]].map(([host,requests,blocked])=>({host,requests,blocked})),
+    hostCountError:0,
+    history:{intervalMs:interval,endUnixMs:end,requests,blocked,forwarded,errors,
+      durationNs:requests.map((r,i)=>r*(120+90*Math.sin(i/25)+(i%45===0?2500:0))*1e6),
+      bytesIn:requests.map(r=>r*900),bytesOut:forwarded.map((f,i)=>f*(60000+20000*Math.sin(i/30)))}};
+}
 const sysnetCaps=scenario==='android'?{platform:'android',routeManagement:true,multipleTargets:false,externalInterfaces:false,gateways:false,policyRouting:false,ipv4Forwarding:false,ipv6Forwarding:false,nat:false,tproxy:false,forwardSourceFilter:false,routeTargets:['tun_inbound'],forwardTargets:[]}
   :{platform:scenario==='utun'?'darwin':'linux',routeManagement:true,multipleTargets:true,externalInterfaces:true,gateways:true,policyRouting:scenario!=='utun',ipv4Forwarding:true,ipv6Forwarding:true,nat:true,tproxy:scenario!=='utun',forwardSourceFilter:true,routeTargets:['tun_inbound','interface'],forwardTargets:scenario==='utun'?['tun_inbound','interface','routes']:['tun_inbound','interface','routes','tproxy']};
 let systemNetwork={routes:[
@@ -246,6 +270,10 @@ const worker=setupWorker(
       if(!p.confirm)return errorResponse('Discard confirmation required',400);
       recoveryImports=recoveryImports.filter(item=>item.id!==p.id);
     }
+    else if(op==='gateway.workspace.get') result=gatewayWorkspace;
+    else if(op==='gateway.status') result={revision:1,gateways:[{id:'gw-ads',enabled:true,requests:270405,blocked:186550,forwarded:83855,errors:4204,tlsFailures:32,protocolFailures:0,durationNs:270405*9023e6,lastOutbound:'Hysteria 2',filterReports:[{id:'easylist',accepted:41250,rejected:318,errors:[]}],upstreams:[]}]};
+    else if(op==='gateway.statistics') result={gateways:[gatewayStatisticsFixture()]};
+    else if(op==='gateway.statistics.reset') result={};
     else if(op==='nodes.groups') {
       const byGroup=new Map();
       for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}

@@ -6,6 +6,7 @@ const loading = Loading;
 
 const TrafficControlPage = dynamic(() => import('@/docs/traffic-control/page'), { loading });
 const GatewayPage = dynamic(() => import('@/docs/gateway/page'), { loading });
+const GatewayStatisticsPage = dynamic(() => import('@/docs/gateway/statistics/page'), { loading });
 const CertificatesPage = dynamic(() => import('@/docs/certificates/page'), { loading });
 const SecurityPage = dynamic(() => import('@/docs/security/page'), { loading });
 const CredentialsPage = dynamic(() => import('@/docs/security/credentials/page'), { loading });
@@ -54,6 +55,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/group/publish", component: GroupPublishPage },
     { path: "/docs/group/activates", component: GroupActivatesPage },
     { path: "/docs/gateway", component: GatewayPage },
+    { path: "/docs/gateway/statistics", component: GatewayStatisticsPage },
     { path: "/docs/certificates", component: CertificatesPage },
     { path: "/docs/traffic-control", component: TrafficControlPage },
     { path: "/docs/inbound", component: InboundPage },

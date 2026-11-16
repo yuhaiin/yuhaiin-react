@@ -36,5 +36,6 @@
   "refresh": "更新",
   "refreshing": "更新中…",
   "sections": "このセクションのページ",
-  "systemNetwork": "システムネットワーク"
+  "systemNetwork": "システムネットワーク",
+  "gatewayStatistics": "Gateway 統計"
 }
