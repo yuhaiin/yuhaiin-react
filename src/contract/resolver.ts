@@ -57,6 +57,8 @@ export function normalizeFakeDNS(value: Partial<FakeDNS> | undefined): FakeDNS {
     ipv6Range: value?.ipv6Range ?? "",
     whitelist: value?.whitelist ?? [],
     skipCheckList: value?.skipCheckList ?? [],
+    whitelistListIds: value?.whitelistListIds ?? [],
+    skipCheckListIds: value?.skipCheckListIds ?? [],
   };
 }
 

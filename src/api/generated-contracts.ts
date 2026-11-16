@@ -1956,6 +1956,8 @@ export namespace Go {
       ipv6Range: string;
       whitelist: string[];
       skipCheckList: string[];
+      whitelistListIds?: string[];
+      skipCheckListIds?: string[];
     }
     export interface Server {
       server: string;

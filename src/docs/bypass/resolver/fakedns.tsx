@@ -1,18 +1,51 @@
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 import { getFakeDNS, saveFakeDNS } from '@/api/resolvers';
+import { collectPages } from '@/api/paging';
+import { listRouteLists } from '@/api/route';
+import { usePermission } from '@/auth/context';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { SettingInputVertical } from '@/component/v2/forms';
 import { InputList } from '@/component/v2/listeditor';
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { Spinner } from '@/component/v2/spinner';
 import Switch from '@/component/v2/switch';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { FakeDNS, normalizeFakeDNS } from '@/contract/resolver';
+import type { ListItem } from '@/contract/route';
 import { RotateCw, Save, Wand2 } from 'lucide-react';
 import { FC, useContext } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
+
+const HOST_LIST_TYPES = ['host', 'hosts_as_host'];
+
+/** Picks shared host lists whose domains are matched in addition to the inline entries. */
+const SharedListPicker: FC<{
+    label: string;
+    lists: ListItem[] | undefined;
+    allowed: boolean;
+    value: string[];
+    onChange: (value: string[]) => void;
+}> = ({ label, lists, allowed, value, onChange }) => {
+    const { t: uiT } = useTranslation('ui');
+    const names = new Map((lists ?? []).map(list => [list.id, list.name]));
+    const options = [
+        ...(lists ?? []).map(list => ({ value: list.id, label: list.name })),
+        // A reference saved before the list became unreadable stays removable.
+        ...value.filter(id => !names.has(id)).map(id => ({ value: id, label: uiT('fakednsMissingList', { id }) })),
+    ];
+    return <fieldset className="space-y-2" disabled={!allowed}>
+        <legend className="text-sm font-medium text-ui-muted">{label} · {uiT('fakednsSharedLists')}</legend>
+        {!allowed
+            ? <p className="text-xs text-ui-muted">{uiT('fakednsSharedListsNoPermission')}</p>
+            : options.length === 0
+                ? <div className="text-xs text-ui-muted">{lists === undefined ? <Spinner size="sm" /> : uiT("fakednsNoSharedLists")}</div>
+                : <MultiSelectChips options={options} value={value} onChange={onChange} />}
+        {allowed && <p className="text-xs text-ui-muted">{uiT('fakednsSharedListsHint')}</p>}
+    </fieldset>;
+};
 
 export const Fakedns: FC = () => {
     const { t: uiT } = useTranslation('ui');
@@ -23,6 +56,14 @@ export const Fakedns: FC = () => {
     const { value: data, setValue, dirty: isDirty, commit } = useEditorDraft("fakedns", server, () => undefined);
     const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(isDirty, saving, () => undefined);
+
+    const canReadLists = usePermission('routes:read');
+    const { data: sharedLists } = useSWR(
+        canReadLists ? "/api/v2/route/lists/options" : null,
+        () => collectPages(listRouteLists),
+        { revalidateOnFocus: false },
+    );
+    const hostLists = sharedLists?.items.filter(list => !list.ownerRuleId && HOST_LIST_TYPES.includes(list.type));
 
     if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
@@ -79,6 +120,13 @@ export const Fakedns: FC = () => {
                         data={data.whitelist}
                         onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
                     />
+                    <SharedListPicker
+                        label={uiT("domainWhitelist")}
+                        lists={hostLists}
+                        allowed={canReadLists}
+                        value={data.whitelistListIds ?? []}
+                        onChange={(v) => handleMutate(prev => ({ ...prev, whitelistListIds: v }))}
+                    />
 
                     <hr className="my-0 border-ui-border/70" />
 
@@ -86,6 +134,13 @@ export const Fakedns: FC = () => {
                         title={uiT("skipCheckList")}
                         data={data.skipCheckList ? data.skipCheckList : []}
                         onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
+                    />
+                    <SharedListPicker
+                        label={uiT("skipCheckList")}
+                        lists={hostLists}
+                        allowed={canReadLists}
+                        value={data.skipCheckListIds ?? []}
+                        onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckListIds: v }))}
                     />
                 </div>
             </CardBody>
