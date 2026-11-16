@@ -246,7 +246,7 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
                 </ResourceEditorFrame>;
 }
 
-function CreateListModal({ open, initialName, initialValue, onSaved, onClose, presentation = "modal" }: { open: boolean; initialName?: string; initialValue?: RouteListDetail; onSaved: (id: string) => void; onClose: () => void; presentation?: "modal" | "inline" }) {
+export function CreateListModal({ open, initialName, initialValue, onSaved, onClose, presentation = "modal" }: { open: boolean; initialName?: string; initialValue?: RouteListDetail; onSaved: (id: string) => void; onClose: () => void; presentation?: "modal" | "inline" }) {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     const { mutate: refreshCache } = useSWRConfig();

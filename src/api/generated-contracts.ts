@@ -1954,8 +1954,6 @@ export namespace Go {
       enabled: boolean;
       ipv4Range: string;
       ipv6Range: string;
-      whitelist: string[];
-      skipCheckList: string[];
       whitelistListIds?: string[];
       skipCheckListIds?: string[];
     }
