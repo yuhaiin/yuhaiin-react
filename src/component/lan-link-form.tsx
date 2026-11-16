@@ -1,6 +1,7 @@
 import { listLANLinkNetworks } from "@/api/inbounds";
 import { getNodeExtraInfo } from "@/api/nodes";
 import type { Go } from "@/api/generated-contracts";
+import { TCPSettingsEditor } from "@/component/tcp-settings";
 import { Badge } from "@/component/v2/badge";
 import { FormSection } from "@/component/v2/form-section";
 import { SettingInputVertical, SettingValue, SwitchCard } from "@/component/v2/forms";
@@ -48,6 +49,7 @@ export function LANLinkInboundForm({ value, onChange }: {
                 <SettingInputVertical label={t("lanLink.publicEndpoint6")} value={value.publicEndpoint6 ?? ""} onChange={publicEndpoint6 => onChange({ publicEndpoint6 })} placeholder="[2001:db8::1]:51821" />
                 <SettingInputVertical label={t("lanLink.stunServer")} value={value.stunServer ?? ""} onChange={stunServer => onChange({ stunServer })} placeholder="stun.l.google.com:19302" />
                 <p className="text-sm text-ui-muted">{t("lanLink.publicEndpointHelp")}</p>
+                <TCPSettingsEditor value={value.tcpSettings} onChange={tcpSettings => onChange({ tcpSettings })} />
             </div>
         </details>
     </div>;
