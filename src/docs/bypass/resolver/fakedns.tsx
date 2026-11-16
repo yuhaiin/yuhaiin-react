@@ -1,18 +1,62 @@
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 import { getFakeDNS, saveFakeDNS } from '@/api/resolvers';
+import { collectPages } from '@/api/paging';
+import { listRouteLists } from '@/api/route';
+import { usePermission } from '@/auth/context';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { SettingInputVertical } from '@/component/v2/forms';
 import { InputList } from '@/component/v2/listeditor';
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { Spinner } from '@/component/v2/spinner';
 import Switch from '@/component/v2/switch';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { FakeDNS, normalizeFakeDNS } from '@/contract/resolver';
-import { RotateCw, Save, Wand2 } from 'lucide-react';
-import { FC, useContext } from "react";
+import { FakeDNS, isLegacyFakeDNS, normalizeFakeDNS } from '@/contract/resolver';
+import type { ListItem } from '@/contract/route';
+import { Plus, RotateCw, Save, Wand2 } from 'lucide-react';
+import { FC, useContext, useState } from "react";
+import { Link } from 'wouter';
+import { CreateListModal } from '../list/page';
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
+
+const HOST_LIST_TYPES = ['host', 'hosts_as_host'];
+
+/** Picks the shared host lists whose domains FakeDNS matches. */
+const SharedListPicker: FC<{
+    title: string;
+    lists: ListItem[] | undefined;
+    allowed: boolean;
+    value: string[];
+    onChange: (value: string[]) => void;
+    onCreate: () => void;
+}> = ({ title, lists, allowed, value, onChange, onCreate }) => {
+    const { t: uiT } = useTranslation('ui');
+    const names = new Map((lists ?? []).map(list => [list.id, list.name]));
+    const options = [
+        ...(lists ?? []).map(list => ({ value: list.id, label: list.name })),
+        // A reference saved before the list became unreadable stays removable.
+        ...value.filter(id => !names.has(id)).map(id => ({ value: id, label: uiT('fakednsMissingList', { id }) })),
+    ];
+    return <fieldset className="space-y-2" disabled={!allowed}>
+        <legend className="text-sm font-semibold text-ui-heading">{title}</legend>
+        {!allowed
+            ? <p className="text-xs text-ui-muted">{uiT('fakednsSharedListsNoPermission')}</p>
+            : <>
+                {options.length === 0
+                    ? <div className="text-xs text-ui-muted">{lists === undefined ? <Spinner size="sm" /> : uiT("fakednsNoSharedLists")}</div>
+                    : <MultiSelectChips options={options} value={value} onChange={onChange} />}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <Button permission="routes:write" size="sm" variant="outline-secondary" onClick={onCreate}><Plus className="mr-1" size={14} />{uiT('fakednsNewList')}</Button>
+                    <Link href="/docs/bypass/list" className="text-xs text-ui-primary underline">{uiT('fakednsManageLists')}</Link>
+                </div>
+                <p className="text-xs text-ui-muted">{uiT('fakednsSharedListsHint')}</p>
+            </>}
+    </fieldset>;
+};
+
+type ListField = 'whitelistListIds' | 'skipCheckListIds';
 
 export const Fakedns: FC = () => {
     const { t: uiT } = useTranslation('ui');
@@ -23,6 +67,15 @@ export const Fakedns: FC = () => {
     const { value: data, setValue, dirty: isDirty, commit } = useEditorDraft("fakedns", server, () => undefined);
     const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(isDirty, saving, () => undefined);
+
+    const canReadLists = usePermission('routes:read');
+    const { data: sharedLists, mutate: mutateLists } = useSWR(
+        canReadLists ? "/api/v2/route/lists/options" : null,
+        () => collectPages(listRouteLists),
+        { revalidateOnFocus: false },
+    );
+    const hostLists = sharedLists?.items.filter(list => !list.ownerRuleId && HOST_LIST_TYPES.includes(list.type));
+    const [creatingFor, setCreatingFor] = useState<ListField | null>(null);
 
     if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
@@ -38,6 +91,14 @@ export const Fakedns: FC = () => {
     };
     const handleMutate = (mutator: (prev: FakeDNS) => FakeDNS) => {
         setValue(prev => prev ? mutator(normalizeFakeDNS(prev)) : prev);
+    };
+    const legacy = isLegacyFakeDNS(server);
+    // A list created here is selected right away; saving FakeDNS stores the reference.
+    const listCreated = (id: string) => {
+        const field = creatingFor;
+        setCreatingFor(null);
+        void mutateLists();
+        if (field) handleMutate(prev => ({ ...prev, [field]: [...new Set([...(prev[field] ?? []), id])] }));
     };
 
     return (
@@ -74,19 +135,38 @@ export const Fakedns: FC = () => {
 
                     <hr className="my-0 border-ui-border/70" />
 
-                    <InputList
-                        title={uiT("domainWhitelist")}
-                        data={data.whitelist}
-                        onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
-                    />
-
-                    <hr className="my-0 border-ui-border/70" />
-
-                    <InputList
-                        title={uiT("skipCheckList")}
-                        data={data.skipCheckList ? data.skipCheckList : []}
-                        onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
-                    />
+                    {legacy ? <>
+                        {/* An older Core still stores the entries inline. */}
+                        <InputList
+                            title={uiT("domainWhitelist")}
+                            data={data.whitelist ?? []}
+                            onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
+                        />
+                        <hr className="my-0 border-ui-border/70" />
+                        <InputList
+                            title={uiT("skipCheckList")}
+                            data={data.skipCheckList ?? []}
+                            onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
+                        />
+                    </> : <>
+                        <SharedListPicker
+                            title={uiT("domainWhitelist")}
+                            lists={hostLists}
+                            allowed={canReadLists}
+                            value={data.whitelistListIds ?? []}
+                            onChange={(v) => handleMutate(prev => ({ ...prev, whitelistListIds: v }))}
+                            onCreate={() => setCreatingFor('whitelistListIds')}
+                        />
+                        <hr className="my-0 border-ui-border/70" />
+                        <SharedListPicker
+                            title={uiT("skipCheckList")}
+                            lists={hostLists}
+                            allowed={canReadLists}
+                            value={data.skipCheckListIds ?? []}
+                            onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckListIds: v }))}
+                            onCreate={() => setCreatingFor('skipCheckListIds')}
+                        />
+                    </>}
                 </div>
             </CardBody>
 
@@ -106,6 +186,7 @@ export const Fakedns: FC = () => {
                 </Button>
             </CardFooter>
             </fieldset>
+            <CreateListModal open={creatingFor !== null} onSaved={listCreated} onClose={() => setCreatingFor(null)} />
         </Card>
     );
 }
