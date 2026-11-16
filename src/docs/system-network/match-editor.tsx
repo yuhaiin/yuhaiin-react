@@ -47,22 +47,23 @@ export const RouteMatchEditor: FC<{ value: RouteMatch; onChange: (value: RouteMa
         {mode === 'global' && <CidrListEditor id="bypass" label={t('match.bypass.label')} help={t('match.bypass.helpGlobal')}
             placeholder={'192.168.1.0/24\n203.0.113.10'} value={value.bypassCidrs} onChange={bypassCidrs => patch({ bypassCidrs })} />}
 
-        {mode === 'non_private' && <>
-            <DefaultExclusions />
-            <details className="grid gap-3">
-                <summary className="cursor-pointer text-sm text-ui-muted">{t('editor.advanced')}</summary>
-                <div className="mt-3 grid gap-4">
-                    <CidrListEditor id="include" label={t('match.include.label')} help={t('match.include.help')}
-                        placeholder={'10.8.0.0/16'} value={value.includeCidrs} onChange={includeCidrs => patch({ includeCidrs })} />
-                    <CidrListEditor id="bypass" label={t('match.bypass.label')} help={t('match.bypass.helpNonPrivate')}
-                        placeholder={'203.0.113.0/24\n2001:db8:100::/48'} value={value.bypassCidrs} onChange={bypassCidrs => patch({ bypassCidrs })} />
-                    <p className="flex gap-2 text-xs leading-relaxed text-ui-muted"><Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{t('match.priority')}</p>
-                </div>
-            </details>
-        </>}
+        {mode === 'non_private' && <DefaultExclusions />}
 
         {mode === 'custom' && <CustomMatch value={value} patch={patch} />}
     </div>;
+};
+
+/** Extra CIDR fields of the non-private mode; shown inside the rule's single advanced section. */
+export const NonPrivateAdvanced: FC<{ value: RouteMatch; onChange: (value: RouteMatch) => void }> = ({ value, onChange }) => {
+    const { t } = useTranslation('systemNetwork');
+    const patch = (fields: Partial<RouteMatch>) => onChange({ ...value, ...fields });
+    return <>
+        <CidrListEditor id="include" label={t('match.include.label')} help={t('match.include.help')}
+            placeholder={'10.8.0.0/16'} value={value.includeCidrs} onChange={includeCidrs => patch({ includeCidrs })} />
+        <CidrListEditor id="bypass" label={t('match.bypass.label')} help={t('match.bypass.helpNonPrivate')}
+            placeholder={'203.0.113.0/24\n2001:db8:100::/48'} value={value.bypassCidrs} onChange={bypassCidrs => patch({ bypassCidrs })} />
+        <p className="flex gap-2 text-xs leading-relaxed text-ui-muted"><Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{t('match.priority')}</p>
+    </>;
 };
 
 const CustomMatch: FC<{ value: RouteMatch; patch: (fields: Partial<RouteMatch>) => void }> = ({ value, patch }) => {
