@@ -19,6 +19,7 @@ const details = {
         { id: 'mcp:connect', category: 'integrations', description: 'Connect MCP clients', access: 'connect', required: true, available: true, previouslyGranted: false },
         { id: 'nodes:read', category: 'nodes', description: 'View nodes', access: 'read', required: false, available: true, previouslyGranted: false },
         { id: 'nodes:write', category: 'nodes', description: 'Change nodes', access: 'write', required: false, available: false, previouslyGranted: false },
+        { id: 'secrets:read', category: 'security', description: 'Read logs', access: 'secret', required: false, available: true, previouslyGranted: false },
     ],
 };
 
@@ -45,9 +46,11 @@ it('shows the request and grants only the scopes the user keeps selected', async
     expect(host.textContent).toContain('http://127.0.0.1:8765');
     expect(host.textContent).toContain('oauthServer.selfRegistered');
     const boxes = [...host.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
-    expect(boxes.map(box => [box.checked, box.disabled])).toEqual([[true, true], [true, false], [false, true]]);
+    expect(boxes.map(box => [box.checked, box.disabled])).toEqual([[true, true], [true, false], [false, true], [true, false]]);
     expect(host.textContent).toContain('oauthServer.notHeld');
-    await act(async () => { boxes[1].click(); });
+    expect(host.textContent).toContain('oauthServer.secretScopeHint');
+    expect(host.textContent).toContain('oauthServer.access.secret');
+    await act(async () => { boxes[1].click(); boxes[3].click(); });
     const allow = [...host.querySelectorAll('button')].find(button => button.textContent === 'oauthServer.allow')!;
     await act(async () => { allow.click(); });
     expect(calls[calls.length - 1]).toEqual({ url: '/api/v2/auth/oauth-server/authorizations/request-id', body: { approve: true, scopes: ['mcp:connect'] } });
