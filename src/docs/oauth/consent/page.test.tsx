@@ -50,7 +50,7 @@ it('shows the request and grants only the scopes the user keeps selected', async
     await act(async () => { boxes[1].click(); });
     const allow = [...host.querySelectorAll('button')].find(button => button.textContent === 'oauthServer.allow')!;
     await act(async () => { allow.click(); });
-    expect(calls.at(-1)).toEqual({ url: '/api/v2/auth/oauth-server/authorizations/request-id', body: { approve: true, scopes: ['mcp:connect'] } });
+    expect(calls[calls.length - 1]).toEqual({ url: '/api/v2/auth/oauth-server/authorizations/request-id', body: { approve: true, scopes: ['mcp:connect'] } });
     expect(followed).toHaveBeenCalledWith('http://127.0.0.1:8765/cb?code=c&state=s');
     unmount();
 });
