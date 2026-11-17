@@ -67,3 +67,13 @@ it('aborts outstanding work when leaving the page', () => {
     act(() => root.unmount());
     expect(signal!.aborted).toBe(true);
 });
+it('keeps the diagnosis request and result apart from the network overview', async () => {
+    vi.mocked(runDiagnostics).mockResolvedValue(report);
+    mount();
+    const tabs = Array.from(host.querySelectorAll('[role="tab"]')).map(tab => tab.textContent);
+    expect(tabs).toEqual(['Run diagnostics', 'Network overview']);
+    expect(host.querySelector('#diagnostic-host')).not.toBeNull();
+    expect(host.querySelector('section')).toBeNull();
+    await act(async () => submit());
+    expect(host.textContent).toContain('192.0.2.1');
+});
