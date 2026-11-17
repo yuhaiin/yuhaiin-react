@@ -2,6 +2,7 @@ import { allowNavigation } from '@/hooks/navigation-guard';
 import { navigation } from '@/hooks/navigation';
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { withQuery } from '@/hooks/use-workspace-navigation';
+import clsx from 'clsx';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { Tabs } from 'radix-ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
@@ -12,15 +13,16 @@ export interface PageTab { value: string; label: string; content: ReactNode; cla
 /**
  * Underlined section tabs. Inactive panels unmount, so their requests and polling stop.
  * The active tab is kept in the URL (`?tab=`) by replacing the entry: reload and
- * links restore it, and switching tabs adds no Back steps.
+ * links restore it, and switching tabs adds no Back steps. `fallback` picks the tab
+ * shown when the URL names none.
  */
-export function PageTabs({ label, items, param = 'tab' }: { label: string; items: PageTab[]; param?: string }) {
+export function PageTabs({ label, items, param = 'tab', fallback, listClassName }: { label: string; items: PageTab[]; param?: string; fallback?: string; listClassName?: string }) {
     const selected = new URLSearchParams(useHashSearch()).get(param) ?? undefined;
     const [direction, setDirection] = useState(1);
     const groupId = useId();
     const reduced = useReducedMotion();
     const tabs = useRef<HTMLDivElement>(null);
-    const tab = items.some(item => item.value === selected) ? selected : items[0]?.value;
+    const tab = items.some(item => item.value === selected) ? selected : items.some(item => item.value === fallback) ? fallback : items[0]?.value;
     useEffect(() => {
         // Keep the active tab visible without scrolling the settings page.
         const reveal = () => {
@@ -42,7 +44,7 @@ export function PageTabs({ label, items, param = 'tab' }: { label: string; items
         setDirection(Math.sign(position(next) - position(tab)));
         navigation.replace(withQuery(navigation.current.location, query => query.set(param, next)));
     }}>
-        <Tabs.List ref={tabs} aria-label={label} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
+        <Tabs.List ref={tabs} aria-label={label} className={clsx("mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border", listClassName)}>
             {items.map(item => <Tabs.Trigger key={item.value} value={item.value} className="relative min-h-11 shrink-0 whitespace-nowrap rounded-t-ui-md px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:bg-ui-selected focus-visible:outline-none data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{item.label}{item.value === tab && <motion.span aria-hidden="true" layoutId="page-active-tab" className="pointer-events-none absolute bottom-0 inset-x-0 h-0.5 bg-ui-primary" transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }} />}</Tabs.Trigger>)}
         </Tabs.List>
         {items.map(item => <TabContent key={item.value} direction={direction} value={item.value} className={item.className ?? 'min-w-0'}>{item.content}</TabContent>)}
