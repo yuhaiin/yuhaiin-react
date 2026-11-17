@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfigurationChanges } from '../configuration-changes';
 import { Groups } from '../groups';
 import { OAuthSettingsPanel } from '../oauth-settings';
+import { OAuthServerAdmin } from '../oauth-server';
 import { ManagementRoles } from '../roles';
 import { SecurityEvents } from '../security-events';
 import { TrafficAccess } from '../traffic-access';
@@ -36,6 +37,7 @@ export default function AdministrationPage() {
             {canOAuth && <OAuthSetup />}
             {manageUsers && <Card><CardBody><UsageRetention /></CardBody></Card>}
         </> }] : []),
+        ...(canOAuth ? [{ value: 'oauth-server', label: t('securityTabs.oauthServer'), className: stacked, content: <OAuthServerAdmin /> }] : []),
         ...(canEvents || canChanges ? [{ value: 'audit', label: t('securityTabs.audit'), className: stacked, content: <>
             <ConfigurationChanges />
             {canEvents && <SecurityEvents />}

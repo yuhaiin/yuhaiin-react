@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { appRoutes } from '@/routes';
 import Sidebar from './Sidebar';
-import { navigationOrder } from './navigation';
+import { navigationOrder, standaloneRoutes } from './navigation';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@/hooks/use-media-query', () => ({ useMediaQuery: () => true }));
@@ -19,7 +19,7 @@ it('uses the rendered menu order for page transitions and keeps every route reac
             await act(async () => button.click());
         }
         const visiblePaths = [...host.querySelectorAll<HTMLAnchorElement>('nav a[href]')].map(link => link.getAttribute('href')!.slice(1));
-        expect(visiblePaths).toEqual(navigationOrder.filter(path => path !== '/login'));
+        expect(visiblePaths).toEqual(navigationOrder.filter(path => !standaloneRoutes.includes(path)));
         expect(new Set(visiblePaths).size).toBe(37);
         expect([...navigationOrder].sort()).toEqual(appRoutes.map(route => route.path).sort());
     } finally { act(() => root.unmount()); host.remove(); }

@@ -62,7 +62,7 @@ it('shows administration tabs by permission', async () => {
     const auditor = await render(<AdministrationPage />, ['identity:read', 'configuration:read']);
     try { expect(auditor.tabs()).toEqual([]); expect(auditor.paths().some(path => path.endsWith('/users'))).toBe(false); } finally { auditor.close(); }
     const manager = await render(<AdministrationPage />, ['users:manage', 'security:read']);
-    try { expect(manager.tabs()).toEqual(['securityTabs.access', 'securityTabs.settings', 'securityTabs.audit']); } finally { manager.close(); }
+    try { expect(manager.tabs()).toEqual(['securityTabs.access', 'securityTabs.settings', 'securityTabs.oauthServer', 'securityTabs.audit']); } finally { manager.close(); }
 });
 
 it('opens a route with any of its listed read permissions', () => {
