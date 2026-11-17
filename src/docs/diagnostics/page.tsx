@@ -123,10 +123,10 @@ export default function DiagnosticsPage() {
     return (
         <div className="w-full min-w-0 space-y-5">
             <PageHeader title={t('title')} description={t('description')} className={clsx(stackDetail)} />
-            <PageTabs label={t('sections')} items={[
+            <PageTabs label={t('sections')} fallback={stackDetail ? 'overview' : undefined} listClassName={clsx(stackDetail)} items={[
                 { value: 'run', label: t('tabs.run'), content: diagnose },
                 { value: 'overview', label: t('tabs.overview'), content: <TCPStackPanel /> },
-            ].sort((a, b) => Number(stackDetail && b.value === 'overview') - Number(stackDetail && a.value === 'overview'))} />
+            ]} />
             {manualCopyModal}
         </div>
     );
