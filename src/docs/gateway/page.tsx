@@ -1,7 +1,7 @@
 import { SecretValues } from "@/component/secret-values";
 import { PageHeader } from '@/component/v2/page-header';
 import { ChartColumn } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import {
@@ -14,8 +14,10 @@ import type { Config } from "@/contract/gateway";
 import { errorMessage } from "@/contract/gateway";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useHashSearch } from "@/hooks/useHashLocation";
 import { GatewayWorkspace } from "./workspace";
 import { AuthorityPanel, RuleTester } from "./tools";
+import { httpRuleTesterQuery } from "./test-links";
 
 type Tool = "tester" | "authority" | null;
 
@@ -28,12 +30,20 @@ export default function GatewayPage() {
     "/api/v2/gateway/status", gatewayStatus, { refreshInterval: 5000 },
   );
   const phone = useMediaQuery("(max-width: 639px)");
+  // The Routing Test links here with `?tool=tester&gateway=&url=`.
+  const link = httpRuleTesterQuery(useHashSearch());
   const [draft, setDraft] = useState<Config>();
-  const [tool, setTool] = useState<Tool>(null);
+  const [tool, setTool] = useState<Tool>(link.open ? "tester" : null);
+  const tools = useRef<HTMLDivElement>(null);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState("");
   const [saved, setSaved] = useState(false);
   if (data && !draft) setDraft(structuredClone(data));
+  const ready = Boolean(draft);
+  // A linked tester sits below the workspace: bring it into view once it renders.
+  useEffect(() => {
+    if (link.open && ready) tools.current?.scrollIntoView?.({ block: "start" });
+  }, [link.open, ready]);
   const dirty = Boolean(data && draft && JSON.stringify(data) !== JSON.stringify(draft));
   useCloseGuard(dirty, pending, () => undefined);
 
@@ -99,7 +109,7 @@ export default function GatewayPage() {
           status={status?.gateways ?? []}
           canRefreshFilter={!dirty && !pending}
           refreshFilter={(id) => void refreshFilter(id)} /></SecretValues>
-        <div className="rounded-ui border border-ui-border bg-ui-surface p-4 sm:p-6 space-y-4">
+        <div ref={tools} className="scroll-mt-4 rounded-ui border border-ui-border bg-ui-surface p-4 sm:p-6 space-y-4">
           <div className="flex flex-wrap gap-2" aria-label={t("diagnostics")}>
             {(["tester", "authority"] as const).map((item) => (
               <Button key={item} size="sm"
@@ -115,7 +125,9 @@ export default function GatewayPage() {
               </a>
             </Button>
           </div>
-          {tool === "tester" && <RuleTester config={draft} />}
+          {tool === "tester" && <RuleTester config={draft}
+            initialGatewayId={link.open ? link.gatewayId : ""}
+            initialURL={link.open ? link.url : ""} />}
           {tool === "authority" && <AuthorityPanel />}
         </div>
         {phone && (dirty || pending) && (

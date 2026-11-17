@@ -1,6 +1,7 @@
 import { PageHeader } from '@/component/v2/page-header';
 import { useTranslation } from 'react-i18next';
 
+import { getGatewayConfig } from '@/api/gateway';
 import { testRule } from '@/api/route';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
@@ -9,8 +10,11 @@ import { Input } from '@/component/v2/input';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import type { RuleTestResponse } from '@/contract/route';
-import { CheckCircle2, Clipboard, ClipboardCheck, ClipboardList, GitBranch, Info, ListChecks, Play, Tags, Terminal, XCircle } from 'lucide-react';
+import { httpRuleTesterHref, routingTestQuery } from '@/docs/gateway/test-links';
+import { useHashSearch } from '@/hooks/useHashLocation';
+import { ArrowRight, CheckCircle2, Clipboard, ClipboardCheck, ClipboardList, GitBranch, Info, ListChecks, Network, Play, Tags, Terminal, XCircle } from 'lucide-react';
 import { type ElementType, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import useSWR from 'swr';
 import { useClipboard } from "../../../component/v2/clipboard";
 
 function formatTestResponse(value: RuleTestResponse): string {
@@ -59,13 +63,36 @@ function ChipList({ items, empty }: { items: string[]; empty: string }) {
     );
 }
 
-function ResultView({ value }: { value: RuleTestResponse }) {
+/** Traffic routed to an HTTP Gateway: point to the HTTP rule tester for the next step. */
+function GatewayHandoff({ gatewayId, input }: { gatewayId: string; input: string }) {
+    const { t: uiT } = useTranslation('ui');
+    const { data } = useSWR("/api/v2/gateway/config", getGatewayConfig, { revalidateOnFocus: false });
+    const name = data?.gateways.find((g) => g.id === gatewayId)?.name || gatewayId;
+
+    return (
+        <div className="flex flex-col gap-3 rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-2 text-sm text-ui-secondary">
+                <Network size={16} className="mt-0.5 shrink-0 text-ui-primary" />
+                <span>{uiT("httpGatewayHandoff", { gateway: name })}</span>
+            </div>
+            <Button asChild size="sm" variant="outline-secondary" className="shrink-0">
+                <a href={httpRuleTesterHref(gatewayId, input)} className="gap-1">
+                    {uiT("openHttpRuleTester")}<ArrowRight size={14} aria-hidden="true" />
+                </a>
+            </Button>
+        </div>
+    );
+}
+
+function ResultView({ value, input }: { value: RuleTestResponse; input: string }) {
     const { t: uiT } = useTranslation('ui');
 
     const hasHistory = value.matchResult.length > 0;
+    const gatewayId = value.target.type === "gateway" ? value.target.id ?? "" : "";
 
     return (
         <div className="grid gap-4">
+            {gatewayId && <GatewayHandoff gatewayId={gatewayId} input={input} />}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
                     <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("mode")}</div>
@@ -131,8 +158,16 @@ function Test() {
     const { t: uiT } = useTranslation('ui');
 
     const ctx = useContext(GlobalToastContext);
-    const [value, setValue] = useState("");
+    // The HTTP rule tester links here with `?q=<host>`: fill it in and run it.
+    const linked = routingTestQuery(useHashSearch());
+    const [value, setValue] = useState(linked);
+    const [seenLink, setSeenLink] = useState(linked);
+    if (linked !== seenLink) {
+        setSeenLink(linked);
+        if (linked) setValue(linked);
+    }
     const [resp, setResp] = useState<RuleTestResponse | undefined>(undefined);
+    const [tested, setTested] = useState("");
     const [testing, setTesting] = useState(false);
 
     // Clipboard hook for copying results
@@ -142,17 +177,26 @@ function Test() {
         if (copied) ctx.Info("Result copied to clipboard!");
     }, [copied, ctx]);
 
-    const handleTest = useCallback(() => {
-        if (!value.trim()) return;
+    const runTest = useCallback((input: string) => {
+        if (!input.trim()) return;
 
         setTesting(true);
         setResp(undefined);
+        setTested(input.trim());
 
-        testRule(value)
+        testRule(input)
             .then(setResp)
             .catch((error) => ctx.Error(`Test failed: ${error.code ?? 500} | ${error.msg ?? error}`))
             .finally(() => setTesting(false));
-    }, [value, ctx]);
+    }, [ctx]);
+
+    const handleTest = useCallback(() => runTest(value), [runTest, value]);
+
+    useEffect(() => {
+        // Running the linked query calls the backend; its loading state is set here on purpose.
+        // oxlint-disable-next-line react/set-state-in-effect
+        if (linked) runTest(linked);
+    }, [linked, runTest]);
 
     return (
         <MainContainer>
@@ -212,7 +256,7 @@ function Test() {
                     </CardHeader>
                     <CardBody>
                         <SettingsBox>
-                            <ResultView value={resp} />
+                            <ResultView value={resp} input={tested} />
                         </SettingsBox>
                     </CardBody>
                 </Card>

@@ -15,7 +15,7 @@
   "interception": "トラフィックの傍受",
   "filters": "URL フィルター",
   "authority": "TLS / 認証局",
-  "tester": "ルールテスト",
+  "tester": "HTTP ルールテスト",
   "statistics": "統計",
   "resetStatistics": "統計をリセット",
   "resetAllStatistics": "すべての統計をリセット",
@@ -162,7 +162,7 @@
   "averageDuration": "平均リクエスト処理時間",
   "activeRequests": "処理中のリクエスト",
   "connectionsLink": "接続一覧とトラフィック監視を開く",
-  "testerHelp": "保存・適用済みの設定でルールをテストします。変更したルールは先に保存してください。テストリクエストはアップストリームに転送されません。傍受をテストする場合は Inbound ID を指定し、通常の HTTP 待受では空欄にします。制限条件がある場合は送信元 IP とプロセスも指定してください。ここでは選択したゲートウェイのみをテストします。前段のルーティング条件は Routing テスターで確認してください。",
+  "testerHelp": "保存・適用済みの設定でルールをテストします。変更したルールは先に保存してください。テストリクエストはアップストリームに転送されません。傍受をテストする場合は Inbound ID を指定し、通常の HTTP 待受では空欄にします。制限条件がある場合は送信元 IP とプロセスも指定してください。ここでは選択したゲートウェイのみをテストします。通信がこのゲートウェイに振り分けられるかは振り分けテストで確認してください。",
   "runTest": "ルールをテスト",
   "matchedRule": "一致したルール",
   "requiresMitm": "HTTPS リクエストの解析には TLS 終端または MITM が必要です",
@@ -259,5 +259,6 @@
   "statsNoRecentRequests": "直近1時間のリクエストはありません",
   "statsNoGateways": "実行中の Gateway はありません。",
   "statsAverage": "平均 {{value}}",
-  "statsBlockedShare": "ブロック {{value}}"
+  "statsBlockedShare": "ブロック {{value}}",
+  "openRoutingTest": "振り分けテストで確認"
 }

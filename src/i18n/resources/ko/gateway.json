@@ -15,7 +15,7 @@
   "interception": "트래픽 가로채기",
   "filters": "URL 필터",
   "authority": "TLS / 인증 기관",
-  "tester": "규칙 테스트",
+  "tester": "HTTP 규칙 테스트",
   "statistics": "통계",
   "resetStatistics": "통계 초기화",
   "resetAllStatistics": "모든 통계 초기화",
@@ -162,7 +162,7 @@
   "averageDuration": "평균 요청 처리 시간",
   "activeRequests": "처리 중인 요청",
   "connectionsLink": "기존 연결 목록과 트래픽 모니터링 열기",
-  "testerHelp": "저장하고 적용한 설정을 테스트합니다. 변경된 규칙은 먼저 저장하세요. 테스트 입력은 업스트림으로 전달되지 않습니다. 가로채기 테스트에는 인바운드 ID를 지정하고 HTTP 리스너에서는 비워 두세요. 제한 조건이 있으면 소스 IP와 프로세스도 입력하세요. 여기서는 선택한 게이트웨이만 테스트하므로 앞단의 Routing 동작은 라우팅 테스터에서 확인하세요.",
+  "testerHelp": "저장하고 적용한 설정을 테스트합니다. 변경된 규칙은 먼저 저장하세요. 테스트 입력은 업스트림으로 전달되지 않습니다. 가로채기 테스트에는 인바운드 ID를 지정하고 HTTP 리스너에서는 비워 두세요. 제한 조건이 있으면 소스 IP와 프로세스도 입력하세요. 여기서는 선택한 게이트웨이만 테스트하므로 트래픽이 이 게이트웨이로 라우팅되는지는 라우팅 테스트에서 확인하세요.",
   "runTest": "규칙 테스트",
   "matchedRule": "일치한 규칙",
   "requiresMitm": "HTTPS 요청을 분석하려면 TLS 종료 또는 MITM이 필요합니다.",
@@ -259,5 +259,6 @@
   "statsNoRecentRequests": "최근 1시간 동안 요청이 없습니다",
   "statsNoGateways": "실행 중인 Gateway가 없습니다.",
   "statsAverage": "평균 {{value}}",
-  "statsBlockedShare": "차단 {{value}}"
+  "statsBlockedShare": "차단 {{value}}",
+  "openRoutingTest": "라우팅 테스트에서 확인"
 }

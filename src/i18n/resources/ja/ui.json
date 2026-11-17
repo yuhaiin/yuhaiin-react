@@ -14,7 +14,7 @@
   "list": "リスト",
   "tag": "タグ",
   "resolver": "リゾルバー",
-  "testRoute": "ルートテスト",
+  "testRoute": "振り分けテスト",
   "blockHistory": "ブロック履歴",
   "connections18": "接続",
   "activeConnections": "アクティブな接続",
@@ -107,7 +107,7 @@
   "inboundConfiguration": "インバウンド設定",
   "entryPoints": "エントリーポイント",
   "tagsManagement": "タグ管理",
-  "ruleTesting": "ルールテスト",
+  "ruleTesting": "振り分けルールの判定",
   "simulateTrafficToVerifyRouting": "通信をシミュレートしてルーティングを検証",
   "analysisResult": "解析結果",
   "rawDecisionPathMetadata": "生の判定経路メタデータ",
@@ -1471,5 +1471,7 @@
   "frontendUpdateComplete": "UI を切り替えました。",
   "frontendExternalOverride": "EXTERNAL_WEB が有効なため、OTA は無効です。",
   "tunSystemNetworkHint": "この TUN をどの宛先に使うかは、他のインターフェースへのルートと合わせてシステムネットワークで設定します。",
-  "tunSystemNetworkLink": "システムネットワークを開く"
+  "tunSystemNetworkLink": "システムネットワークを開く",
+  "httpGatewayHandoff": "この通信は HTTP Gateway「{{gateway}}」に渡されます。HTTP ルールの判定は HTTP ルールテストで確認できます。",
+  "openHttpRuleTester": "HTTP ルールテストで確認"
 }

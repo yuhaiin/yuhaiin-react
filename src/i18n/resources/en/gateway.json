@@ -15,7 +15,7 @@
   "interception": "Interception",
   "filters": "URL filters",
   "authority": "TLS / Certificate Authority",
-  "tester": "Rule tester",
+  "tester": "HTTP rule tester",
   "statistics": "Statistics",
   "resetStatistics": "Reset statistics",
   "resetAllStatistics": "Reset all statistics",
@@ -162,7 +162,7 @@
   "averageDuration": "Average request duration",
   "activeRequests": "Active requests",
   "connectionsLink": "Open existing Connections and traffic monitoring",
-  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream. Use an inbound ID to test interception; leave it blank for a reverse listener. Fill source IP and process when admission restricts them. Tests use the saved configuration. This tests the selected Gateway only; use the Routing tester to confirm the preceding Gateway action.",
+  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream. Use an inbound ID to test interception; leave it blank for a reverse listener. Fill source IP and process when admission restricts them. This tests the selected Gateway only; use the Routing Test to confirm that traffic is routed to this Gateway.",
   "runTest": "Test policy",
   "matchedRule": "Matched rule",
   "requiresMitm": "HTTPS request parsing requires termination or MITM",
@@ -259,5 +259,6 @@
   "statsNoRecentRequests": "No requests in the last hour",
   "statsNoGateways": "No running Gateway.",
   "statsAverage": "Average {{value}}",
-  "statsBlockedShare": "{{value}} blocked"
+  "statsBlockedShare": "{{value}} blocked",
+  "openRoutingTest": "Check in Routing Test"
 }

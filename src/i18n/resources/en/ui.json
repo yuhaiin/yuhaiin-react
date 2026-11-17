@@ -14,7 +14,7 @@
   "list": "List",
   "tag": "Tag",
   "resolver": "Resolver",
-  "testRoute": "Test Route",
+  "testRoute": "Routing Test",
   "blockHistory": "Block History",
   "connections18": "Connections",
   "activeConnections": "Active connections",
@@ -107,7 +107,7 @@
   "inboundConfiguration": "Inbound Configuration",
   "entryPoints": "Entry Points",
   "tagsManagement": "Tags Management",
-  "ruleTesting": "Rule Testing",
+  "ruleTesting": "Routing Rule Check",
   "simulateTrafficToVerifyRouting": "Simulate traffic to verify routing",
   "analysisResult": "Analysis Result",
   "rawDecisionPathMetadata": "Raw decision path metadata",
@@ -1471,5 +1471,7 @@
   "frontendUpdateComplete": "Frontend switched successfully.",
   "frontendExternalOverride": "EXTERNAL_WEB is active, so managed OTA is disabled.",
   "tunSystemNetworkHint": "Which destinations use this TUN is set in System Network, together with routes to other interfaces.",
-  "tunSystemNetworkLink": "Open System Network"
+  "tunSystemNetworkLink": "Open System Network",
+  "httpGatewayHandoff": "This traffic is handed to HTTP Gateway \"{{gateway}}\". Check its HTTP rules in the HTTP rule tester.",
+  "openHttpRuleTester": "Check in HTTP rule tester"
 }
