@@ -91,10 +91,6 @@ export type RPCOperation =
   | "outbound.selector.references"
   | "outbound.selector.status"
   | "outbound.selectors.get"
-  | "publish.delete"
-  | "publish.put"
-  | "publish.resolve"
-  | "publishes"
   | "resolver.cache.delete"
   | "resolver.cache.get"
   | "resolver.delete"
@@ -148,6 +144,12 @@ export type RPCOperation =
   | "route.rules.test"
   | "settings.get"
   | "settings.put"
+  | "share.feed.create"
+  | "share.feed.delete"
+  | "share.feed.preview"
+  | "share.feed.put"
+  | "share.feed.rotate"
+  | "share.feeds"
   | "subscriptions.delete"
   | "subscriptions.get"
   | "subscriptions.put"
@@ -255,10 +257,12 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/subscriptions", operation: "subscriptions.put" },
   { method: "DELETE", pattern: "/api/v2/subscriptions", operation: "subscriptions.delete" },
   { method: "POST", pattern: "/api/v2/subscriptions/update", operation: "subscriptions.update" },
-  { method: "GET", pattern: "/api/v2/publishes", operation: "publishes" },
-  { method: "PUT", pattern: "/api/v2/publishes/{name}", operation: "publish.put" },
-  { method: "DELETE", pattern: "/api/v2/publishes/{name}", operation: "publish.delete" },
-  { method: "POST", pattern: "/api/v2/publishes/{name}/resolve", operation: "publish.resolve" },
+  { method: "GET", pattern: "/api/v2/share-feeds", operation: "share.feeds" },
+  { method: "POST", pattern: "/api/v2/share-feeds", operation: "share.feed.create" },
+  { method: "POST", pattern: "/api/v2/share-feeds/preview", operation: "share.feed.preview" },
+  { method: "PUT", pattern: "/api/v2/share-feeds/{id}", operation: "share.feed.put" },
+  { method: "DELETE", pattern: "/api/v2/share-feeds/{id}", operation: "share.feed.delete" },
+  { method: "POST", pattern: "/api/v2/share-feeds/{id}/rotate", operation: "share.feed.rotate" },
   { method: "GET", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.get" },
   { method: "GET", pattern: "/api/v2/traffic-control", operation: "traffic_control.get" },
   { method: "GET", pattern: "/api/v2/traffic-control/status", operation: "traffic_control.status" },
