@@ -85,10 +85,11 @@ export default function ConsentPage() {
                                 onChange={event => toggle(scope.id, event.target.checked)} aria-describedby={`scope-${scope.id}`} />
                             <span className="min-w-0 flex-1 space-y-1">
                                 <span className="flex flex-wrap items-center gap-2"><code className="text-sm">{scope.id}</code>
-                                    <Badge variant={scope.access === 'write' ? 'warning' : scope.access === 'read' ? 'success' : 'info'}>{t(`oauthServer.access.${scope.access}`)}</Badge>
+                                    <Badge variant={scope.access === 'secret' ? 'danger' : scope.access === 'write' ? 'warning' : scope.access === 'read' ? 'success' : 'info'}>{t(`oauthServer.access.${scope.access}`)}</Badge>
                                     {scope.required && <Badge variant="muted">{t('oauthServer.required')}</Badge>}
                                 </span>
                                 <span id={`scope-${scope.id}`} className="block text-sm text-ui-muted">{scope.description}</span>
+                                {scope.access === 'secret' && <span className="block text-xs text-ui-warning">{t('oauthServer.secretScopeHint')}</span>}
                                 {!scope.available && <span className="block text-xs text-ui-danger">{t('oauthServer.notHeld')}</span>}
                             </span>
                         </label>)}

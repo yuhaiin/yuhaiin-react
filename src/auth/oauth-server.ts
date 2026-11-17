@@ -28,7 +28,7 @@ export interface OAuthGrant {
     createdAt: number; expiresAt: number; lastUsedAt: number; revoked: boolean; revokedReason: string; activeTokens: number;
 }
 export interface OAuthToken { id: string; grantId: string; kind: 'access' | 'refresh'; prefix: string; scopes: string[]; createdAt: number; expiresAt: number; lastSeen: number; revoked: boolean }
-export interface ConsentScope { id: string; category: string; description: string; access: 'read' | 'write' | 'connect'; required: boolean; available: boolean; previouslyGranted: boolean }
+export interface ConsentScope { id: string; category: string; description: string; access: 'read' | 'write' | 'connect' | 'secret'; required: boolean; available: boolean; previouslyGranted: boolean }
 export interface AuthorizationDetails {
     id: string; clientId: string; clientName: string; clientType: OAuthClientType; clientUri: string; registration: 'manual' | 'dynamic';
     redirectOrigin: string; redirectUri: string; resource: string; resourceId: string; resourceName: string;
