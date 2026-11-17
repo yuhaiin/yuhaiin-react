@@ -8,7 +8,7 @@ export function IssuedSecret({ value, onClose }: { value: Pick<Issued, 'secret' 
     const { t } = useTranslation('auth');
     const clipboard = useClipboard({ usePromptAsFallback: true });
     return <Modal open onOpenChange={open => { if (!open) onClose(); }}><ModalContent>
-        <ModalHeader><ModalTitle>{t(value.kind === 'enrollment' ? 'enrollmentCapability' : value.kind === 'proxy' ? 'proxyCredentialCreated' : 'tokenCreated')}</ModalTitle></ModalHeader>
+        <ModalHeader><ModalTitle>{t(value.kind === 'enrollment' ? 'enrollmentCapability' : value.kind === 'proxy' ? 'proxyCredentialCreated' : value.kind === 'oauth-client' ? 'oauthServer.clientCreated' : 'tokenCreated')}</ModalTitle></ModalHeader>
         <ModalBody className="space-y-3">
             <p className="text-sm text-ui-muted">{t('copyOnce')}</p>
             <label className="block space-y-2"><span>{t('secret')}</span><Textarea code readOnly value={value.secret} rows={3} onFocus={event => event.target.select()} className="break-all" /></label>

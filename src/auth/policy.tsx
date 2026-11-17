@@ -27,6 +27,7 @@ export const routePermissions: Record<string, { read: string | string[]; write?:
     '/docs/diagnostics': { read: 'diagnostics:run', write: 'diagnostics:run' },
     '/docs/config/about': { read: 'settings:read' }, '/docs/config/licenses': { read: 'settings:read' },
     '/docs/security': { read: 'identity:read' },
+    '/oauth/consent/:id': { read: 'identity:read' },
     '/docs/security/credentials': { read: ['tokens:own', 'proxy-credentials:own', 'upstream-credentials:manage'] },
     '/docs/security/usage': { read: 'usage:own' },
     '/docs/security/admin': { read: ['users:manage', 'roles:read', 'traffic-access:read', 'security:read', 'security:write', 'configuration:read'] },

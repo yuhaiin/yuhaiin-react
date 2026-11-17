@@ -3,7 +3,7 @@ import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
 import { loginWithPasskey, passkeySupported } from '@/auth/passkey';
 import { requireSecureController } from '@/auth/transport';
-import { discardEnrollment, pendingEnrollment, establishLocalConnection, getSession } from '@/auth/session';
+import { discardEnrollment, pendingEnrollment, establishLocalConnection } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
@@ -12,6 +12,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { OAuthLogin } from './oauth';
+import { landingPath } from '@/auth/oauth-server';
 import { LOGIN_NAME_PATTERN } from '@/auth/login-name';
 
 type Mode = 'login' | 'enroll' | 'setup';
@@ -65,7 +66,7 @@ export default function LoginPage() {
                 await enroll(capability, enteredPassword);
                 setCapability(''); discardEnrollment(); setRequired(false); setMode('login'); setNotice(t('enrolled'));
             } else {
-                await login(name, enteredPassword); navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
+                await login(name, enteredPassword); navigation.replace(landingPath());
             }
         } catch (cause) {
             const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : 0;
@@ -78,7 +79,7 @@ export default function LoginPage() {
             requireSecureController(controller);
             setApiUrl(controller);
             await loginWithPasskey();
-            navigation.replace(getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security');
+            navigation.replace(landingPath());
         } catch { setError(t('passkeyFailed')); }
         finally { setBusy(false); }
     };

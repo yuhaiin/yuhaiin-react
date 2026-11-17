@@ -21,6 +21,7 @@ import { navigationOrder } from './docs/nav/navigation';
 import { sectionOf } from './docs/nav/SectionTabs';
 import { pageExitGhost } from './component/page-ghost';
 import { appRoutes } from './routes';
+import { rememberReturn } from '@/auth/oauth-server';
 
 // WebUI preferences are local to this browser and need no controller session.
 const publicPaths = ['/login', '/docs/webui'];
@@ -53,7 +54,8 @@ function AppContent() {
     const [location, navigate] = useLocation();
     const session = useSession();
     const connecting = useLocalConnection();
-    useEffect(() => { if (!connecting && !session && !publicPaths.includes(location)) navigate("/login"); }, [connecting, session, location, navigate]);
+    // An OAuth consent request survives the sign-in it may need first.
+    useEffect(() => { if (!connecting && !session && !publicPaths.includes(location)) { rememberReturn(location); navigate("/login"); } }, [connecting, session, location, navigate]);
 
     const reducedMotion = useReducedMotion();
     const { index: historyIndex } = useNavigationSnapshot();
@@ -63,7 +65,7 @@ function AppContent() {
     const direction = useSmartAnimation(location, navigationOrder, historyIndex, desktop ? undefined : sectionOf);
     const leavePage = useMemo(() => pageExitGhost(location), [location]);
     const offset = reducedMotion ? 0 : direction * (desktop ? 6 : 16);
-    const isStandalone = location === '/login' || !session;
+    const isStandalone = location === '/login' || location.startsWith('/oauth/consent/') || !session;
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',

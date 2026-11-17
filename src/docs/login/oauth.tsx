@@ -1,6 +1,6 @@
 import { beginOAuth, providerID, providerLabel, oauthProviders, type OAuthProvider, type OAuthChoice } from '@/auth/oauth';
 import { setApiUrl } from '@/common/apiurl';
-import { getSession } from '@/auth/session';
+import { landingPath } from '@/auth/oauth-server';
 import { Button } from '@/component/v2/button';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,7 @@ export function OAuthLogin({ controller }: { controller: string }) {
     }, [controller, t]);
     const signIn = async (provider: OAuthProvider) => {
         request.current = new AbortController(); setApiUrl(controller); setBusy(true); setError('');
-        try { await beginOAuth(provider, false, request.current.signal); window.location.assign(getSession()?.principal.permissions.includes('connections:read') ? '#/' : '#/docs/security'); }
+        try { await beginOAuth(provider, false, request.current.signal); window.location.assign('#' + landingPath()); }
         catch { if (!request.current.signal.aborted) setError(t('oauthFailed')); } finally { setBusy(false); }
     };
     return <div className="space-y-3">

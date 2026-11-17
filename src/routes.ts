@@ -13,6 +13,7 @@ const CredentialsPage = dynamic(() => import('@/docs/security/credentials/page')
 const UsagePage = dynamic(() => import('@/docs/security/usage/page'), { loading });
 const AdministrationPage = dynamic(() => import('@/docs/security/admin/page'), { loading });
 const LoginPage = dynamic(() => import('@/docs/login/page'), { loading });
+const ConsentPage = dynamic(() => import('@/docs/oauth/consent/page'), { loading });
 const HomePage = dynamic(() => import('@/docs/home/page'), { loading });
 const GroupPage = dynamic(() => import('@/docs/group/page'), { loading });
 const GroupSubscribePage = dynamic(() => import('@/docs/group/subscribe/page'), { loading });
@@ -49,6 +50,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security/usage", component: UsagePage },
     { path: "/docs/security/admin", component: AdministrationPage },
     { path: "/login", component: LoginPage },
+    { path: "/oauth/consent/:id", component: ConsentPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },
     { path: "/docs/group/subscribe", component: GroupSubscribePage },

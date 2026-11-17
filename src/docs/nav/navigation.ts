@@ -72,7 +72,9 @@ export const navigationSections: NavigationSection[] = [
         ] },
     ] },
 ];
-export const navigationOrder = ['/login', ...navigationSections.flatMap(section => section.items.flatMap(item => 'path' in item ? [item.path] : item.items.map(link => link.path)))];
+// Standalone routes have no menu entry: sign-in and the OAuth consent page.
+export const standaloneRoutes = ['/login', '/oauth/consent/:id'];
+export const navigationOrder = [...standaloneRoutes, ...navigationSections.flatMap(section => section.items.flatMap(item => 'path' in item ? [item.path] : item.items.map(link => link.path)))];
 
 /** Route aliases and resource queries share the title of their owning page. */
 export function navigationLabel(location: string): Label | undefined {
