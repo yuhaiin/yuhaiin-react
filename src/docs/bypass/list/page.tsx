@@ -21,6 +21,7 @@ import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
 import { RegistryCatalogModal } from "./registry-catalog";
+import { ProcessPatternHelp, ProcessPatternIssues, routeListPatternIssues } from "@/component/process-patterns";
 import { Check, Clock, CloudDownload, Network, RefreshCw, Save, TriangleAlert } from "lucide-react";
 import { useCallback, useContext, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -200,8 +201,9 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
     const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(name, data, createDefaultRouteList);
     const { pending, run } = useAsyncAction(error => { const message = error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
     const close = useCloseGuard(dirty, pending, onClose);
+    const invalidPatterns = routeListPatternIssues(draft).length > 0;
     const save = () => {
-        if (!name || !data || error || isLoading || pending) return;
+        if (!name || !data || error || isLoading || pending || invalidPatterns) return;
         void run(async () => {
             setActionError('');
             if (dirty && !deleted) { const saved = await saveRouteList(name, draft); commit(saved); await mutate(saved, { revalidate: false }); }
@@ -233,8 +235,8 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
                     </div>
                     <div className={editorActionsClass}>
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <StageChangeButton showDiffIcon disabled={pending || deleted || isLoading || Boolean(error) || !data} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
-                        <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
+                        <StageChangeButton showDiffIcon disabled={pending || deleted || isLoading || Boolean(error) || !data || invalidPatterns} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
+                        <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data || invalidPatterns} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
                     </div>
                 </>}>
                     <fieldset disabled={pending} className="contents">
@@ -262,9 +264,10 @@ export function CreateListModal({ open, initialName, initialValue, onSaved, onCl
     const { value: draft, setValue: setDraft, commit, dirty } = useEditorDraft(open ? `new-list:${initialName ?? ''}` : null, undefined, createDraft);
     const { pending, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
     const close = useCloseGuard(dirty, pending, onClose);
+    const invalidPatterns = routeListPatternIssues(draft).length > 0;
 
     const save = () => {
-        if (pending || !draft.name.trim()) return;
+        if (pending || !draft.name.trim() || invalidPatterns) return;
         void run(async () => {
         setActionError('');
         const saved = dirty || draft.revision === 0 ? (draft.revision > 0 ? await saveRouteList(draft.id, draft) : await createRouteList(draft)) : draft;
@@ -280,8 +283,8 @@ export function CreateListModal({ open, initialName, initialValue, onSaved, onCl
     return <ResourceEditorFrame title={uiT("newRouteList")} label={uiT('definedLists')} presentation={presentation} open={open} onClose={close}
         footer={<>
                     <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                    <StageChangeButton showDiffIcon disabled={pending || !draft.name.trim()} request={{ store: "configuration", kind: "route-list", resourceId: draft.id || undefined, payload: draft }} onCommitted={async change => { onSaved(change.resourceId); }} />
-                    <Button permission="routes:write" variant="primary" onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
+                    <StageChangeButton showDiffIcon disabled={pending || !draft.name.trim() || invalidPatterns} request={{ store: "configuration", kind: "route-list", resourceId: draft.id || undefined, payload: draft }} onCommitted={async change => { onSaved(change.resourceId); }} />
+                    <Button permission="routes:write" variant="primary" onClick={save} disabled={pending || !draft.name.trim() || invalidPatterns}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
                 </>}>
                     <fieldset disabled={pending} className="contents">
                     {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
@@ -348,14 +351,16 @@ function RouteListFormFields({ value, onChange, lockName }: RouteListFormProps) 
                     <Badge variant="secondary" pill>{uiT("entryCount", { count: lines.length })}</Badge>
                 </div>
 
+                {value.type === "process" && <ProcessPatternHelp />}
                 <InputList
                     title={sourceType === "remote" ? "URL" : "Rule"}
                     hideHeader
                     data={lines}
                     secret={sourceType === "remote"}
                     onChange={updateLines}
-                    placeholder={sourceType === "remote" ? "https://example.com/list.txt" : undefined}
+                    placeholder={sourceType === "remote" ? "https://example.com/list.txt" : value.type === "process" ? "/usr/bin/curl\n/Applications/ExampleEditor.app/**\n**/aaa/**" : undefined}
                 />
+                <ProcessPatternIssues issues={routeListPatternIssues(value)} />
             </div>
 
             {(value.errorMsgs?.length ?? 0) > 0 && (

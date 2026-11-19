@@ -4,6 +4,7 @@ import { Button } from '@/component/v2/button';
 import { SettingLabel } from '@/component/v2/card';
 import { DropdownSelect, SettingSelectVertical, SettingInputVertical } from '@/component/v2/forms';
 import { Textarea } from '@/component/v2/input';
+import { ProcessPatternHelp, ProcessPatternIssues, routeListPatternIssues } from '@/component/process-patterns';
 import { createDefaultRouteList, type RuleDraft, type RuleExpr, type RouteListDetail } from '@/contract/route';
 import { Plus, X } from 'lucide-react';
 import { createID } from '@/common/id';
@@ -145,8 +146,9 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                                         onChange={event => updateList(local.id, list => ({
                                             ...list, source: { type: 'local', local: { lists: event.target.value.split('\n') } },
                                         }))}
-                                        placeholder={expr.type === 'host' ? 'example.com\n*.example.com\n10.0.0.0/8' : '/usr/bin/firefox'} />
+                                        placeholder={expr.type === 'host' ? 'example.com\n*.example.com\n10.0.0.0/8' : '/usr/bin/firefox\n/Applications/Firefox.app/**'} />
                                 </label>
+                                {expr.type === 'process' && <><ProcessPatternIssues issues={routeListPatternIssues(local)} /><ProcessPatternHelp /></>}
                                 <label className="flex items-center gap-2 text-sm text-ui-muted">
                                     <input type="checkbox" checked={value.shareLists?.includes(local.id) ?? false}
                                         onChange={event => setShared(local.id, event.target.checked)} />
