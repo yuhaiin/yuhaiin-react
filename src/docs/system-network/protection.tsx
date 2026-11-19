@@ -211,7 +211,8 @@ function Details({ data }: { data: ProtectionStatus }) {
             <AccordionContent>
                 <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
                     <dt className="text-ui-muted">{t('protection.details.backend')}</dt><dd className="m-0">{data.backendName ?? '—'} <span className="font-mono text-ui-muted">{data.backend}</span></dd>
-                    <dt className="text-ui-muted">{t('protection.details.service')}</dt><dd className="m-0">{t(`protection.service.${data.service || 'unknown'}`, { defaultValue: data.service ?? '—' })}</dd>
+                    <dt className="text-ui-muted">{t('protection.details.service')}</dt><dd className="m-0">{t(`protection.service.${data.service || 'unknown'}`, { defaultValue: data.service ?? '—' })}
+                        {data.serviceVersion && <span className="font-mono text-ui-muted"> {data.serviceVersion}</span>}</dd>
                     <dt className="text-ui-muted">{t('protection.details.filter')}</dt><dd className="m-0">{yesNo(data.filter.enabled)}</dd>
                     <dt className="text-ui-muted">{t('protection.details.registered')}</dt><dd className="m-0">{yesNo(data.filter.registered)}</dd>
                     <dt className="text-ui-muted">{t('protection.details.persistent')}</dt><dd className="m-0">{yesNo(data.filter.persistent)}</dd>

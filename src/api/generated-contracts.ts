@@ -2564,6 +2564,7 @@ export namespace Go {
       desired: ProtectionSettings;
       effective: boolean;
       service?: string;
+      serviceVersion?: string;
       filter: ProtectionFilter;
       checkedAt?: number;
       updatedAt?: number;
