@@ -624,5 +624,35 @@
   "outboundNoTrafficWindow": "No fresh traffic window yet; sampling resets after restart or a clock/sleep gap.",
   "outboundRecentDialFailures": "Recent TCP dial failure ratio",
   "outboundDialWindowHint": "From retained dial outcomes within {{seconds}} s (shared history limit {{limit}}). Excludes later I/O, application errors and UDP session creation.",
-  "nodeImportSaveFailed": "The node could not be imported. Retry the failed item after checking permissions and configuration."
+  "nodeImportSaveFailed": "The node could not be imported. Retry the failed item after checking permissions and configuration.",
+  "processPatterns": {
+    "title": "Process path patterns",
+    "syntax": {
+      "exact": "A plain path matches that executable exactly.",
+      "star": "Any characters within one path component (never crosses a separator).",
+      "question": "Exactly one character within one path component.",
+      "doubleStar": "Any number of directories; at the end it matches everything below the directory, not the directory itself. It must be a whole component.",
+      "anyDirectory": "Everything below any directory named exactly aaa, at any depth (not aaab or aaa-backup)."
+    },
+    "examples": "Examples",
+    "windowsTitle": "Windows",
+    "windowsFixedDrive": "only on drive C.",
+    "windowsAnyDrive": "on any drive or network share.",
+    "windowsCase": "A pattern without a drive letter never matches every drive by itself: start it with **/ for that. Windows paths are compared without regard to case and accept \\ or /; macOS and Linux paths are case-sensitive.",
+    "lookup": "Patterns match the executable path the operating system reports. Without process lookup, or when the path is unavailable, process rules do not match.",
+    "invalid_one": "1 entry cannot be used",
+    "invalid_other": "{{count}} entries cannot be used",
+    "line": "Line {{line}}",
+    "problems": {
+      "doubleStarComponent": "** must be a whole path component, as in /dir/**/name; use * inside a name.",
+      "notAbsolute": "a pattern must be an absolute path or start with **/.",
+      "relativePath": "relative paths never match; use an absolute path or start with **/.",
+      "driveRelative": "drive-relative paths are not supported; write C:\\ followed by the path.",
+      "noDrive": "the path has no drive letter; write C:\\… for one drive or **/… for any drive.",
+      "wildcardDrive": "wildcard drive letters are not supported; start the pattern with **/ to match any drive.",
+      "wildcardRoot": "wildcards are not supported in the drive, server or share name; start the pattern with **/ instead.",
+      "aboveRoot": "\"..\" climbs above the root.",
+      "dotDotAfterWildcard": "\"..\" cannot follow a wildcard component."
+    }
+  }
 }

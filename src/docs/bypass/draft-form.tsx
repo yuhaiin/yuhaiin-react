@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { RouteRuleForm, type RuleEditorOptions } from './rule-form';
 import { hasAdvancedRuleOptions, parseSimpleMatcher, referencedLists } from './draft';
 import { SimpleConditions, type PrivateChoiceHistory } from './simple-conditions';
+import { ProcessPatternHelp, ProcessPatternIssues, routeListPatternIssues } from '@/component/process-patterns';
 
 export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; onChange: (value: RuleDraft) => void; options: RuleEditorOptions }) {
     const { t } = useTranslation('routing');
@@ -55,6 +56,7 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
                 <label className="block space-y-2"><SettingLabel>{t('onePerLine')}</SettingLabel>
                     <Textarea code value={list.source.local?.lists?.join('\n') ?? ''} onChange={event => setListText(list.id, event.target.value)} />
                 </label>
+                {list.type === 'process' && <div className="mt-3 space-y-3"><ProcessPatternIssues issues={routeListPatternIssues(list)} /><ProcessPatternHelp /></div>}
                 {shareControl(list.id)}
             </SettingsBox>)}
             <Button size="sm" onClick={addList}>{t('addMatchingData')}</Button>
