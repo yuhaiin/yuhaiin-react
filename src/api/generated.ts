@@ -65,6 +65,7 @@ export type RPCOperation =
   | "inbounds.post"
   | "inbounds.status"
   | "info"
+  | "logs.recent"
   | "node.close"
   | "node.delete"
   | "node.extra"
@@ -91,6 +92,10 @@ export type RPCOperation =
   | "outbound.selector.references"
   | "outbound.selector.status"
   | "outbound.selectors.get"
+  | "profiler.analyze"
+  | "profiler.delete"
+  | "profiler.sessions"
+  | "profiler.start"
   | "publish.delete"
   | "publish.put"
   | "publish.resolve"
@@ -146,6 +151,7 @@ export type RPCOperation =
   | "route.rules.post"
   | "route.rules.priority"
   | "route.rules.test"
+  | "runtime.stats"
   | "settings.get"
   | "settings.put"
   | "subscriptions.delete"
@@ -157,6 +163,8 @@ export type RPCOperation =
   | "systemNetwork.interfaces"
   | "systemNetwork.outbound"
   | "systemNetwork.preview"
+  | "systemNetwork.protection.get"
+  | "systemNetwork.protection.put"
   | "systemNetwork.routes"
   | "systemNetwork.status"
   | "tools.diagnostics"
@@ -178,6 +186,12 @@ export type RPCOperation =
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
+  { method: "POST", pattern: "/api/v2/logs/recent", operation: "logs.recent" },
+  { method: "GET", pattern: "/api/v2/runtime/stats", operation: "runtime.stats" },
+  { method: "GET", pattern: "/api/v2/profiler", operation: "profiler.sessions" },
+  { method: "POST", pattern: "/api/v2/profiler", operation: "profiler.start" },
+  { method: "DELETE", pattern: "/api/v2/profiler/{id}", operation: "profiler.delete" },
+  { method: "POST", pattern: "/api/v2/profiler/{id}/analyze", operation: "profiler.analyze" },
   { method: "GET", pattern: "/api/v2/certificates", operation: "certificates.list" },
   { method: "PUT", pattern: "/api/v2/certificates", operation: "certificate.save" },
   { method: "DELETE", pattern: "/api/v2/certificates/{id}", operation: "certificate.delete" },
@@ -273,6 +287,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/system-network/preview", operation: "systemNetwork.preview" },
   { method: "GET", pattern: "/api/v2/system-network/routes", operation: "systemNetwork.routes" },
   { method: "GET", pattern: "/api/v2/system-network/outbound", operation: "systemNetwork.outbound" },
+  { method: "GET", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.get" },
+  { method: "PUT", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.put" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },
