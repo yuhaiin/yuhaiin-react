@@ -3,6 +3,12 @@ import { setupWorker } from 'msw/browser';
 import { createDefaultSettings } from '/src/contract/settings.ts';
 import { establishSession } from '/src/auth/session.ts';
 import { operationPermissions } from '/src/auth/operations.ts';
+let protection={state:'protected',supported:true,backend:'pf',backendName:'macOS Packet Filter',mode:'standard',desired:{enabled:true,startAtBoot:true},effective:true,service:'running',
+  filter:{enabled:true,registered:true,persistent:true,loaded:true,reference:true,name:'io.github.yuhaiin/protection'},checkedAt:1763500000,updatedAt:1763499000,
+  problems:[{code:'preexisting_state',message:'The packet filter was already in use when protection started; connections opened before then may continue until they close'}],
+  physicalInterfaces:['en0','en5','bridge0'],tunnelInterfaces:['utun4'],privateNetworks:['10.0.0.0/8','100.64.0.0/10','172.16.0.0/12','192.168.0.0/16','fc00::/7','127.0.0.0/8','169.254.0.0/16','::1','fe80::/10'],
+  bypassNetworks:['198.51.100.0/24','203.0.113.0/24'],bypassCount:2,ownTraffic:{allowed:true,method:'socket_group',group:'_yuhaiin',groupId:340,connections:7},
+  tunnelIpv4:true,tunnelIpv6:false,blocked:{packets:1284,bytes:93112,lastAt:1763499900}};
 const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
 const protectedUpdateReady = new URLSearchParams(location.search).get('protected') === 'ready';
 let updateOperationId = '';
@@ -386,6 +392,8 @@ const worker=setupWorker(
     else if(op==='systemNetwork.interfaces')result=systemNetworkInterfaces;
     else if(op==='systemNetwork.routes')result=systemNetworkRoutes;
     else if(op==='systemNetwork.outbound')result=systemNetworkOutbound;
+    else if(op==='systemNetwork.protection.get')result=protection;
+    else if(op==='systemNetwork.protection.put'){protection={...protection,desired:p,state:p.enabled?'protected':'disabled',effective:p.enabled};result=protection;}
     else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;
