@@ -165,6 +165,7 @@ export type RPCOperation =
   | "systemNetwork.preview"
   | "systemNetwork.protection.get"
   | "systemNetwork.protection.put"
+  | "systemNetwork.protection.rules"
   | "systemNetwork.routes"
   | "systemNetwork.status"
   | "tools.diagnostics"
@@ -289,6 +290,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/system-network/outbound", operation: "systemNetwork.outbound" },
   { method: "GET", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.get" },
   { method: "PUT", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.put" },
+  { method: "GET", pattern: "/api/v2/system-network/protection/rules", operation: "systemNetwork.protection.rules" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },

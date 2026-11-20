@@ -1,5 +1,5 @@
 import { requestJSON } from './client';
-import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus, type SystemRoutes, type OutboundRouting, type ProtectionSettings, type ProtectionStatus } from '@/contract/system-network';
+import { normalizeSystemNetworkConfig, type SystemNetworkConfig, type SystemNetworkInterfaces, type SystemNetworkPreview, type SystemNetworkSaveResult, type SystemNetworkStatus, type SystemRoutes, type OutboundRouting, type ProtectionRules, type ProtectionSettings, type ProtectionStatus } from '@/contract/system-network';
 
 export const systemNetworkKeys = {
     config: '/api/v2/system-network/config',
@@ -8,6 +8,7 @@ export const systemNetworkKeys = {
     routes: '/api/v2/system-network/routes',
     outbound: '/api/v2/system-network/outbound',
     protection: '/api/v2/system-network/protection',
+    protectionRules: '/api/v2/system-network/protection/rules',
 };
 
 export async function getSystemNetworkConfig(): Promise<SystemNetworkConfig> {
@@ -50,4 +51,9 @@ export function getNetworkProtection(): Promise<ProtectionStatus> {
 /** Enables or disables the kill switch; the response reports whether the operating system really enforces it. */
 export function putNetworkProtection(settings: ProtectionSettings): Promise<ProtectionStatus> {
     return requestJSON<ProtectionStatus>('PUT', systemNetworkKeys.protection, settings);
+}
+
+/** Read-only view of the packet filter rules: the main ruleset with Yuhaiin's lines marked, and Yuhaiin's rule sets with counters. */
+export function getNetworkProtectionRules(): Promise<ProtectionRules> {
+    return requestJSON<ProtectionRules>('GET', systemNetworkKeys.protectionRules);
 }

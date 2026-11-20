@@ -2601,6 +2601,56 @@ export namespace Go {
       bytes: number;
       lastAt?: number;
     }
+    export interface ProtectionRules {
+      backend?: string;
+      available: boolean;
+      reason?: string;
+      readAt: number;
+      rulesets: ProtectionRuleset[];
+      main: ProtectionMainRule[];
+      config: ProtectionConfigFile;
+      raw: string;
+      errors?: string[];
+    }
+    export interface ProtectionRuleset {
+      name: string;
+      purpose: string;
+      rules: ProtectionRule[];
+      tables?: ProtectionRuleTable[];
+      error?: string;
+    }
+    export interface ProtectionRule {
+      text: string;
+      label?: string;
+      category: string;
+      counters: boolean;
+      evaluations: number;
+      packets: number;
+      bytes: number;
+      states: number;
+    }
+    export interface ProtectionRuleTable {
+      name: string;
+      count: number;
+      entries: string[];
+      truncated?: boolean;
+    }
+    export interface ProtectionMainRule {
+      kind: string;
+      text: string;
+      yuhaiin: boolean;
+    }
+    export interface ProtectionConfigFile {
+      path?: string;
+      registered: boolean;
+      lines: ProtectionConfigLine[];
+      error?: string;
+    }
+    export interface ProtectionConfigLine {
+      number: number;
+      text: string;
+      managed: boolean;
+    }
     export interface Capabilities {
       platform: string;
       routeManagement: boolean;

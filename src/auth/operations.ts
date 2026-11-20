@@ -124,6 +124,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "systemNetwork.config.put": "settings:write",
     "systemNetwork.protection.get": "settings:read",
     "systemNetwork.protection.put": "settings:write",
+    "systemNetwork.protection.rules": "settings:read",
     "logs.recent": "diagnostics:run",
     "runtime.stats": "metrics:read",
     "profiler.sessions": "diagnostics:run",

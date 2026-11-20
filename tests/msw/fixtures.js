@@ -3,6 +3,20 @@ import { setupWorker } from 'msw/browser';
 import { createDefaultSettings } from '/src/contract/settings.ts';
 import { establishSession } from '/src/auth/session.ts';
 import { operationPermissions } from '/src/auth/operations.ts';
+let protectionRules={backend:'pf',available:true,readAt:1763500000,raw:'### pfctl -s rules\nscrub-anchor "com.apple/*" all fragment reassemble\nanchor "io.github.yuhaiin/*" all\nanchor "com.apple/*" all\n',
+  main:[{kind:'translation',text:'nat-anchor "com.apple/*" all',yuhaiin:false},{kind:'translation',text:'rdr-anchor "com.apple/*" all',yuhaiin:false},{kind:'translation',text:'nat-anchor "io.github.yuhaiin/*" all',yuhaiin:true},
+    {kind:'normalization',text:'scrub-anchor "com.apple/*" all fragment reassemble',yuhaiin:false},{kind:'filter',text:'anchor "io.github.yuhaiin/*" all',yuhaiin:true},{kind:'filter',text:'anchor "com.apple/*" all',yuhaiin:false}],
+  rulesets:[{name:'io.github.yuhaiin/protection',purpose:'protection',rules:[
+    {text:'pass out on lo0 all flags any keep state label "yuhaiin-loopback" tag io.github.yuhaiin.pass',label:'yuhaiin-loopback',category:'loopback',counters:true,evaluations:820,packets:6400,bytes:512000,states:12},
+    {text:'pass out from any to <yuhaiin_private> flags any keep state label "yuhaiin-private" tag io.github.yuhaiin.pass',label:'yuhaiin-private',category:'private',counters:true,evaluations:300,packets:2200,bytes:180000,states:6},
+    {text:'pass out inet6 proto ipv6-icmp all icmp6-type neighbrsol keep state label "yuhaiin-nd" tag io.github.yuhaiin.pass',label:'yuhaiin-nd',category:'local',counters:true,evaluations:40,packets:40,bytes:3200,states:0},
+    {text:'pass out from any to <yuhaiin_bypass> flags any keep state label "yuhaiin-bypass" tag io.github.yuhaiin.pass',label:'yuhaiin-bypass',category:'bypass',counters:true,evaluations:12,packets:90,bytes:7000,states:1},
+    {text:'pass out on utun4 all flags any keep state (if-bound) label "yuhaiin-tunnel" tag io.github.yuhaiin.pass',label:'yuhaiin-tunnel',category:'tunnel',counters:true,evaluations:900,packets:81000,bytes:9200000,states:44},
+    {text:'pass out proto tcp all group = 340 flags any keep state label "yuhaiin-own-tcp" tag io.github.yuhaiin.pass',label:'yuhaiin-own-tcp',category:'own',counters:true,evaluations:60,packets:42000,bytes:51000000,states:7},
+    {text:'block return out quick all label "yuhaiin-block-3fbc2130dfdb4ee8" ! tagged io.github.yuhaiin.pass',label:'yuhaiin-block-3fbc2130dfdb4ee8',category:'block',counters:true,evaluations:1284,packets:1284,bytes:93112,states:0}],
+    tables:[{name:'yuhaiin_private',count:9,entries:['10.0.0.0/8','100.64.0.0/10','172.16.0.0/12','192.168.0.0/16','127.0.0.0/8','169.254.0.0/16','fc00::/7','::1','fe80::/10']},{name:'yuhaiin_bypass',count:2,entries:['198.51.100.0/24','203.0.113.0/24']}]},
+    {name:'io.github.yuhaiin/forward',purpose:'forward',rules:[]}],
+  config:{path:'/etc/pf.conf',registered:true,lines:[{number:27,text:'nat-anchor "io.github.yuhaiin/*" # managed by Yuhaiin (io.github.yuhaiin)',managed:true},{number:29,text:'anchor "io.github.yuhaiin/*" # managed by Yuhaiin (io.github.yuhaiin)',managed:true}]}};
 let protection={state:'protected',supported:true,backend:'pf',backendName:'macOS Packet Filter',mode:'standard',desired:{enabled:true,startAtBoot:true},effective:true,service:'running',
   filter:{enabled:true,registered:true,persistent:true,loaded:true,reference:true,name:'io.github.yuhaiin/protection'},checkedAt:1763500000,updatedAt:1763499000,
   problems:[{code:'preexisting_state',message:'The packet filter was already in use when protection started; connections opened before then may continue until they close'}],
@@ -393,6 +407,7 @@ const worker=setupWorker(
     else if(op==='systemNetwork.routes')result=systemNetworkRoutes;
     else if(op==='systemNetwork.outbound')result=systemNetworkOutbound;
     else if(op==='systemNetwork.protection.get')result=protection;
+    else if(op==='systemNetwork.protection.rules')result=protectionRules;
     else if(op==='systemNetwork.protection.put'){protection={...protection,desired:p,state:p.enabled?'protected':'disabled',effective:p.enabled};result=protection;}
     else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;

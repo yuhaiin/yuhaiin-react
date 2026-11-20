@@ -530,6 +530,50 @@
       "unreachable": "응답 없음",
       "not_installed": "설치되지 않음",
       "unknown": "—"
+    },
+    "rules": {
+      "title": "패킷 필터 규칙",
+      "help": "읽기 전용입니다. 시스템의 기본 규칙 집합을 평가 순서대로 표시하고 Yuhaiin 줄을 표시합니다. Yuhaiin 자체 규칙 집합과 카운터, 설정 파일의 Yuhaiin 줄도 보여 줍니다. 여기서는 아무것도 변경할 수 없습니다.",
+      "loading": "패킷 필터를 읽는 중…",
+      "readAt": "{{time}}에 읽음",
+      "copy": "원시 출력 복사",
+      "copied": "복사됨",
+      "main": "기본 규칙 집합",
+      "mainHelp": "시스템이 평가하는 순서대로 변환 규칙, 필터 규칙 순으로 표시합니다. 킬 스위치가 다른 규칙보다 먼저 확인되도록 Yuhaiin 앵커가 첫 번째 필터 규칙이어야 합니다.",
+      "notFirst": "Yuhaiin 앵커보다 앞에 다른 필터 규칙이 있습니다. 그 \"quick\" 규칙은 킬 스위치보다 먼저 트래픽을 허용할 수 있습니다.",
+      "empty": "기본 규칙 집합이 비어 있습니다.",
+      "kind": {
+        "translation": "변환",
+        "normalization": "정규화",
+        "filter": "필터"
+      },
+      "purpose": {
+        "protection": "킬 스위치",
+        "forward": "포워딩"
+      },
+      "noRules": "로드된 규칙이 없습니다.",
+      "category": "분류",
+      "rule": "규칙",
+      "packets": "패킷",
+      "bytes": "바이트",
+      "states": "상태",
+      "categories": {
+        "loopback": "루프백",
+        "private": "사설",
+        "local": "로컬 네트워크",
+        "bypass": "우회",
+        "tunnel": "Yuhaiin TUN",
+        "own": "Yuhaiin",
+        "block": "차단",
+        "forward": "포워딩",
+        "other": "기타"
+      },
+      "tableCount": "주소 {{count}}개",
+      "truncated": "{{count}}개 중 {{shown}}개를 표시합니다.",
+      "config": "{{path}}의 Yuhaiin 줄",
+      "configNone": "Yuhaiin 줄이 없습니다. 재시작하면 등록이 사라집니다.",
+      "managed": "Yuhaiin 관리",
+      "manual": "수동으로 추가"
     }
   }
 }
