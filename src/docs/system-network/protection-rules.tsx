@@ -3,6 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
 import { useClipboard } from '@/component/v2/clipboard';
+import { formatBytes } from '@/common/format';
 import { cn, ui } from '@/component/v2/styles';
 import type { ProtectionRules, ProtectionRuleset } from '@/contract/system-network';
 import { useLocaleFormat } from '@/i18n/useLocaleFormat';
@@ -105,15 +106,15 @@ function Ruleset({ set }: { set: ProtectionRuleset }) {
                         <th className="py-1 pr-2 font-normal">{t('protection.rules.category')}</th>
                         <th className="py-1 pr-2 font-normal">{t('protection.rules.rule')}</th>
                         <th className="py-1 pr-2 text-right font-normal">{t('protection.rules.packets')}</th>
-                        <th className="py-1 pr-2 text-right font-normal">{t('protection.rules.bytes')}</th>
-                        <th className="py-1 text-right font-normal">{t('protection.rules.states')}</th>
+                        <th className="whitespace-nowrap py-1 pr-2 text-right font-normal">{t('protection.rules.bytes')}</th>
+                        <th className="whitespace-nowrap py-1 pl-2 text-right font-normal">{t('protection.rules.states')}</th>
                     </tr></thead>
                     <tbody>{set.rules.map((r, i) => <tr key={i} className={cn('border-t border-ui-border align-top', r.category === 'block' && 'bg-ui-danger-soft/40')}>
                         <td className="py-1 pr-2"><Badge variant={categoryVariant[r.category] ?? 'muted'}>{t(`protection.rules.categories.${r.category}`, { defaultValue: r.category })}</Badge></td>
                         <td className="py-1 pr-2"><code className="break-all font-mono">{r.text}</code></td>
                         <td className="py-1 pr-2 text-right font-mono">{r.counters ? format.number(r.packets) : '—'}</td>
-                        <td className="py-1 pr-2 text-right font-mono">{r.counters ? format.number(r.bytes) : '—'}</td>
-                        <td className="py-1 text-right font-mono">{r.counters ? format.number(r.states) : '—'}</td>
+                        <td className="whitespace-nowrap py-1 pr-2 text-right font-mono" title={r.counters ? `${format.number(r.bytes)} B` : undefined}>{r.counters ? (r.bytes < 1024 ? `${r.bytes} B` : formatBytes(r.bytes, 1, ' ')) : '—'}</td>
+                        <td className="py-1 pl-2 text-right font-mono">{r.counters ? format.number(r.states) : '—'}</td>
                     </tr>)}</tbody>
                 </table>
             </div>}
