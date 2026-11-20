@@ -57,11 +57,11 @@ const EditModal: FC<{
                             </div>
                         </FormSection>
                         <FormSection title={uiT("connection")}>
-                            <div className="flex min-w-0 max-w-2xl flex-col gap-4">
+                            <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
                                 <SettingInputVertical label={uiT("displayAddress")} value={newItem.address} onChange={(address) => setNewItem(prev => ({ ...prev, address }))} placeholder="example.com:443" />
                                 <SettingInputVertical label={uiT("path")} value={newItem.path} onChange={(path) => setNewItem(prev => ({ ...prev, path }))} placeholder="custom/path" />
                                 <SettingInputVertical label={uiT("password")} value={newItem.password} onChange={(password) => setNewItem(prev => ({ ...prev, password }))} placeholder={uiT("optionalPassword")} />
-                                <SwitchCard
+                                <SwitchCard className="md:col-span-2"
                                     label={uiT("allowInsecureHttp")}
                                     checked={newItem.insecure}
                                     onCheckedChange={(insecure) => setNewItem(prev => ({ ...prev, insecure }))}

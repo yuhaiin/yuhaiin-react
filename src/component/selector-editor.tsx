@@ -3,6 +3,7 @@ import { DetailBack } from '@/component/v2/detail-back';
 import { deleteSelector, saveSelector, selectorReferences } from '@/api/selectors';
 import { Button } from '@/component/v2/button';
 import { SettingInputVertical } from '@/component/v2/forms';
+import { cn } from '@/component/v2/styles';
 import { NodeSelect } from './node-select';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { GlobalToastContext } from '@/component/v2/toast';
@@ -51,17 +52,21 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
         if (!item || !await confirmAction(t('deleteSelectorConfirm'))) return;
         setActionError(''); void run(async () => { await deleteSelector(item.id); (onDeleted ?? onSaved)(item); });
     };
-    const body = <fieldset disabled={pending} className="grid min-w-0 max-w-2xl grid-cols-1 gap-4 [--field-margin:0px]">
+    const body = <fieldset disabled={pending} className={cn('grid min-w-0 grid-cols-1 gap-x-8 gap-y-4 [--field-margin:0px]', item ? 'lg:grid-cols-2 lg:items-start' : 'max-w-2xl')}>
+        <div className="grid min-w-0 gap-4 [&>*]:min-w-0">
         <SettingInputVertical label={t('name')} value={value.name} onChange={name => setValue(prev => ({ ...prev, name }))} />
         <div className="space-y-2"><span className="text-[13px] font-normal text-ui-muted">{t('selectedNode')}</span>
             <NodeSelect label={t('selectedNode')} value={value.nodeId} disabled={pending} onChange={node => { void refreshCache(['/api/v2/nodes/detail', node.id], node, { revalidate: false }); setValue(prev => ({ ...prev, nodeId: node.id })); }} />
         </div>
         <Button size="sm" variant="outline-secondary" onClick={() => setCreatingNode(true)}><Plus size={16} />{t("addNode")}</Button>
         <SelectorPolicyEditor value={value} onChange={setValue} />
+        </div>
+        <div className={cn("grid min-w-0 content-start gap-4 [&>*]:min-w-0", item && "lg:rounded-ui-md lg:border lg:border-ui-border lg:bg-ui-chip/40 lg:p-4 [&>section]:border-t-0 [&>section]:pt-0")}>
         {item && <SelectorLiveStatus key={item.id} value={item} />}
         {refs && <div className="space-y-2 text-sm"><details><summary className="cursor-pointer text-ui-muted">{t('impact', { count: refs.items.length })}</summary><ul className="mt-2 max-h-48 overflow-auto list-disc pl-5">{refs.items.map(ref => <li key={`${ref.kind}:${ref.id}`}>{ref.name}</li>)}</ul></details></div>}
         {refsError && <p role="alert" className="text-sm text-ui-danger">{t('loadFailed')}</p>}
         {actionError && <p role="alert" className="text-sm text-ui-danger">{actionError}</p>}
+        </div>
         </fieldset>;
     const footer = <>
         <div>{item && <Button permission="nodes:write" variant="outline-danger" disabled={pending || !refs || refs.items.length > 0} onClick={remove}><Trash size={16} className="mr-1.5" aria-hidden="true" />{t('delete')}</Button>}</div>
