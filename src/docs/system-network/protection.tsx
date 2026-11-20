@@ -12,6 +12,7 @@ import { useLocaleFormat } from '@/i18n/useLocaleFormat';
 import { ArrowDown, Ban, Check, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProtectionRulesCard } from './protection-rules';
 import useSWR from 'swr';
 
 /** Visual tone of each protection state; "protected" is only shown when the OS verified the rules. */
@@ -87,6 +88,7 @@ export function ProtectionTab() {
         {data?.supported && <Flow data={data} />}
         {data?.supported && <Policy data={data} />}
         {data?.supported && <Details data={data} />}
+        {data?.supported && <ProtectionRulesCard />}
     </div>;
 }
 

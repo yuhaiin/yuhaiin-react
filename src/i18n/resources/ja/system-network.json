@@ -530,6 +530,50 @@
       "unreachable": "応答なし",
       "not_installed": "未インストール",
       "unknown": "—"
+    },
+    "rules": {
+      "title": "パケットフィルタのルール",
+      "help": "読み取り専用です。システムのメインルールセットを評価順に表示し、Yuhaiin の行をマークします。Yuhaiin 自身のルールセットとカウンタ、設定ファイル内の Yuhaiin の行も表示します。ここから変更はできません。",
+      "loading": "パケットフィルタを読み取っています…",
+      "readAt": "{{time}} に読み取り",
+      "copy": "生の出力をコピー",
+      "copied": "コピーしました",
+      "main": "メインルールセット",
+      "mainHelp": "システムが評価する順に、変換ルール、フィルタルールの順で表示します。キルスイッチが他のルールより先に評価されるよう、Yuhaiin のアンカーは最初のフィルタルールである必要があります。",
+      "notFirst": "Yuhaiin のアンカーより前に別のフィルタルールがあります。その \"quick\" ルールはキルスイッチより先に通信を許可できます。",
+      "empty": "メインルールセットは空です。",
+      "kind": {
+        "translation": "変換",
+        "normalization": "正規化",
+        "filter": "フィルタ"
+      },
+      "purpose": {
+        "protection": "キルスイッチ",
+        "forward": "フォワーディング"
+      },
+      "noRules": "ルールは読み込まれていません。",
+      "category": "分類",
+      "rule": "ルール",
+      "packets": "パケット",
+      "bytes": "バイト",
+      "states": "ステート",
+      "categories": {
+        "loopback": "ループバック",
+        "private": "プライベート",
+        "local": "ローカルネットワーク",
+        "bypass": "バイパス",
+        "tunnel": "Yuhaiin TUN",
+        "own": "Yuhaiin",
+        "block": "遮断",
+        "forward": "フォワーディング",
+        "other": "その他"
+      },
+      "tableCount": "{{count}} 件のアドレス",
+      "truncated": "{{count}} 件中 {{shown}} 件を表示しています。",
+      "config": "{{path}} 内の Yuhaiin の行",
+      "configNone": "Yuhaiin の行がありません。再起動すると登録が失われます。",
+      "managed": "Yuhaiin が管理",
+      "manual": "手動で追加"
     }
   }
 }

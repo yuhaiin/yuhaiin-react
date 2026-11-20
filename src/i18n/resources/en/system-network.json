@@ -530,6 +530,50 @@
       "unreachable": "Not reachable",
       "not_installed": "Not installed",
       "unknown": "—"
+    },
+    "rules": {
+      "title": "Packet filter rules",
+      "help": "Read-only. The system's main ruleset in evaluation order with Yuhaiin's lines marked, Yuhaiin's own rule sets with their counters, and Yuhaiin's lines in the configuration file. Nothing can be changed here.",
+      "loading": "Reading the packet filter…",
+      "readAt": "Read at {{time}}",
+      "copy": "Copy raw output",
+      "copied": "Copied",
+      "main": "Main ruleset",
+      "mainHelp": "Translation rules, then filter rules, as the system evaluates them. Yuhaiin's anchor should be the first filter rule so the kill switch is checked before other rules.",
+      "notFirst": "Another filter rule comes before Yuhaiin's anchor; its \"quick\" rules can pass traffic before the kill switch is checked.",
+      "empty": "The main ruleset is empty.",
+      "kind": {
+        "translation": "Translation",
+        "normalization": "Normalization",
+        "filter": "Filter"
+      },
+      "purpose": {
+        "protection": "Kill switch",
+        "forward": "Forwarding"
+      },
+      "noRules": "No rules loaded.",
+      "category": "Category",
+      "rule": "Rule",
+      "packets": "Packets",
+      "bytes": "Bytes",
+      "states": "States",
+      "categories": {
+        "loopback": "Loopback",
+        "private": "Private",
+        "local": "Local network",
+        "bypass": "Bypass",
+        "tunnel": "Yuhaiin TUN",
+        "own": "Yuhaiin",
+        "block": "Block",
+        "forward": "Forwarding",
+        "other": "Other"
+      },
+      "tableCount": "{{count}} addresses",
+      "truncated": "Showing {{shown}} of {{count}}.",
+      "config": "Yuhaiin's lines in {{path}}",
+      "configNone": "No Yuhaiin lines; the registration will not survive a restart.",
+      "managed": "Managed by Yuhaiin",
+      "manual": "Added by hand"
     }
   }
 }

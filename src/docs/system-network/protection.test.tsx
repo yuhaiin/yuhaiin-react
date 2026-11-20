@@ -8,7 +8,8 @@ import { ProtectionTab } from './protection';
 const api = vi.hoisted(() => ({
     getNetworkProtection: vi.fn(),
     putNetworkProtection: vi.fn(),
-    systemNetworkKeys: { protection: 'sn/protection' },
+    getNetworkProtectionRules: vi.fn(),
+    systemNetworkKeys: { protection: 'sn/protection', protectionRules: 'sn/protection/rules' },
 }));
 vi.mock('@/api/system-network', () => api);
 vi.mock('react-i18next', () => ({
