@@ -539,13 +539,14 @@
       "copy": "원시 출력 복사",
       "copied": "복사됨",
       "main": "기본 규칙 집합",
-      "mainHelp": "시스템이 평가하는 순서대로 변환 규칙, 필터 규칙 순으로 표시합니다. 킬 스위치가 다른 규칙보다 먼저 확인되도록 Yuhaiin 앵커가 첫 번째 필터 규칙이어야 합니다.",
       "notFirst": "Yuhaiin 앵커보다 앞에 다른 필터 규칙이 있습니다. 그 \"quick\" 규칙은 킬 스위치보다 먼저 트래픽을 허용할 수 있습니다.",
       "empty": "기본 규칙 집합이 비어 있습니다.",
       "kind": {
         "translation": "변환",
         "normalization": "정규화",
-        "filter": "필터"
+        "filter": "필터",
+        "chain": "체인",
+        "sublayer": "하위 계층"
       },
       "purpose": {
         "protection": "킬 스위치",
@@ -570,10 +571,24 @@
       },
       "tableCount": "주소 {{count}}개",
       "truncated": "{{count}}개 중 {{shown}}개를 표시합니다.",
-      "config": "{{path}}의 Yuhaiin 줄",
-      "configNone": "Yuhaiin 줄이 없습니다. 재시작하면 등록이 사라집니다.",
       "managed": "Yuhaiin 관리",
-      "manual": "수동으로 추가"
+      "manual": "수동으로 추가",
+      "mainHelp": {
+        "pf": "시스템이 평가하는 순서대로 변환 규칙, 필터 규칙 순으로 표시합니다. 킬 스위치가 다른 규칙보다 먼저 확인되도록 Yuhaiin 앵커가 첫 번째 필터 규칙이어야 합니다.",
+        "nftables": "시스템의 모든 기본 체인을 후크별 평가 순서로 표시합니다. 어느 체인에서든 drop 또는 reject는 최종 결정이므로 다른 체인이 accept해도 Yuhaiin 테이블이 차단합니다.",
+        "wfp": "모든 필터링 하위 계층을 가중치가 높은 순서로 표시합니다. 어느 하위 계층에서든 차단은 최종 결정이며 Yuhaiin 하위 계층의 가중치가 가장 높습니다."
+      },
+      "configTitle": {
+        "pf": "{{path}}의 Yuhaiin 줄",
+        "nftables": "시작 유닛 {{path}}",
+        "wfp": "시작 시 보호"
+      },
+      "configNone": {
+        "pf": "Yuhaiin 줄이 없습니다. 재시작하면 등록이 사라집니다.",
+        "nftables": "시작 유닛이 설치되지 않았습니다. Yuhaiin이 시작될 때 보호가 돌아옵니다."
+      },
+      "bootYes": "차단 필터가 영구적입니다. Windows가 부팅 시 서비스보다 먼저 적용합니다.",
+      "bootNo": "필터가 영구적이지 않습니다. 다음 재시작까지 유지됩니다."
     }
   }
 }
