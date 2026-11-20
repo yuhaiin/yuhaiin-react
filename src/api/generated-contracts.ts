@@ -2546,6 +2546,61 @@ export namespace Go {
       link?: boolean;
       reason?: string;
     }
+    export interface ProtectionSettings {
+      enabled: boolean;
+      startAtBoot: boolean;
+    }
+    export interface ProtectionProblem {
+      code: string;
+      message: string;
+      hint?: string;
+    }
+    export interface ProtectionStatus {
+      state: string;
+      supported: boolean;
+      backend?: string;
+      backendName?: string;
+      mode?: string;
+      desired: ProtectionSettings;
+      effective: boolean;
+      service?: string;
+      serviceVersion?: string;
+      filter: ProtectionFilter;
+      checkedAt?: number;
+      updatedAt?: number;
+      error?: string;
+      problems?: ProtectionProblem[];
+      physicalInterfaces: string[];
+      tunnelInterfaces: string[];
+      privateNetworks: string[];
+      bypassNetworks: string[];
+      bypassCount: number;
+      ownTraffic: ProtectionOwnTraffic;
+      tunnelIpv4: boolean;
+      tunnelIpv6: boolean;
+      blocked?: ProtectionCounters;
+    }
+    export interface ProtectionFilter {
+      enabled?: boolean;
+      registered?: boolean;
+      persistent?: boolean;
+      loaded?: boolean;
+      reference?: boolean;
+      name?: string;
+    }
+    export interface ProtectionOwnTraffic {
+      allowed: boolean;
+      method?: string;
+      group?: string;
+      groupId?: number;
+      connections?: number;
+      reason?: string;
+    }
+    export interface ProtectionCounters {
+      packets: number;
+      bytes: number;
+      lastAt?: number;
+    }
     export interface Capabilities {
       platform: string;
       routeManagement: boolean;
@@ -2747,6 +2802,86 @@ export namespace Go {
     }
   }
   export namespace tools {
+    export interface LogQuery {
+      limit?: number;
+      level?: string;
+      contains?: string;
+    }
+    export interface RecentLogs {
+      lines: string[];
+      truncated: boolean;
+      partial: boolean;
+    }
+    export interface ProfileRequest {
+      type: string;
+      seconds: number;
+    }
+    export interface ProfileSession {
+      id: string;
+      type: string;
+      seconds: number;
+      status: string;
+      createdAt: string;
+      completedAt: string;
+      size: number;
+      error?: string;
+    }
+    export interface ProfileSessions {
+      enabled: boolean;
+      sessions: ProfileSession[];
+    }
+    export interface ProfileAnalysisRequest {
+      id: string;
+      sampleType?: string;
+      mode?: string;
+      limit?: number;
+      focus?: string;
+      wait?: boolean;
+    }
+    export interface ProfileFunction {
+      function: string;
+      file?: string;
+      flat: number;
+      flatPercent: number;
+      cumulative: number;
+      cumulativePercent: number;
+    }
+    export interface ProfileStack {
+      value: number;
+      percent: number;
+      frames: string[];
+    }
+    export interface ProfileAnalysis {
+      session: ProfileSession;
+      sampleType: string;
+      unit: string;
+      sampleTypes: string[];
+      total: number;
+      duration?: string;
+      functions?: ProfileFunction[];
+      stacks?: ProfileStack[];
+    }
+    export interface RuntimeStats {
+      goVersion: string;
+      os: string;
+      arch: string;
+      cpus: number;
+      gomaxprocs: number;
+      goroutines: number;
+      uptimeSeconds: number;
+      heapAllocBytes: number;
+      heapInuseBytes: number;
+      heapObjects: number;
+      stackInuseBytes: number;
+      sysBytes: number;
+      totalAllocBytes: number;
+      nextGcBytes: number;
+      numGc: number;
+      gcPauseTotal: string;
+      lastGcPause: string;
+      gcCpuFraction: number;
+      cgoCalls: number;
+    }
     export interface DiagnosticRequest {
       host: string;
       tcpOnly?: boolean;
