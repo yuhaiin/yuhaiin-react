@@ -411,6 +411,7 @@ export namespace Go {
       error?: string;
     }
     export interface ListRequest {
+      page?: number;
       cursor?: string;
       limit?: number;
       domain?: string;
@@ -432,6 +433,7 @@ export namespace Go {
       items: Record[];
       nextCursor?: string;
       total: number;
+      page: number;
       limit: number;
     }
     export interface GetRequest {

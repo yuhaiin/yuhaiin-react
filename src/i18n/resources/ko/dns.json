@@ -22,12 +22,6 @@
     "fakeip": "FakeIP",
     "cache": "캐시"
   },
-  "pager": {
-    "label": "DNS 기록 페이지",
-    "newer": "최신",
-    "older": "이전",
-    "status": "{{page}}페이지 · 일치 {{total}}건"
-  },
   "range": {
     "1h": "1시간",
     "24h": "24시간",

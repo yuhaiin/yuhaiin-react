@@ -22,12 +22,6 @@
     "fakeip": "FakeIP",
     "cache": "キャッシュ"
   },
-  "pager": {
-    "label": "DNS 履歴のページ",
-    "newer": "新しい順",
-    "older": "古い順",
-    "status": "{{page}} ページ目 · 該当 {{total}} 件"
-  },
   "range": {
     "1h": "1 時間",
     "24h": "24 時間",
