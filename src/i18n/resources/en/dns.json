@@ -22,12 +22,6 @@
     "fakeip": "FakeIP",
     "cache": "cache"
   },
-  "pager": {
-    "label": "DNS history pages",
-    "newer": "Newer",
-    "older": "Older",
-    "status": "Page {{page}} · {{total}} matching"
-  },
   "range": {
     "1h": "1 hour",
     "24h": "24 hours",

@@ -364,8 +364,8 @@ const worker=setupWorker(
     else if(op==='connections.history') result={items:history};
     else if(op==='dns.history.list'){
       let items=dnsHistory.filter(item=>(!p.query||item.domain.includes(p.query)||(item.processName||'').toLowerCase().includes(p.query))&&(!p.domain||item.domain===p.domain||item.domain.endsWith('.'+p.domain))&&(!p.outcome||p.outcome.split(',').includes(item.outcome))&&(!p.queryType||item.queryType===p.queryType)&&(!p.sourceType||item.sourceType===p.sourceType)&&(!p.fakeipOnly||item.fakeip.returned)&&(!p.from||Date.parse(item.createdAt)>=p.from));
-      const start=p.cursor?items.findIndex(item=>String(item.id)===p.cursor)+1:0; const page=items.slice(start,start+(p.limit||50));
-      result={items:page,total:items.length,limit:p.limit||50,nextCursor:start+page.length<items.length?String(page[page.length-1].id):undefined};
+      const start=p.cursor?items.findIndex(item=>String(item.id)===p.cursor)+1:(Math.max(1,p.page||1)-1)*(p.limit||50); const page=items.slice(start,start+(p.limit||50));
+      result={items:page,total:items.length,limit:p.limit||50,page:Math.max(1,p.page||1),nextCursor:start+page.length<items.length?String(page[page.length-1].id):undefined};
     }
     else if(op==='dns.history.get') result=dnsDetail(dnsHistory.find(item=>item.id===p.id)||dnsHistory[0]);
     else if(op==='dns.history.stats'){

@@ -36,8 +36,9 @@ function compact(filter: DNSHistoryFilter): Record<string, string | number | boo
   return out;
 }
 
-export function listDNSHistory(filter: DNSHistoryFilter, cursor: string | undefined, limit: number, signal?: AbortSignal): Promise<DNSHistoryList> {
-  return requestJSON<DNSHistoryList>("GET", "/api/v2/dns/history", undefined, { ...compact(filter), cursor, limit }, signal).then(page => ({ ...page, items: page.items ?? [] }));
+/** `page` is 1-based; keep `filter.to` fixed while paging one view. */
+export function listDNSHistory(filter: DNSHistoryFilter, page: number, limit: number, signal?: AbortSignal): Promise<DNSHistoryList> {
+  return requestJSON<DNSHistoryList>("GET", "/api/v2/dns/history", undefined, { ...compact(filter), page, limit }, signal).then(result => ({ ...result, items: result.items ?? [] }));
 }
 
 export function getDNSHistoryRecord(id: number, signal?: AbortSignal): Promise<DNSHistoryRecord> {

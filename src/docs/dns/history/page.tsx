@@ -8,7 +8,8 @@ import { HistoryList, HistoryListSkeleton, HistoryTitle, formatHistoryTime, hist
 import Loading from "@/component/v2/loading";
 import { PageHeader } from "@/component/v2/page-header";
 import { Spinner } from "@/component/v2/spinner";
-import { ChevronLeft, ChevronRight, ListFilter, RotateCw, Settings2 } from "lucide-react";
+import { useServerPageClamp } from "@/hooks/use-pagination";
+import { ListFilter, RotateCw, Settings2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -21,8 +22,8 @@ import { DNSHistorySettingsModal } from "./settings";
 export const PAGE_SIZE = 50;
 
 /**
- * Cursor pages: page n is fetched with the cursor the server returned for page
- * n-1, so new queries arriving meanwhile never shift or repeat rows.
+ * Numbered pages over a window that ends at `anchor`: requests arriving while
+ * the reader pages do not shift the pages. Refresh moves the window.
  */
 export default function DNSHistoryPage() {
     const { t } = useTranslation("dns");
@@ -30,8 +31,7 @@ export default function DNSHistoryPage() {
     const [filters, setFilters] = useState<FilterState>(emptyFilters);
     // Relative ranges resolve once per view so every page shares one window.
     const [anchor, setAnchor] = useState(() => Date.now());
-    const [cursors, setCursors] = useState<string[]>([""]);
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [range, setRange] = useState<TimeRangeKey>("24h");
     const [selected, setSelected] = useState<DNSHistoryRecord>();
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -39,22 +39,16 @@ export default function DNSHistoryPage() {
 
     const request = useMemo(() => toRequestFilter(filters, query, anchor), [filters, query, anchor]);
     const listKey = JSON.stringify(request);
-    const cursor = cursors[page] || undefined;
-    const list = useSWR(["/api/v2/dns/history", listKey, anchor, cursor ?? ""], () => listDNSHistory(request, cursor, PAGE_SIZE), { keepPreviousData: true, revalidateOnFocus: false });
+    const list = useSWR(["/api/v2/dns/history", listKey, anchor, page], () => listDNSHistory({ ...request, to: anchor + 1 }, page, PAGE_SIZE), { keepPreviousData: true, revalidateOnFocus: false });
+    useServerPageClamp(list.data ? { page: list.data.page, pageSize: list.data.limit, total: list.data.total } : undefined, page, setPage);
     const stats = useSWR(["/api/v2/dns/history/stats", range, anchor], () => getDNSHistoryStats(rangeStart(range, anchor) ?? 1), { revalidateOnFocus: false, shouldRetryOnError: false });
     const settings = useSWR("/api/v2/dns/history/settings", getDNSHistorySettings, { revalidateOnFocus: false });
     const readsInbounds = can("inbounds:read");
     const inbounds = useSWR(filtersOpen && readsInbounds ? "/api/v2/inbounds/dns-history-filter" : null, () => listInbounds({ pageSize: 200 }), { revalidateOnFocus: false });
 
-    const restart = () => { setCursors([""]); setPage(0); setAnchor(Date.now()); };
+    const restart = () => { setPage(1); setAnchor(Date.now()); };
     // A new anchor is a new key for the list and the overview: one request each.
     const refresh = restart;
-    const next = () => {
-        const nextCursor = list.data?.nextCursor;
-        if (!nextCursor) return;
-        setCursors(previous => [...previous.slice(0, page + 1), nextCursor]);
-        setPage(page + 1);
-    };
 
     const sourceLabel = (item: DNSHistoryRecord) => t(`source.${item.sourceType}`, { defaultValue: item.sourceType });
     const columns: HistoryColumn<DNSHistoryRecord>[] = [
@@ -111,16 +105,9 @@ export default function DNSHistoryPage() {
 
         {list.error && !list.data ? <Loading code={list.error.code} onRetry={() => void list.mutate()}>{list.error.msg ?? String(list.error)}</Loading>
             : !list.data ? <HistoryListSkeleton />
-            : <>
-                <HistoryList label={t("title")} items={items} columns={columns} getKey={item => String(item.id)} onClickItem={setSelected}
-                    page={page + 1} totalItems={items.length} pageSize={PAGE_SIZE} onPageChange={() => undefined} resetKey={resetKey}
-                    empty={enabled === false ? t("emptyDisabled") : filterCount || query ? t("emptyFiltered") : t("empty")} />
-                <nav aria-label={t("pager.label")} className="mt-3 flex items-center justify-between gap-3">
-                    <Button size="sm" variant="outline-secondary" disabled={page === 0} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" />{t("pager.newer")}</Button>
-                    <span className="text-xs tabular-nums text-ui-muted" role="status">{t("pager.status", { page: page + 1, total: total.toLocaleString() })}</span>
-                    <Button size="sm" variant="outline-secondary" disabled={!list.data.nextCursor} onClick={next}>{t("pager.older")}<ChevronRight size={16} aria-hidden="true" /></Button>
-                </nav>
-            </>}
+            : <HistoryList label={t("title")} items={items} columns={columns} getKey={item => String(item.id)} onClickItem={setSelected}
+                page={page} totalItems={total} pageSize={PAGE_SIZE} onPageChange={setPage} resetKey={resetKey}
+                empty={enabled === false ? t("emptyDisabled") : filterCount || query ? t("emptyFiltered") : t("empty")} />}
     </MainContainer>;
 }
 

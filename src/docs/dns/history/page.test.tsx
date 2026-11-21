@@ -41,9 +41,10 @@ beforeEach(() => {
     vi.clearAllMocks();
     confirm.answer = true;
     authorizeTest();
-    api.listDNSHistory.mockImplementation(async (_filter: unknown, cursor?: string) => cursor === "c2"
-        ? { items: [record(3)], total: 3, limit: 50 }
-        : { items: [record(2), record(1)], total: 3, limit: 50, nextCursor: "c2" });
+    // 60 records: page 1 has 50, page 2 the rest.
+    api.listDNSHistory.mockImplementation(async (_filter: unknown, page: number) => ({
+        items: Array.from({ length: page === 2 ? 10 : 50 }, (_, index) => record(page === 2 ? 50 + index + 1 : index + 1)).reverse(),
+        total: 60, limit: 50, page }));
     api.getDNSHistoryStats.mockResolvedValue(stats);
     api.getDNSHistorySettings.mockResolvedValue({ enabled: true, retentionHours: 72, maxRecords: 20000 });
     api.saveDNSHistorySettings.mockImplementation(async (value: unknown) => value);
@@ -76,39 +77,40 @@ function type(input: HTMLInputElement, value: string) {
 
 it("shows the overview and the newest page from one list and one stats request", async () => {
     await render();
-    expect(text()).toContain("host2.example.com");
+    expect(text()).toContain("host50.example.com");
     expect(text()).toContain("203.0.113.1");
     expect(text()).toContain("120");
     expect(text()).toContain("75%"); // 30 hits of 40 cache lookups
-    expect(text()).toContain("Page 1 · 3 matching");
     expect(api.listDNSHistory).toHaveBeenCalledTimes(1);
     expect(api.getDNSHistoryStats).toHaveBeenCalledTimes(1);
-    const [filter, cursor, limit] = api.listDNSHistory.mock.calls[0];
-    expect(cursor).toBeUndefined();
+    const [filter, page, limit] = api.listDNSHistory.mock.calls[0];
+    expect(page).toBe(1);
     expect(limit).toBe(50);
     expect(Date.now() - filter.from).toBeGreaterThan(23 * 3600_000);
+    expect(filter.to).toBeGreaterThanOrEqual(filter.from);
 });
 
-it("pages with server cursors and returns to newer records", async () => {
+it("uses the shared numbered pagination over a fixed time window", async () => {
     await render();
-    await click("Older");
-    expect(api.listDNSHistory).toHaveBeenLastCalledWith(expect.anything(), "c2", 50);
-    expect(text()).toContain("host3.example.com");
-    expect(button("Older").disabled).toBe(true);
-    await click("Newer");
-    expect(text()).toContain("host2.example.com");
-    expect(text()).toContain("Page 1");
+    await click("2");
+    const [first] = api.listDNSHistory.mock.calls[0];
+    const [filter, page, limit] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    expect([page, limit]).toEqual([2, 50]);
+    expect(filter.to).toBe(first.to);
+    expect(text()).toContain("host60.example.com");
+    await click("1");
+    expect(text()).toContain("host50.example.com");
 });
 
 it("sends the search to the server and restarts at the first page", async () => {
     await render();
-    await click("Older");
+    await click("2");
     const input = host.querySelector<HTMLInputElement>("input[placeholder]")!;
     type(input, "Example");
     await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
-    const [filter, cursor] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    const [filter, page] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
     expect(filter.query).toBe("example");
-    expect(cursor).toBeUndefined();
+    expect(page).toBe(1);
 });
 
 it("applies filters from the filter panel", async () => {
@@ -119,16 +121,16 @@ it("applies filters from the filter panel", async () => {
     type(inputs[0], "example.com");
     await act(async () => dialog.querySelector<HTMLButtonElement>("[role=switch]")!.click());
     await click("Apply");
-    const [filter, cursor] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    const [filter, page] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
     expect(filter).toMatchObject({ domain: "example.com", fakeipOnly: true });
-    expect(cursor).toBeUndefined();
+    expect(page).toBe(1);
     expect(button("Filters (2 active)")).toBeTruthy();
 });
 
 it("shows the detail with every record section, attempts and the FakeIP mapping link", async () => {
     await render();
-    await click("DNS request details: host2.example.com");
-    expect(api.getDNSHistoryRecord).toHaveBeenCalledWith(2);
+    await click("DNS request details: host50.example.com");
+    expect(api.getDNSHistoryRecord).toHaveBeenCalledWith(50);
     const dialog = document.querySelector<HTMLElement>("[role=dialog]")!;
     expect(dialog.textContent).toContain("Answer (2)");
     expect(dialog.textContent).toContain("\"v=spf1 -all\"");
