@@ -19,8 +19,7 @@
     "openDetail": "DNS request details: {{domain}}"
   },
   "marker": {
-    "fakeip": "FakeIP",
-    "cache": "cache"
+    "fakeip": "FakeIP"
   },
   "range": {
     "1h": "1 hour",

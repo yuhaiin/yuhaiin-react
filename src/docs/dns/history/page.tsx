@@ -9,7 +9,7 @@ import Loading from "@/component/v2/loading";
 import { PageHeader } from "@/component/v2/page-header";
 import { Spinner } from "@/component/v2/spinner";
 import { useServerPageClamp } from "@/hooks/use-pagination";
-import { ListFilter, RotateCw, Settings2 } from "lucide-react";
+import { Database, ListFilter, RotateCw, Settings2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -54,21 +54,25 @@ export default function DNSHistoryPage() {
     const refresh = restart;
 
     const sourceLabel = (item: DNSHistoryRecord) => t(`source.${item.sourceType}`, { defaultValue: item.sourceType });
+    // The domain keeps a minimum and the largest share; secondary text columns
+    // share what is left. Bounded tracks such as minmax(0,9rem) would grow
+    // to their maximum before the domain's fr track and squeeze it to zero.
+    // Process and resolver need an xl table; narrower ones keep them in the detail.
     const columns: HistoryColumn<DNSHistoryRecord>[] = [
-        { id: "domain", header: t("column.domain"), width: "minmax(0,1fr)", role: "primary",
+        { id: "domain", header: t("column.domain"), width: "minmax(10rem,3fr)", role: "primary",
           label: item => t("column.openDetail", { domain: item.domain || t("detail.unknownDomain") }),
           cell: item => <HistoryTitle title={item.domain || t("detail.unknownDomain")}
               detail={item.error && !item.rcode ? item.error : item.answerSummary || [processName(item.processName), item.clientIp].filter(Boolean).join(" · ") || undefined}
               detailTone={item.error && !item.rcode ? "danger" : "neutral"} /> },
-        { id: "type", header: t("column.type"), width: "4.5rem", mono: true, cell: item => item.domain ? item.queryType : "—" },
-        { id: "source", header: t("column.source"), width: "minmax(0,9rem)",
+        { id: "type", header: t("column.type"), width: "4rem", mono: true, cell: item => item.domain ? item.queryType : "—" },
+        { id: "source", header: t("column.source"), width: "minmax(0,1fr)",
           cell: item => <span title={[sourceLabel(item), item.inboundName || item.inboundId, item.transport.toUpperCase()].filter(Boolean).join(" · ")}>{item.inboundName || item.inboundId || sourceLabel(item)}</span>,
           mobileCell: item => item.inboundName || item.inboundId || sourceLabel(item) },
-        { id: "process", header: t("column.process"), width: "minmax(0,8rem)", cell: item => <span title={item.processName}>{processName(item.processName) || "—"}</span>, mobileCell: () => null },
-        { id: "resolver", header: t("column.resolver"), width: "minmax(0,8rem)", cell: item => <span title={item.server}>{item.resolverLabel || item.resolver || "—"}</span>, mobileCell: () => null },
-        { id: "result", header: t("column.result"), width: "8.5rem", cell: item => <ResultCell item={item} /> },
-        { id: "latency", header: t("column.latency"), width: "5rem", numeric: true, mono: true, cell: item => formatLatency(item.durationNs) },
-        { id: "time", header: t("column.time"), width: "7rem", numeric: true, mono: true, role: "aside", cell: item => formatHistoryTime(new Date(item.createdAt)) },
+        { id: "process", header: t("column.process"), width: "minmax(0,1fr)", from: "xl", cell: item => <span title={item.processName}>{processName(item.processName) || "—"}</span>, mobileCell: () => null },
+        { id: "resolver", header: t("column.resolver"), width: "minmax(0,1fr)", from: "xl", cell: item => <span title={item.server}>{item.resolverLabel || item.resolver || "—"}</span>, mobileCell: () => null },
+        { id: "result", header: t("column.result"), width: "8rem", cell: item => <ResultCell item={item} /> },
+        { id: "latency", header: t("column.latency"), width: "4.5rem", numeric: true, mono: true, cell: item => formatLatency(item.durationNs) },
+        { id: "time", header: t("column.time"), width: "6rem", numeric: true, mono: true, role: "aside", cell: item => formatHistoryTime(new Date(item.createdAt)) },
     ];
 
     const filterCount = activeFilterCount(filters);
@@ -121,6 +125,6 @@ function ResultCell({ item }: { item: DNSHistoryRecord }) {
     return <span className="inline-flex min-w-0 items-center gap-1">
         <Badge variant={outcomeBadge(item.outcome)} className="truncate">{t(`outcome.${item.outcome}`, { defaultValue: item.outcome })}</Badge>
         {item.fakeip.returned && <Badge variant="info" title={item.fakeip.ipv4 || item.fakeip.ipv6}>{t("marker.fakeip")}</Badge>}
-        {item.cacheStatus === "hit" && <span className="text-ui-muted" title={t("cache.hit")}>{t("marker.cache")}</span>}
+        {item.cacheStatus === "hit" && <Database size={13} className="shrink-0 text-ui-muted" role="img" aria-label={t("cache.hit")}><title>{t("cache.hit")}</title></Database>}
     </span>;
 }

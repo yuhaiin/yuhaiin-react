@@ -84,3 +84,22 @@ it('offers a column filter from the table header and marks it when narrowed', ()
     expect(trigger()?.querySelector('.bg-ui-primary')).not.toBeNull();
     act(() => root.unmount());
 });
+
+it('keeps xl-only columns out of the md grid template and cells', () => {
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    const wide: HistoryColumn<string>[] = [
+        ...columns,
+        { id: 'detail', header: 'Detail', width: 'minmax(0,1fr)', from: 'xl', cell: item => `${item}-detail` },
+        { id: 'time', header: 'Time', width: '6rem', role: 'aside', cell: () => 'now' },
+    ];
+    act(() => root.render(<HistoryList items={['one']} getKey={item => item} onClickItem={() => undefined} label="history" columns={wide} page={1} totalItems={1} pageSize={30} onPageChange={() => undefined} resetKey="a" />));
+    const row = host.querySelector<HTMLElement>('[role=row][class*=cursor-pointer]')!;
+    expect(row.style.getPropertyValue('--history-columns')).toBe('minmax(0,1fr) 6rem');
+    expect(row.style.getPropertyValue('--history-columns-xl')).toBe('minmax(0,1fr) minmax(0,1fr) 6rem');
+    const detail = [...row.querySelectorAll('[role=cell]')].find(cell => cell.textContent === 'one-detail')!;
+    expect(detail.className).toContain('hidden xl:block');
+    const header = [...host.querySelectorAll('[role=columnheader]')].find(cell => cell.textContent === 'Detail')!;
+    expect(header.className).toContain('hidden xl:flex');
+    act(() => root.unmount());
+});
