@@ -92,18 +92,18 @@ function ColumnFilter({ filter, align }: { filter: HistoryColumnFilter; align: "
     const active = filter.value !== filter.options[0]?.value;
     const current = filter.options.find(option => option.value === filter.value)?.label ?? filter.value;
     return <Dropdown>
-        <DropdownTrigger asChild>
-            <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
-                className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
-                <ListFilter size={13} aria-hidden="true" />
-                {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
-            </button>
-        </DropdownTrigger>
-        <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
-            <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
-                {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
-            </DropdownRadioGroup>
-        </DropdownContent>
+    <DropdownTrigger asChild>
+        <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
+        className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
+        <ListFilter size={13} aria-hidden="true" />
+        {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
+        </button>
+    </DropdownTrigger>
+    <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
+        <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
+        {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
+        </DropdownRadioGroup>
+    </DropdownContent>
     </Dropdown>;
 }
 
@@ -206,24 +206,36 @@ export function HistoryToolbar({ onSearch, filter, onRefresh, refreshing, sortOr
             <Button size="sm" className={historyToolbarButton} aria-label={uiT("refresh")} onClick={onRefresh} disabled={refreshing}>
                 {refreshing ? <Spinner size="sm" /> : <RotateCw size={16} />}
             </Button>
-            <Dropdown>
-                <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
-                <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
-                    <div className="mb-3">
-                        <SettingLabel>{uiT("sortOrder")}</SettingLabel>
-                        <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && onSortOrderChange(v as "asc" | "desc")} className="w-full">
-                            <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
-                            <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
-                        </ToggleGroup>
-                    </div>
-                    <SettingLabel>{uiT("sortBy")}</SettingLabel>
-                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && onSortByChange(v)} className="flex w-full flex-wrap whitespace-nowrap">
-                        {sortOptions.map(option => <ToggleItem key={option.value} value={option.value} className="grow px-3">{option.label}</ToggleItem>)}
-                    </ToggleGroup>
-                </DropdownContent>
-            </Dropdown>
+            <HistorySortMenu sortOrder={sortOrder} onSortOrderChange={onSortOrderChange} sortBy={sortBy} onSortByChange={onSortByChange} sortOptions={sortOptions} />
         </div>
     );
+}
+
+/** Phones have no table header, so sorting lives in this menu below md. */
+export function HistorySortMenu({ sortOrder, onSortOrderChange, sortBy, onSortByChange, sortOptions }: {
+    sortOrder: "asc" | "desc";
+    onSortOrderChange: (order: "asc" | "desc") => void;
+    sortBy: string;
+    onSortByChange: (field: string) => void;
+    sortOptions: { value: string; label: string }[];
+}) {
+    const { t: uiT } = useTranslation("ui");
+    return <Dropdown>
+        <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
+        <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
+            <div className="mb-3">
+                <SettingLabel>{uiT("sortOrder")}</SettingLabel>
+                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && onSortOrderChange(v as "asc" | "desc")} className="w-full">
+                    <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
+                    <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
+                </ToggleGroup>
+            </div>
+            <SettingLabel>{uiT("sortBy")}</SettingLabel>
+            <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && onSortByChange(v)} className="flex w-full flex-wrap whitespace-nowrap">
+                {sortOptions.map(option => <ToggleItem key={option.value} value={option.value} className="grow px-3">{option.label}</ToggleItem>)}
+            </ToggleGroup>
+        </DropdownContent>
+    </Dropdown>;
 }
 
 const tableFrame = "min-w-0 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface";

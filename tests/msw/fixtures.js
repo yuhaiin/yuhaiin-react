@@ -364,6 +364,9 @@ const worker=setupWorker(
     else if(op==='connections.history') result={items:history};
     else if(op==='dns.history.list'){
       let items=dnsHistory.filter(item=>(!p.query||item.domain.includes(p.query)||(item.processName||'').toLowerCase().includes(p.query))&&(!p.domain||item.domain===p.domain||item.domain.endsWith('.'+p.domain))&&(!p.outcome||p.outcome.split(',').includes(item.outcome))&&(!p.queryType||item.queryType===p.queryType)&&(!p.sourceType||item.sourceType===p.sourceType)&&(!p.fakeipOnly||item.fakeip.returned)&&(!p.from||Date.parse(item.createdAt)>=p.from));
+      const sortValue={domain:item=>item.domain,type:item=>item.queryType,result:item=>item.outcome,latency:item=>item.durationNs}[p.sortBy];
+      if(sortValue) items=[...items].sort((a,b)=>{const x=sortValue(a),y=sortValue(b);return (x<y?-1:x>y?1:0)*(p.sortOrder==='asc'?1:-1)||b.id-a.id;});
+      else if(p.sortOrder==='asc') items=[...items].reverse();
       const start=p.cursor?items.findIndex(item=>String(item.id)===p.cursor)+1:(Math.max(1,p.page||1)-1)*(p.limit||50); const page=items.slice(start,start+(p.limit||50));
       result={items:page,total:items.length,limit:p.limit||50,page:Math.max(1,p.page||1),nextCursor:start+page.length<items.length?String(page[page.length-1].id):undefined};
     }

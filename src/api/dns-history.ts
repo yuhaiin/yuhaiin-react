@@ -25,6 +25,9 @@ export type DNSHistoryFilter = {
   /** Unix milliseconds. */
   from?: number;
   to?: number;
+  /** time (default), domain, type, result or latency; ties stay newest first. */
+  sortBy?: "time" | "domain" | "type" | "result" | "latency";
+  sortOrder?: "asc" | "desc";
 };
 
 function compact(filter: DNSHistoryFilter): Record<string, string | number | boolean> {
