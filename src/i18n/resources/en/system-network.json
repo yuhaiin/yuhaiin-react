@@ -539,13 +539,14 @@
       "copy": "Copy raw output",
       "copied": "Copied",
       "main": "Main ruleset",
-      "mainHelp": "Translation rules, then filter rules, as the system evaluates them. Yuhaiin's anchor should be the first filter rule so the kill switch is checked before other rules.",
       "notFirst": "Another filter rule comes before Yuhaiin's anchor; its \"quick\" rules can pass traffic before the kill switch is checked.",
       "empty": "The main ruleset is empty.",
       "kind": {
         "translation": "Translation",
         "normalization": "Normalization",
-        "filter": "Filter"
+        "filter": "Filter",
+        "chain": "Chain",
+        "sublayer": "Sublayer"
       },
       "purpose": {
         "protection": "Kill switch",
@@ -570,10 +571,24 @@
       },
       "tableCount": "{{count}} addresses",
       "truncated": "Showing {{shown}} of {{count}}.",
-      "config": "Yuhaiin's lines in {{path}}",
-      "configNone": "No Yuhaiin lines; the registration will not survive a restart.",
       "managed": "Managed by Yuhaiin",
-      "manual": "Added by hand"
+      "manual": "Added by hand",
+      "mainHelp": {
+        "pf": "Translation rules, then filter rules, as the system evaluates them. Yuhaiin's anchor should be the first filter rule so the kill switch is checked before other rules.",
+        "nftables": "Every base chain of the system, in evaluation order per hook. A drop or reject in any chain is final, so Yuhaiin's table blocks even if another chain accepts.",
+        "wfp": "Every filtering sublayer, highest weight first. A block in any sublayer is final; Yuhaiin's sublayer has the highest weight."
+      },
+      "configTitle": {
+        "pf": "Yuhaiin's lines in {{path}}",
+        "nftables": "Startup unit {{path}}",
+        "wfp": "Protection at startup"
+      },
+      "configNone": {
+        "pf": "No Yuhaiin lines; the registration will not survive a restart.",
+        "nftables": "The startup unit is not installed; protection returns when Yuhaiin starts."
+      },
+      "bootYes": "The block filters are persistent: Windows applies them at boot, before services start.",
+      "bootNo": "The filters are not persistent; they last until the next restart."
     }
   }
 }

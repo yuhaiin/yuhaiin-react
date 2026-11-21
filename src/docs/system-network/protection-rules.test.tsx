@@ -79,3 +79,26 @@ it('explains an unreadable packet filter', async () => {
     expect(host.textContent).toContain('not running as root');
     expect(host.textContent).toContain('Permission denied');
 });
+
+it('explains nftables chains without the PF ordering warning', async () => {
+    await render({ ...rules, backend: 'nftables',
+        main: [{ kind: 'chain', text: 'inet firewalld filter_OUTPUT: hook output priority 10', yuhaiin: false }, { kind: 'chain', text: 'inet yuhaiin_protection output: hook output priority 0', yuhaiin: true }],
+        config: { path: '/etc/systemd/system/yuhaiin-protection.service', registered: true, lines: [{ number: 11, text: 'ExecStart=/usr/local/bin/yuhaiin protection restore', managed: true }] } });
+    await openCard();
+    const text = host.textContent ?? '';
+    expect(text).toContain('protection.rules.mainHelp.nftables');
+    expect(text).toContain('protection.rules.kind.chain');
+    expect(text).not.toContain('protection.rules.notFirst');
+    expect(text).toContain('protection.rules.configTitle.nftables');
+    expect(text).toContain('ExecStart=');
+});
+
+it('shows WFP sublayers and whether the filters are persistent', async () => {
+    await render({ ...rules, backend: 'wfp', main: [{ kind: 'sublayer', text: 'weight 65535: Yuhaiin kill switch', yuhaiin: true }],
+        config: { path: 'Base Filtering Engine (persistent filters)', registered: true, lines: [] } });
+    await openCard();
+    const text = host.textContent ?? '';
+    expect(text).toContain('protection.rules.mainHelp.wfp');
+    expect(text).toContain('protection.rules.bootYes');
+    expect(text).not.toContain('protection.rules.configNone');
+});
