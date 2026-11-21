@@ -4,7 +4,7 @@ import { can } from "@/auth/session";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { FilterSearch, MainContainer } from "@/component/v2/card";
-import { HistoryList, HistoryListSkeleton, HistoryTitle, formatHistoryTime, historyToolbarButton, type HistoryColumn } from "@/component/v2/history-list";
+import { HistoryList, HistoryListSkeleton, HistorySortMenu, HistoryTitle, formatHistoryTime, historyToolbarButton, nextHistorySort, type HistoryColumn, type HistorySortOrder } from "@/component/v2/history-list";
 import Loading from "@/component/v2/loading";
 import { PageHeader } from "@/component/v2/page-header";
 import { Spinner } from "@/component/v2/spinner";
@@ -21,6 +21,9 @@ import { DNSHistorySettingsModal } from "./settings";
 
 export const PAGE_SIZE = 50;
 
+const sortFields = { Time: "time", Domain: "domain", Type: "type", Result: "result", Latency: "latency" } as const;
+type SortKey = keyof typeof sortFields;
+
 /**
  * Numbered pages over a window that ends at `anchor`: requests arriving while
  * the reader pages do not shift the pages. Refresh moves the window.
@@ -32,12 +35,15 @@ export default function DNSHistoryPage() {
     // Relative ranges resolve once per view so every page shares one window.
     const [anchor, setAnchor] = useState(() => Date.now());
     const [page, setPage] = useState(1);
+    // Column sort keys; the server sorts because it pages.
+    const [sortBy, setSortBy] = useState<SortKey>("Time");
+    const [sortOrder, setSortOrder] = useState<HistorySortOrder>("desc");
     const [range, setRange] = useState<TimeRangeKey>("24h");
     const [selected, setSelected] = useState<DNSHistoryRecord>();
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
-    const request = useMemo(() => toRequestFilter(filters, query, anchor), [filters, query, anchor]);
+    const request = useMemo(() => ({ ...toRequestFilter(filters, query, anchor), sortBy: sortFields[sortBy], sortOrder }), [filters, query, anchor, sortBy, sortOrder]);
     const listKey = JSON.stringify(request);
     const view = `${listKey}|${anchor}`;
     // Each result remembers the view it belongs to: while the next page loads
@@ -59,22 +65,23 @@ export default function DNSHistoryPage() {
     // to their maximum before the domain's fr track and squeeze it to zero.
     // Process and resolver need an xl table; narrower ones keep them in the detail.
     const columns: HistoryColumn<DNSHistoryRecord>[] = [
-        { id: "domain", header: t("column.domain"), width: "minmax(10rem,3fr)", role: "primary",
+        { id: "domain", header: t("column.domain"), sortKey: "Domain", width: "minmax(10rem,3fr)", role: "primary",
           label: item => t("column.openDetail", { domain: item.domain || t("detail.unknownDomain") }),
           cell: item => <HistoryTitle title={item.domain || t("detail.unknownDomain")}
               detail={item.error && !item.rcode ? item.error : item.answerSummary || [processName(item.processName), item.clientIp].filter(Boolean).join(" · ") || undefined}
               detailTone={item.error && !item.rcode ? "danger" : "neutral"} /> },
-        { id: "type", header: t("column.type"), width: "4rem", mono: true, cell: item => item.domain ? item.queryType : "—" },
+        { id: "type", header: t("column.type"), sortKey: "Type", width: "4rem", mono: true, cell: item => item.domain ? item.queryType : "—" },
         { id: "source", header: t("column.source"), width: "minmax(0,1fr)",
           cell: item => <span title={[sourceLabel(item), item.inboundName || item.inboundId, item.transport.toUpperCase()].filter(Boolean).join(" · ")}>{item.inboundName || item.inboundId || sourceLabel(item)}</span>,
           mobileCell: item => item.inboundName || item.inboundId || sourceLabel(item) },
         { id: "process", header: t("column.process"), width: "minmax(0,1fr)", from: "xl", cell: item => <span title={item.processName}>{processName(item.processName) || "—"}</span>, mobileCell: () => null },
         { id: "resolver", header: t("column.resolver"), width: "minmax(0,1fr)", from: "xl", cell: item => <span title={item.server}>{item.resolverLabel || item.resolver || "—"}</span>, mobileCell: () => null },
-        { id: "result", header: t("column.result"), width: "8rem", cell: item => <ResultCell item={item} /> },
-        { id: "latency", header: t("column.latency"), width: "4.5rem", numeric: true, mono: true, cell: item => formatLatency(item.durationNs) },
-        { id: "time", header: t("column.time"), width: "6rem", numeric: true, mono: true, role: "aside", cell: item => formatHistoryTime(new Date(item.createdAt)) },
+        { id: "result", header: t("column.result"), sortKey: "Result", width: "8rem", cell: item => <ResultCell item={item} /> },
+        { id: "latency", header: t("column.latency"), sortKey: "Latency", width: "4.5rem", numeric: true, mono: true, cell: item => formatLatency(item.durationNs) },
+        { id: "time", header: t("column.time"), sortKey: "Time", width: "6rem", numeric: true, mono: true, role: "aside", cell: item => formatHistoryTime(new Date(item.createdAt)) },
     ];
 
+    const sort = (field: string) => { const next = nextHistorySort(field, sortBy, sortOrder); setSortBy(next.sortBy as SortKey); setSortOrder(next.sortOrder); setPage(1); };
     const filterCount = activeFilterCount(filters);
     const enabled = settings.data?.enabled;
     const items = list.data?.items ?? [];
@@ -99,6 +106,8 @@ export default function DNSHistoryPage() {
                     <ListFilter size={16} aria-hidden="true" /><span className="hidden lg:inline">{t("filters.title")}</span>
                     {filterCount > 0 && <Badge variant="primary" pill className="px-1.5 py-0 text-[11px]">{filterCount}</Badge>}
                 </Button>
+                <HistorySortMenu sortBy={sortBy} sortOrder={sortOrder} onSortByChange={field => { setSortBy(field as SortKey); setPage(1); }} onSortOrderChange={order => { setSortOrder(order); setPage(1); }}
+                    sortOptions={(Object.keys(sortFields) as SortKey[]).map(key => ({ value: key, label: t(`column.${sortFields[key]}`) }))} />
                 <Button size="sm" className={historyToolbarButton} aria-label={t("refresh")} onClick={refresh} disabled={list.isValidating}>
                     {list.isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                 </Button>
@@ -114,6 +123,7 @@ export default function DNSHistoryPage() {
         {list.error && !list.data ? <Loading code={list.error.code} onRetry={() => void list.mutate()}>{list.error.msg ?? String(list.error)}</Loading>
             : !list.data ? <HistoryListSkeleton />
             : <HistoryList label={t("title")} items={items} columns={columns} getKey={item => String(item.id)} onClickItem={setSelected}
+                sortBy={sortBy} sortOrder={sortOrder} onSort={sort}
                 page={shownPage} totalItems={total} pageSize={PAGE_SIZE} onPageChange={setPage} resetKey={resetKey}
                 empty={enabled === false ? t("emptyDisabled") : filterCount || query ? t("emptyFiltered") : t("empty")} />}
     </MainContainer>;

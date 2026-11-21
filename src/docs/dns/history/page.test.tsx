@@ -209,3 +209,20 @@ it("runs the page transition when the next page's rows arrive, not before", asyn
     expect(after).not.toBe(before);
     expect(text()).toContain("host60.example.com");
 });
+
+it("sorts on the server from the column headers and restarts at page 1", async () => {
+    await render();
+    await click("2");
+    await click("Domain");
+    let [filter, page] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    expect(filter).toMatchObject({ sortBy: "domain", sortOrder: "asc" });
+    expect(page).toBe(1);
+    await click("Domain");
+    [filter] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    expect(filter).toMatchObject({ sortBy: "domain", sortOrder: "desc" });
+    await click("Latency");
+    [filter] = api.listDNSHistory.mock.calls[api.listDNSHistory.mock.calls.length - 1];
+    expect(filter).toMatchObject({ sortBy: "latency", sortOrder: "asc" });
+    const header = [...document.querySelectorAll("[role=columnheader]")].find(cell => cell.textContent === "Latency")!;
+    expect(header.getAttribute("aria-sort")).toBe("ascending");
+});

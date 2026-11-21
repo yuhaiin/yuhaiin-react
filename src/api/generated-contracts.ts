@@ -414,6 +414,8 @@ export namespace Go {
       page?: number;
       cursor?: string;
       limit?: number;
+      sortBy?: string;
+      sortOrder?: string;
       domain?: string;
       query?: string;
       queryType?: string;
