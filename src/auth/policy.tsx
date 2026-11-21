@@ -21,6 +21,8 @@ export const routePermissions: Record<string, { read: string | string[]; write?:
     '/docs/bypass/resolver': { read: 'resolver:read', write: 'resolver:write' },
     '/docs/connections/v2': { read: 'connections:read' },
     '/docs/connections/history': { read: 'connections:read' }, '/docs/connections/failed': { read: 'connections:read' },
+    // Queried domains, clients and processes: a separate, privacy-sensitive permission.
+    '/docs/dns/history': { read: 'dns-history:read', write: 'dns-history:write' },
     '/docs/config': { read: 'settings:read', write: 'settings:write' },
     '/docs/config/backup': { read: 'backup:manage', write: 'backup:manage' },
     '/docs/config/log': { read: 'diagnostics:run' }, '/docs/config/pprof': { read: 'diagnostics:run' },

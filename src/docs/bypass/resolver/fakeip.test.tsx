@@ -76,3 +76,12 @@ it('retains entries after a failed delete and supports retry after a failed quer
     await click('deleteFakeIPMapping host-00.example 198.18.0.0');
     expect(host.textContent).toContain('host-00.example');
 });
+
+it('opens on the mapping linked from DNS history', async () => {
+    window.history.replaceState(null, '', '/#/docs/bypass/resolver?tab=fakeip&fakeip=198.18.0.7');
+    window.dispatchEvent(new Event('yuhaiin:reset-navigation'));
+    await render();
+    expect(api.listFakeIPEntries).toHaveBeenCalledWith(1, 25, '198.18.0.7');
+    expect(host.querySelector('input')!.value).toBe('198.18.0.7');
+    expect(host.textContent).toContain('host-07.example');
+});

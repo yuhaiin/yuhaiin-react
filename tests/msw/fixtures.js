@@ -52,6 +52,41 @@ if (scenario === 'l2tp') {
   nodes[0] = { ...nodes[0], name:'L2TP test node', chain:[{type:'l2tp',l2tp:{gateway:'vpn.example.invalid:1701',username:'alice',auth_type:'mschap-v2',ipv6:true,ipv6_address:'fd88::2/64',mtu:1400}}] };
   nodes[1] = { ...nodes[1], name:'L2TPv3 test node', chain:[{type:'l2tpv3',l2tpv3:{gateway:'vpn.example.invalid:1701',static:true,local_session_id:4294967295,peer_session_id:200,local_cookie:'1122334455667788',peer_cookie:'aabbccdd',sublayer:true,address:'10.89.0.2/24',router:'10.89.0.1',ipv6_address:'fd89::2/64',ipv6_router:'fd89::1',mtu:1400}}] };
 }
+// DNS history preview: every outcome, FakeIP, cache, hosts and upstream attempts.
+let dnsHistorySettings={enabled:scenario!=='dns-disabled',retentionHours:72,maxRecords:20000};
+const dnsFakeIP=(returned,ip)=>({requested:returned,returned,ipv4:returned?ip:undefined,poolIpv4:returned?'198.18.0.0/15':undefined,reason:returned?'force_fakeip':'disabled',allocation:returned?'allocated':'not_requested',force:returned,global:false,skipCheck:false});
+const dnsSamples=[
+  ['www.example.com','A','success','NOERROR','fakeip','miss',true,'198.18.0.12'],
+  ['api.github.com','AAAA','success','NOERROR','upstream','miss',false,'2606:50c0:8000::154'],
+  ['very-long-subdomain-name-for-mobile-layout-testing.cdn.example.invalid','HTTPS','success','NOERROR','cache','hit',false,'1 . alpn="h2,h3"'],
+  ['missing.example.invalid','A','nxdomain','NXDOMAIN','upstream','miss',false,''],
+  ['ipv6-only.example','A','nodata','NOERROR','upstream','miss',false,''],
+  ['slow.example','A','timeout','','','miss',false,''],
+  ['burst.example','A','dropped','','','',false,''],
+  ['router.lan','A','success','NOERROR','hosts','bypass',false,'192.168.1.1'],
+  ['_spf.example.com','TXT','success','NOERROR','upstream','miss',false,'"v=spf1 include:_spf.example.com -all"'],
+  ['broken.example','A','servfail','SERVFAIL','upstream','miss',false,''],
+  ['ads.example','A','nodata','NOERROR','blocked','bypass',false,''],
+  ['quota.example','A','rejected','','','',false,''],
+];
+const dnsFailure={timeout:['upstream','timeout','i/o timeout'],dropped:['dns_admission','queue_full','dns request buffer is full'],rejected:['traffic_control','download_quota','download quota exceeded']};
+const dnsHistory=Array.from({length:scenario==='empty'?0:140},(_,i)=>{
+  const [domain,queryType,outcome,rcode,source,cache,fake,data]=dnsSamples[i%dnsSamples.length];
+  const failure=dnsFailure[outcome]||['','',''];
+  return {id:1000-i,createdAt:new Date(Date.now()-i*37000).toISOString(),durationNs:outcome==='timeout'?10_000_000_000:cache==='hit'?180_000:(i%7+1)*3_200_000,transport:i%5===0?'tcp':'udp',sourceType:i%3===0?'local_dns':'dns_hijack',
+    clientIp:i%3===0?'127.0.0.1':'172.19.0.1',clientPort:40000+i,inboundId:i%3===0?'':'tun',inboundName:i%3===0?'':'TUN',processName:i%4===0?'/Applications/Safari.app/Contents/MacOS/Safari':i%4===1?'/usr/bin/curl':'',pid:i%4<2?4000+i:0,
+    domain,queryType,queryClass:'IN',transactionId:0x1a2b+i,resolver:source==='blocked'?'block':'r-cloudflare',resolverLabel:source==='blocked'?'':'Cloudflare',server:source==='blocked'?'':'1.1.1.1:53',serverType:source==='blocked'?'':'udp',routeMode:source==='blocked'?'block':'proxy',routeRuleId:'rule-0',routeRuleName:source==='blocked'?'Block ads':'Work traffic',
+    cacheStatus:cache||'unknown',resolutionSource:source||'unknown',fakeip:dnsFakeIP(fake,'198.18.0.'+(12+i%200)),outcome,rcode:rcode||undefined,failureStage:failure[0]||undefined,failureReason:failure[1]||undefined,error:failure[2]||undefined,
+    requestSize:40,responseSize:rcode?(data?72:48):0,sentBytes:rcode?(data?72:48):0,answerCount:data?1:0,authorityCount:outcome==='nxdomain'?1:0,additionalCount:0,answerSummary:fake?'198.18.0.'+(12+i%200):data||undefined};
+});
+const dnsDetail=(item)=>({...item,
+  answer:item.answerSummary?[{name:item.domain,type:item.queryType==='HTTPS'?'HTTPS':item.queryType,class:'IN',ttl:item.fakeip.returned?40:300,data:item.answerSummary}]:[],
+  authority:item.outcome==='nxdomain'?[{name:'example.invalid',type:'SOA',class:'IN',ttl:900,data:'a.iana-servers.net. noc.dns.icann.org. 2026112101 7200 3600 1209600 3600'}]:[],
+  flags:{aa:false,tc:false,rd:true,ra:true,ad:false,cd:false,serverTruncated:false},
+  details:{admission:item.cacheStatus==='hit'?'cache_hit':item.outcome==='dropped'?'queue_full':'queued',queueWaitNs:item.cacheStatus==='hit'?0:120_000,selectionReason:'route_rule',serverTransport:item.serverType,requestRd:true,requestCd:false,requestAd:false,requestDo:false,requestUdpSize:1232,
+    attempts:item.resolutionSource==='upstream'||item.resolutionSource==='fakeip'||item.outcome==='timeout'?[
+      ...(item.outcome==='timeout'||item.id%6===0?[{resolver:'Cloudflare',server:'1.1.1.1:53',transport:'udp',offsetNs:30_000,durationNs:item.outcome==='timeout'?9_900_000_000:3_000_000_000,result:'timeout',error:'read udp 1.1.1.1:53: i/o timeout'}]:[]),
+      ...(item.outcome==='timeout'?[]:[{resolver:'Cloudflare',server:'1.1.1.1:53',transport:'udp',offsetNs:item.id%6===0?3_000_100_000:30_000,durationNs:item.durationNs-60_000,result:'success',rcode:item.rcode}])]:[]}});
 const activeIds = new Set(nodes.slice(0, 3).map(node => node.id));
 const subscriptions = scenario === 'empty' ? [] : [
   { name: 'Work network', type: 'reserve', url: 'https://work.example.invalid/subscription?token=synthetic-token' },
@@ -327,6 +362,20 @@ const worker=setupWorker(
     else if(op==='nodes.post'){ if(p.name==='fail'&&!failedImports.has(p.id)){failedImports.add(p.id);return HttpResponse.json({error:{message:'Synthetic create failure'}},{status:500});} result=upsert(nodes,p); }
     else if(op==='connections') result={connections};
     else if(op==='connections.history') result={items:history};
+    else if(op==='dns.history.list'){
+      let items=dnsHistory.filter(item=>(!p.query||item.domain.includes(p.query)||(item.processName||'').toLowerCase().includes(p.query))&&(!p.domain||item.domain===p.domain||item.domain.endsWith('.'+p.domain))&&(!p.outcome||p.outcome.split(',').includes(item.outcome))&&(!p.queryType||item.queryType===p.queryType)&&(!p.sourceType||item.sourceType===p.sourceType)&&(!p.fakeipOnly||item.fakeip.returned)&&(!p.from||Date.parse(item.createdAt)>=p.from));
+      const start=p.cursor?items.findIndex(item=>String(item.id)===p.cursor)+1:0; const page=items.slice(start,start+(p.limit||50));
+      result={items:page,total:items.length,limit:p.limit||50,nextCursor:start+page.length<items.length?String(page[page.length-1].id):undefined};
+    }
+    else if(op==='dns.history.get') result=dnsDetail(dnsHistory.find(item=>item.id===p.id)||dnsHistory[0]);
+    else if(op==='dns.history.stats'){
+      const items=dnsHistory.filter(item=>Date.parse(item.createdAt)>=(p.from||0)); const count=f=>items.filter(f).length;
+      result={from:p.from,to:Date.now(),total:items.length,success:count(item=>['success','nxdomain','nodata'].includes(item.outcome)),failed:count(item=>!['success','nxdomain','nodata'].includes(item.outcome)),dropped:count(item=>item.outcome==='dropped'),timeout:count(item=>item.outcome==='timeout'),writeErrors:0,fakeip:count(item=>item.fakeip.returned),cacheHits:count(item=>item.cacheStatus==='hit'),cacheMisses:count(item=>item.cacheStatus==='miss'),avgLatencyNs:items.reduce((sum,item)=>sum+item.durationNs,0)/Math.max(1,items.length),
+        recorder:{enabled:dnsHistorySettings.enabled,queueLength:0,queueCapacity:4096,persisted:items.length,recordsDropped:scenario==='dns-pressure'?1843:0,persistenceErrors:0,startedAt:new Date(Date.now()-86400000).toISOString()}};
+    }
+    else if(op==='dns.history.settings.get') result=dnsHistorySettings;
+    else if(op==='dns.history.settings.put') result=dnsHistorySettings=structuredClone(p);
+    else if(op==='dns.history.clear') { result={deleted:dnsHistory.length}; dnsHistory.length=0; }
     else if(op==='connections.failed_history') result={items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',error:'Synthetic timeout',process:'audit',time:x.time,failedCount:String(i+1)}))};
     else if(op==='connections.total'){total+=1024;result={download:String(total),upload:String(total/2),counters:Object.fromEntries(connections.map((c,i)=>[c.id,{download:String(scenario.startsWith('connections')?(i+1)*1234567890123+total:total),upload:String(scenario.startsWith('connections')?(connections.length-i)*987654321123+total:total/2)}]))};}
     else if(op==='connections.telemetry') result={groups:[{dimension:'protocol',items:[{value:'tcp',download:'2048',upload:'1024',failures:'0'}]}]};

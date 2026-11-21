@@ -65,11 +65,14 @@ import koNode from './resources/ko/node.json';
 import enUi from './resources/en/ui.json';
 import jaUi from './resources/ja/ui.json';
 import koUi from './resources/ko/ui.json';
+import enDns from './resources/en/dns.json';
+import jaDns from './resources/ja/dns.json';
+import koDns from './resources/ko/dns.json';
 
 const resources = {
-    en: { systemNetwork: enSystemNetwork, android: enAndroid, certificates: enCertificates, auth: enAuth, trafficControl: enTrafficControl, gateway: enGateway, routing: enRouting, diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
-    ja: { systemNetwork: jaSystemNetwork, android: jaAndroid, certificates: jaCertificates, auth: jaAuth, trafficControl: jaTrafficControl, gateway: jaGateway, routing: jaRouting, diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
-    ko: { systemNetwork: koSystemNetwork, android: koAndroid, certificates: koCertificates, auth: koAuth, trafficControl: koTrafficControl, gateway: koGateway, routing: koRouting, diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
+    en: { dns: enDns, systemNetwork: enSystemNetwork, android: enAndroid, certificates: enCertificates, auth: enAuth, trafficControl: enTrafficControl, gateway: enGateway, routing: enRouting, diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
+    ja: { dns: jaDns, systemNetwork: jaSystemNetwork, android: jaAndroid, certificates: jaCertificates, auth: jaAuth, trafficControl: jaTrafficControl, gateway: jaGateway, routing: jaRouting, diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
+    ko: { dns: koDns, systemNetwork: koSystemNetwork, android: koAndroid, certificates: koCertificates, auth: koAuth, trafficControl: koTrafficControl, gateway: koGateway, routing: koRouting, diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
 };
 
 i18n.use(initReactI18next).init({
@@ -77,7 +80,7 @@ i18n.use(initReactI18next).init({
     lng: fallbackLanguage,
     fallbackLng: fallbackLanguage,
     supportedLngs: [...supportedLanguages],
-    ns: ['systemNetwork', 'android', 'certificates', 'trafficControl', 'gateway', 'routing', 'diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
+    ns: ['dns', 'systemNetwork', 'android', 'certificates', 'trafficControl', 'gateway', 'routing', 'diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
     defaultNS: 'common',
     interpolation: {
         escapeValue: false,

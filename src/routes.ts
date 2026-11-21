@@ -31,6 +31,7 @@ const BypassBlockPage = dynamic(() => import('@/docs/bypass/block/page'), { load
 const ConnectionsV2Page = dynamic(() => import('@/docs/connections/v2/page'), { loading });
 const ConnectionsHistoryPage = dynamic(() => import('@/docs/connections/history/page'), { loading });
 const ConnectionsFailedPage = dynamic(() => import('@/docs/connections/failed/page'), { loading });
+const DNSHistoryPage = dynamic(() => import('@/docs/dns/history/page'), { loading });
 const ConfigPage = dynamic(() => import('@/docs/config/page'), { loading });
 const WebUIPage = dynamic(() => import('@/docs/webui/page'), { loading });
 const ConfigBackupPage = dynamic(() => import('@/docs/config/backup/page'), { loading });
@@ -72,6 +73,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/connections/v2", component: ConnectionsV2Page },
     { path: "/docs/connections/history", component: ConnectionsHistoryPage },
     { path: "/docs/connections/failed", component: ConnectionsFailedPage },
+    { path: "/docs/dns/history", component: DNSHistoryPage },
     { path: "/docs/config", component: ConfigPage },
     { path: "/docs/webui", component: WebUIPage },
     { path: "/docs/config/backup", component: ConfigBackupPage },
