@@ -186,6 +186,7 @@ it("keeps the mobile line readable without horizontal scrolling", async () => {
     const row = document.querySelector<HTMLElement>("[role=row][class*=cursor-pointer]")!;
     const mobileLine = row.querySelector<HTMLElement>(".md\\:hidden")!;
     expect(mobileLine.textContent).toContain("TUN");
-    expect(mobileLine.textContent).toContain("Primary");
+    expect(mobileLine.textContent).toContain("Success");
+    expect(mobileLine.textContent).not.toContain("Primary");
     expect(row.className).toContain("min-w-0");
 });

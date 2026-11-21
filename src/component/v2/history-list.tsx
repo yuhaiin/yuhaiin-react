@@ -143,6 +143,8 @@ function HistoryTableRow<T>({ item, columns, template, onClick, fresh }: {
     const primary = columns.find(column => column.role === "primary") ?? columns[0];
     const aside = columns.find(column => column.role === "aside");
     const rest = columns.filter(column => column !== primary && column !== aside);
+    // A column whose mobile cell is empty stays off the collapsed line.
+    const mobile = rest.map(column => ({ column, content: (column.mobileCell ?? column.cell)(item) })).filter(({ content }) => content !== null && content !== undefined && content !== "");
     const Row = fresh ? motion.div : "div";
     // From md up every cell is a grid column in declaration order; below md the
     // rest collapse into one dotted line under the title.
@@ -157,8 +159,8 @@ function HistoryTableRow<T>({ item, columns, template, onClick, fresh }: {
             return <div key={column.id} role="cell" className={clsx(cellClass(column), "hidden md:block")}>{column.cell(item)}</div>;
         })}
         {/* Below md the secondary cells share one line under the title. */}
-        {rest.length > 0 && <div className="col-span-2 row-start-2 min-w-0 truncate text-xs text-ui-muted md:hidden">
-            {rest.map((column, index) => <React.Fragment key={column.id}>{index > 0 && <span aria-hidden="true"> · </span>}<span className={textTones[column.tone ?? "neutral"]}>{(column.mobileCell ?? column.cell)(item)}</span></React.Fragment>)}
+        {mobile.length > 0 && <div className="col-span-2 row-start-2 min-w-0 truncate text-xs text-ui-muted md:hidden">
+            {mobile.map(({ column, content }, index) => <React.Fragment key={column.id}>{index > 0 && <span aria-hidden="true"> · </span>}<span className={textTones[column.tone ?? "neutral"]}>{content}</span></React.Fragment>)}
         </div>}
     </Row>;
 }
