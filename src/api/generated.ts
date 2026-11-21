@@ -33,6 +33,12 @@ export type RPCOperation =
   | "connections.total"
   | "connections.trace"
   | "connections.traffic"
+  | "dns.history.clear"
+  | "dns.history.get"
+  | "dns.history.list"
+  | "dns.history.settings.get"
+  | "dns.history.settings.put"
+  | "dns.history.stats"
   | "frontend.apply"
   | "frontend.check"
   | "frontend.reset"
@@ -262,6 +268,12 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/resolver/fakedns", operation: "resolver.fakedns.put" },
   { method: "GET", pattern: "/api/v2/resolver/server", operation: "resolver.server.get" },
   { method: "PUT", pattern: "/api/v2/resolver/server", operation: "resolver.server.put" },
+  { method: "GET", pattern: "/api/v2/dns/history", operation: "dns.history.list" },
+  { method: "GET", pattern: "/api/v2/dns/history/stats", operation: "dns.history.stats" },
+  { method: "GET", pattern: "/api/v2/dns/history/settings", operation: "dns.history.settings.get" },
+  { method: "PUT", pattern: "/api/v2/dns/history/settings", operation: "dns.history.settings.put" },
+  { method: "GET", pattern: "/api/v2/dns/history/{id}", operation: "dns.history.get" },
+  { method: "DELETE", pattern: "/api/v2/dns/history", operation: "dns.history.clear" },
   { method: "GET", pattern: "/api/v2/resolver/fakeip/entries", operation: "resolver.fakeip.entries" },
   { method: "DELETE", pattern: "/api/v2/resolver/fakeip/entries/{ip}/{domain}", operation: "resolver.fakeip.entry.delete" },
   { method: "GET", pattern: "/api/v2/resolver/cache", operation: "resolver.cache.get" },

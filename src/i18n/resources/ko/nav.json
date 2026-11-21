@@ -37,5 +37,6 @@
   "refreshing": "새로고침 중…",
   "sections": "이 섹션의 페이지",
   "systemNetwork": "시스템 네트워크",
-  "gatewayStatistics": "Gateway 통계"
+  "gatewayStatistics": "Gateway 통계",
+  "dnsHistory": "DNS 기록"
 }

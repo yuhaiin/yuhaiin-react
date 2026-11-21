@@ -302,6 +302,179 @@ export namespace Go {
       failed: string;
     }
   }
+  export namespace dnshistory {
+    export interface Record {
+      id: number;
+      createdAt: string;
+      durationNs: number;
+      transport: string;
+      sourceType: string;
+      clientIp?: string;
+      clientPort?: number;
+      inboundId?: string;
+      inboundName?: string;
+      processName?: string;
+      pid?: number;
+      uid?: number;
+      userId?: string;
+      credentialId?: string;
+      groupIds?: string[];
+      domain: string;
+      queryType: string;
+      queryClass: string;
+      transactionId: number;
+      resolver?: string;
+      resolverLabel?: string;
+      server?: string;
+      serverType?: string;
+      routeMode?: string;
+      routeRuleId?: string;
+      routeRuleName?: string;
+      cacheStatus: string;
+      resolutionSource: string;
+      fakeip: FakeIP;
+      outcome: string;
+      rcode?: string;
+      failureStage?: string;
+      failureReason?: string;
+      error?: string;
+      requestSize: number;
+      responseSize: number;
+      sentBytes: number;
+      answerCount: number;
+      authorityCount: number;
+      additionalCount: number;
+      answerSummary?: string;
+      answer?: ResourceRecord[];
+      authority?: ResourceRecord[];
+      additional?: ResourceRecord[];
+      flags?: ResponseFlags;
+      details?: Details;
+    }
+    export interface FakeIP {
+      requested: boolean;
+      returned: boolean;
+      ipv4?: string;
+      ipv6?: string;
+      poolIpv4?: string;
+      poolIpv6?: string;
+      reason: string;
+      allocation: string;
+      error?: string;
+      force: boolean;
+      global: boolean;
+      skipCheck: boolean;
+    }
+    export interface ResourceRecord {
+      name: string;
+      type: string;
+      class: string;
+      ttl: number;
+      data: string;
+      dataTruncated?: boolean;
+    }
+    export interface ResponseFlags {
+      aa: boolean;
+      tc: boolean;
+      rd: boolean;
+      ra: boolean;
+      ad: boolean;
+      cd: boolean;
+      serverTruncated: boolean;
+      answerOmitted?: number;
+      authorityOmitted?: number;
+      additionalOmitted?: number;
+    }
+    export interface Details {
+      admission?: string;
+      queueWaitNs?: number;
+      selectionReason?: string;
+      serverTransport?: string;
+      cacheStale?: boolean;
+      sharedQuery?: boolean;
+      hostsRewrite?: string;
+      requestRd: boolean;
+      requestCd: boolean;
+      requestAd: boolean;
+      requestDo: boolean;
+      requestUdpSize?: number;
+      attempts?: Attempt[];
+    }
+    export interface Attempt {
+      resolver: string;
+      server?: string;
+      transport?: string;
+      offsetNs: number;
+      durationNs: number;
+      result: string;
+      rcode?: string;
+      error?: string;
+    }
+    export interface ListRequest {
+      cursor?: string;
+      limit?: number;
+      domain?: string;
+      query?: string;
+      queryType?: string;
+      transport?: string;
+      sourceType?: string;
+      inboundId?: string;
+      process?: string;
+      resolver?: string;
+      server?: string;
+      outcome?: string;
+      rcode?: string;
+      fakeipOnly?: boolean;
+      from?: number;
+      to?: number;
+    }
+    export interface ListResponse {
+      items: Record[];
+      nextCursor?: string;
+      total: number;
+      limit: number;
+    }
+    export interface GetRequest {
+      id: number;
+    }
+    export interface StatsRequest {
+      from?: number;
+      to?: number;
+    }
+    export interface Stats {
+      from: number;
+      to: number;
+      total: number;
+      success: number;
+      failed: number;
+      dropped: number;
+      timeout: number;
+      writeErrors: number;
+      fakeip: number;
+      cacheHits: number;
+      cacheMisses: number;
+      avgLatencyNs: number;
+      recorder: RecorderStatus;
+    }
+    export interface RecorderStatus {
+      enabled: boolean;
+      queueLength: number;
+      queueCapacity: number;
+      persisted: number;
+      recordsDropped: number;
+      persistenceErrors: number;
+      lastPersistenceError?: string;
+      startedAt: string;
+    }
+    export interface Settings {
+      enabled: boolean;
+      retentionHours: number;
+      maxRecords: number;
+    }
+    export interface ClearResponse {
+      deleted: number;
+    }
+  }
   export namespace gateway {
     export interface Config {
       revision: number;

@@ -13,7 +13,7 @@ import { IssuedSecret } from './secret';
 import { PermissionPicker } from './permission-picker';
 export const tokenNameMax = 64;
 export const tokenNoteMax = 512;
-const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own', 'proxy-credentials:own']);
+const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'dns-history:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own', 'proxy-credentials:own']);
 export function Tokens() {
     const { t } = useTranslation('auth'); const session = useSession()!;
     const [now, setNow] = useState(() => Date.now());

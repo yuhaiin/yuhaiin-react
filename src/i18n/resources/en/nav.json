@@ -37,5 +37,6 @@
   "refreshing": "Refreshing…",
   "sections": "Pages in this section",
   "systemNetwork": "System Network",
-  "gatewayStatistics": "Gateway statistics"
+  "gatewayStatistics": "Gateway statistics",
+  "dnsHistory": "DNS history"
 }
