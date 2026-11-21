@@ -39,7 +39,10 @@ export default function DNSHistoryPage() {
 
     const request = useMemo(() => toRequestFilter(filters, query, anchor), [filters, query, anchor]);
     const listKey = JSON.stringify(request);
-    const list = useSWR(["/api/v2/dns/history", listKey, anchor, page], () => listDNSHistory({ ...request, to: anchor + 1 }, page, PAGE_SIZE), { keepPreviousData: true, revalidateOnFocus: false });
+    const view = `${listKey}|${anchor}`;
+    // Each result remembers the view it belongs to: while the next page loads
+    // the previous rows stay, and the page transition runs when the new rows arrive.
+    const list = useSWR(["/api/v2/dns/history", listKey, anchor, page], async () => ({ ...await listDNSHistory({ ...request, to: anchor + 1 }, page, PAGE_SIZE), view }), { keepPreviousData: true, revalidateOnFocus: false });
     useServerPageClamp(list.data ? { page: list.data.page, pageSize: list.data.limit, total: list.data.total } : undefined, page, setPage);
     const stats = useSWR(["/api/v2/dns/history/stats", range, anchor], () => getDNSHistoryStats(rangeStart(range, anchor) ?? 1), { revalidateOnFocus: false, shouldRetryOnError: false });
     const settings = useSWR("/api/v2/dns/history/settings", getDNSHistorySettings, { revalidateOnFocus: false });
@@ -72,7 +75,8 @@ export default function DNSHistoryPage() {
     const enabled = settings.data?.enabled;
     const items = list.data?.items ?? [];
     const total = list.data?.total ?? 0;
-    const resetKey = `${listKey}|${anchor}`;
+    const shownPage = list.data?.page ?? page;
+    const resetKey = list.data?.view ?? view;
 
     return <MainContainer className="flex min-h-full min-w-0 flex-col">
         <DNSHistoryDetail summary={selected} onClose={() => setSelected(undefined)} />
@@ -106,7 +110,7 @@ export default function DNSHistoryPage() {
         {list.error && !list.data ? <Loading code={list.error.code} onRetry={() => void list.mutate()}>{list.error.msg ?? String(list.error)}</Loading>
             : !list.data ? <HistoryListSkeleton />
             : <HistoryList label={t("title")} items={items} columns={columns} getKey={item => String(item.id)} onClickItem={setSelected}
-                page={page} totalItems={total} pageSize={PAGE_SIZE} onPageChange={setPage} resetKey={resetKey}
+                page={shownPage} totalItems={total} pageSize={PAGE_SIZE} onPageChange={setPage} resetKey={resetKey}
                 empty={enabled === false ? t("emptyDisabled") : filterCount || query ? t("emptyFiltered") : t("empty")} />}
     </MainContainer>;
 }

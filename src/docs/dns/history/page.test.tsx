@@ -192,3 +192,20 @@ it("keeps the mobile line readable without horizontal scrolling", async () => {
     expect(mobileLine.textContent).not.toContain("Primary");
     expect(row.className).toContain("min-w-0");
 });
+
+it("runs the page transition when the next page's rows arrive, not before", async () => {
+    await render();
+    let release!: () => void;
+    const pending = new Promise<void>(resolve => { release = resolve; });
+    const original = api.listDNSHistory.getMockImplementation()!;
+    api.listDNSHistory.mockImplementation(async (filter: unknown, page: number, limit: number) => { await pending; return original(filter, page, limit); });
+    const before = document.querySelector("[role=table] > [role=rowgroup]:last-child");
+    await click("2");
+    // Still waiting: the previous rows stay and are not re-animated.
+    expect(document.querySelector("[role=table] > [role=rowgroup]:last-child")).toBe(before);
+    expect(text()).toContain("host50.example.com");
+    await act(async () => { release(); await pending; });
+    const after = document.querySelector("[role=table] > [role=rowgroup]:last-child");
+    expect(after).not.toBe(before);
+    expect(text()).toContain("host60.example.com");
+});
