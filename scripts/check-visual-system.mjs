@@ -193,7 +193,7 @@ try {
       const state = evaluation.result?.value;
       if (!state || state.theme !== theme || state.accent !== accent || state.overflow || state.clipped.length) throw new Error('Invalid theme/layout: ' + JSON.stringify(state));
       if (name === 'topology') {
-        // Toolbar: title on one line, count/rates neither wrapped nor clipped, search usable, buttons on screen.
+        // Toolbar: title on one line, count/rates neither wrapped, clipped nor covered, search usable, buttons on screen.
         const toolbar = await evaluate(send, `(() => {
           const bar = document.querySelector('[data-topology-toolbar]');
           const box = el => el.getBoundingClientRect();
@@ -208,9 +208,15 @@ try {
             clipped: parts.filter(el => !inside(el)).map(el => el.dataset.part),
             search: Math.round(box(bar.querySelector('[data-part=search]')).width),
             offscreen: [...bar.querySelectorAll('[data-part=actions] button')].filter(el => box(el).right > innerWidth + 0.5).length,
+            // The search and buttons must stay inside the actions group and never cover the overview.
+            covered: [...bar.querySelector('[data-part=actions]').children].filter(el => {
+              const a = box(el), group = box(bar.querySelector('[data-part=actions]'));
+              const overlaps = b => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
+              return a.width > 0 && (a.left < group.left - 0.5 || a.right > group.right + 0.5 || parts.some(part => overlaps(box(part))));
+            }).length,
           };
         })()`);
-        if (toolbar.title > 1 || toolbar.wrapped.length || toolbar.clipped.length || toolbar.search < 140 || toolbar.offscreen) throw new Error('Topology toolbar layout: ' + JSON.stringify(toolbar));
+        if (toolbar.title > 1 || toolbar.wrapped.length || toolbar.clipped.length || toolbar.search < 140 || toolbar.offscreen || toolbar.covered) throw new Error('Topology toolbar layout: ' + JSON.stringify(toolbar));
       }
       const failures = state.contrast.filter(check => check.ratio < check.minimum);
       if (failures.length) throw new Error(`${theme}/${accent} contrast: ${JSON.stringify(failures)}`);

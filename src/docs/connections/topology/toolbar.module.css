@@ -81,8 +81,9 @@
 .actions {
     container: topology-actions / inline-size;
     display: flex;
-    /* Grows into the rest of the row; below this basis it wraps to its own row. */
-    flex: 1 1 380px;
+    /* Grows into the rest of the row; below this basis it wraps to its own row.
+       The basis holds the search (240 px) and three icon buttons, touch-sized included. */
+    flex: 1 1 400px;
     min-width: 0;
     align-items: center;
     justify-content: flex-end;
@@ -123,8 +124,21 @@
     }
 }
 
-/* Labels follow the room the actions actually have (their own row or the rest of the first). */
-@container topology-actions (min-width: 520px) {
+/* Labels follow the room the actions actually have (their own row or the rest of the first).
+   Each threshold leaves room for the search plus that language's labelled buttons (~290 px
+   in English and Korean, ~330 px in Japanese); while labels show, the search may give up
+   width, so wider system fonts never push the buttons out of the group and over the overview. */
+@container topology-actions (min-width: 560px) {
+    :global(:root:not(:lang(ja))) .label {
+        display: inline;
+    }
+
+    .search {
+        min-width: 160px;
+    }
+}
+
+@container topology-actions (min-width: 640px) {
     .label {
         display: inline;
     }
