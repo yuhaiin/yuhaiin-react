@@ -119,6 +119,8 @@ traffic() {
 		/demo/topology-demo traffic -profile laptop -socks 10.89.77.10:1080 >/dev/null
 	podman run -d --network $NET --name $P-phone --ip 10.89.77.51 -v "$WORK/bin:/demo:ro,z" $IMAGE \
 		/demo/topology-demo traffic -profile phone -http 10.89.77.10:8080 -mixed 10.89.77.10:1080 -dns 10.89.77.10:5353 >/dev/null
+	# The core's own client: replace any earlier one rather than adding another.
+	podman exec $P-core sh -c 'for p in /proc/[0-9]*; do [ "${p#/proc/}" = "$$" ] && continue; case "$(tr "\0" " " < $p/cmdline 2>/dev/null)" in *"topology-demo traffic"*) kill ${p#/proc/};; esac; done' || true
 	podman exec -d $P-core /demo/topology-demo traffic -profile local -mixed 127.0.0.1:7890
 	log "traffic running (podman logs -f $P-laptop | $P-phone)"
 }
