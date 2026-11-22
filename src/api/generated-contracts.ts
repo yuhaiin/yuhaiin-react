@@ -2648,24 +2648,52 @@ export namespace Go {
     export interface LinkNames {
       names: string[];
     }
-    export interface Publish {
+    export interface ShareFeedEntry {
+      kind: string;
+      value: string;
+    }
+    export interface ShareFeed {
+      id: string;
       name: string;
-      points: string[];
-      path: string;
-      password: string;
-      address: string;
-      insecure: boolean;
+      enabled: boolean;
+      token: string;
+      baseUrl: string;
+      entries: ShareFeedEntry[];
+      createdAt: number;
+      updatedAt: number;
+      lastAccess: number;
+      accessCount: number;
     }
-    export interface PublishList {
-      items: Publish[];
+    export interface ShareFeedList {
+      items: ShareFeed[];
     }
-    export interface ResolvePublishRequest {
+    export interface ShareFeedID {
+      id: string;
+    }
+    export interface ShareFeedPreviewRequest {
+      entries: ShareFeedEntry[];
+    }
+    export interface ShareFeedPreviewNode {
+      id: string;
       name: string;
-      password: string;
-      path: string;
+      group: string;
+      from: string;
     }
-    export interface ResolvePublishResponse {
-      points: Go.node.Node[];
+    export interface ShareFeedSkippedNode {
+      id: string;
+      name: string;
+      reason: string;
+    }
+    export interface ShareFeedPreview {
+      nodes: ShareFeedPreviewNode[];
+      skipped: ShareFeedSkippedNode[];
+      missing: ShareFeedEntry[];
+    }
+    export interface ShareFeedDocument {
+      version: number;
+      name: string;
+      generatedAt: number;
+      nodes: Go.node.Node[];
     }
   }
   export namespace sysnet {
