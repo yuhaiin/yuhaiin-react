@@ -52,12 +52,12 @@ export interface RibbonStyle {
 
 function directionSpeed(rate: number, mapping: FlowMapping) {
     const intensity = intensityFor(rate, mapping);
-    return intensity === 0 ? 0 : 36 + 150 * intensity;
+    return intensity === 0 ? 0 : 72 + 228 * intensity;
 }
 
 function directionGlow(rate: number, mapping: FlowMapping) {
     const intensity = intensityFor(rate, mapping);
-    return intensity === 0 ? 0 : 0.32 + 0.4 * intensity;
+    return intensity === 0 ? 0 : 0.26 + 0.32 * intensity;
 }
 
 export function ribbonStyle(up: number, down: number, mapping: FlowMapping = defaultMapping): RibbonStyle {

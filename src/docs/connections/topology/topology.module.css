@@ -131,7 +131,7 @@
     padding: 6px 7px 6px 6px;
 }
 
-/* Neutral emphasis: the card never competes with the mint/lavender flow colours. */
+/* Neutral emphasis: the card never competes with the mint/sage flow colours. */
 .cardActive {
     border-color: color-mix(in srgb, var(--border-strong) 45%, var(--border));
 }
@@ -299,7 +299,7 @@
 }
 
 /* Each legend line is a short ribbon with the same gradient as on the canvas. */
-.swatchUp { background: linear-gradient(90deg, var(--topology-flow), var(--topology-upload-alt), var(--topology-upload)); }
+.swatchUp { background: linear-gradient(90deg, var(--topology-upload-alt), var(--topology-upload)); }
 .swatchDown { background: linear-gradient(90deg, var(--topology-download), var(--topology-download-alt)); }
 
 .lineTcp,

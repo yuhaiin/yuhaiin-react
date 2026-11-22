@@ -22,12 +22,14 @@ export interface RenderEdge {
 }
 
 export interface Palette {
-    /** Upload: arriving-end colours (two hues); download: arriving-end colours. */
+    /** Upload (mint/teal) and download (sage): the base colour, a dimmer one of the same family, and the highlight. */
     up: string;
     upAlt: string;
+    upHighlight: string;
     down: string;
     downAlt: string;
-    /** The colour between the two families (blue). */
+    downHighlight: string;
+    /** Between the two families, for ribbons carrying both directions. */
     flow: string;
     idle: string;
     edge: string;
@@ -91,7 +93,7 @@ export class FlowRenderer {
     /** Reused for every pattern transform. */
     private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
     private view: View = { x: 0, y: 0, k: 1 };
-    private palette: Palette = { up: "gray", upAlt: "gray", down: "gray", downAlt: "gray", flow: "gray", idle: "gray", edge: "gray", highlight: "gray", auxiliary: "gray", dark: false };
+    private palette: Palette = { up: "gray", upAlt: "gray", upHighlight: "gray", down: "gray", downAlt: "gray", downHighlight: "gray", flow: "gray", idle: "gray", edge: "gray", highlight: "gray", auxiliary: "gray", dark: false };
     private width = 0;
     private height = 0;
     private ratio = 1;
@@ -140,7 +142,7 @@ export class FlowRenderer {
 
     setPalette(palette: Palette) {
         this.palette = palette;
-        this.patterns = [this.pattern(palette.up), this.pattern(palette.down)];
+        this.patterns = [this.pattern(palette.upHighlight), this.pattern(palette.downHighlight)];
         this.buildGradients();
         this.schedule();
     }
@@ -199,7 +201,9 @@ export class FlowRenderer {
         this.edges.forEach((edge, index) => {
             const ribbon = this.ribbons[index];
             if (!ribbon || ribbon.style.intensity === 0) return;
-            const start = edge.down > 0 ? down : flow;
+            // One colour family per ribbon: each end takes the colour of the traffic arriving
+            // there, from a dimmer shade of it; only a ribbon carrying both blends the two.
+            const start = edge.down > 0 ? down : upAlt;
             const end = edge.up > 0 ? up : downAlt;
             if (!ctx) {
                 ribbon.gradient = end;
@@ -330,7 +334,8 @@ export class FlowRenderer {
             }
             const width = (style.width + (edge.highlighted ? RIBBON_PX.selectedExtra : 0)) * px;
             // The ribbon itself: one continuous shape with a soft colour gradient along it.
-            ctx.globalAlpha = edge.alpha * Math.min(1, style.alpha * (palette.dark ? 1 : 1.1) + (edge.highlighted ? 0.12 : 0));
+            // Slightly quieter on the dark canvas, so the ribbons never outshine the cards.
+            ctx.globalAlpha = edge.alpha * Math.min(1, style.alpha * (palette.dark ? 0.9 : 1.1) + (edge.highlighted ? 0.12 : 0));
             ctx.strokeStyle = ribbon.gradient;
             ctx.lineWidth = width;
             ctx.stroke(ribbon.path);

@@ -59,14 +59,54 @@ const MAX_ZOOM = 2.5;
 const PADDING = 28;
 const READABLE_ZOOM = 0.66;
 
+/**
+ * Theme colours for the canvas. The topology tokens are `color-mix()`es of the app's
+ * theme colours, which Canvas 2D can't be relied on to parse, so each is resolved
+ * through the browser first: as a computed colour, then as pixels, to a plain rgb().
+ */
+let probe: { element: HTMLElement; ctx: CanvasRenderingContext2D | null } | undefined;
+function resolveColor(token: string) {
+    const fallback = getComputedStyle(document.documentElement).getPropertyValue(token).trim() || "gray";
+    if (!document.body) return fallback;
+    if (!probe) {
+        const element = document.createElement("span");
+        element.setAttribute("aria-hidden", "true");
+        element.style.display = "none";
+        let ctx: CanvasRenderingContext2D | null = null;
+        try {
+            const canvas = document.createElement("canvas");
+            canvas.width = canvas.height = 1;
+            ctx = canvas.getContext("2d", { willReadFrequently: true });
+        } catch { ctx = null; }
+        probe = { element, ctx };
+    }
+    const { element, ctx } = probe;
+    if (!element.isConnected) document.body.append(element);
+    element.style.color = "";
+    element.style.color = `var(${token})`;
+    const computed = getComputedStyle(element).color || fallback;
+    if (!ctx) return computed;
+    try {
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = "#000";
+        ctx.fillStyle = computed;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+        return a === 0 ? computed : `rgb(${r} ${g} ${b})`;
+    } catch {
+        return computed;
+    }
+}
+
 function readPalette(): Palette {
-    const style = getComputedStyle(document.documentElement);
-    const read = (token: string) => style.getPropertyValue(token).trim() || "gray";
+    const read = resolveColor;
     return {
         up: read("--topology-upload"),
         upAlt: read("--topology-upload-alt"),
+        upHighlight: read("--topology-upload-highlight"),
         down: read("--topology-download"),
         downAlt: read("--topology-download-alt"),
+        downHighlight: read("--topology-download-highlight"),
         flow: read("--topology-flow"),
         idle: read("--topology-edge-idle"),
         edge: read("--topology-edge-active"),

@@ -44,7 +44,10 @@ function edge(id: string, up: number, down: number, length = 300): RenderEdge {
     return { id, d: `M0,0 C${length / 2},0 ${length / 2},0 ${length},0`, ends: [0, 0, length, 0], vertical: false, length, dashed: false, up, down, alpha: 1, highlighted: false };
 }
 
-const palette: Palette = { up: "teal", upAlt: "cyan", down: "violet", downAlt: "indigo", flow: "blue", idle: "gray", edge: "gray", highlight: "white", auxiliary: "gray", dark: true };
+const palette: Palette = {
+    up: "mint", upAlt: "mint-dim", upHighlight: "mint-light", down: "sage", downAlt: "sage-dim", downHighlight: "sage-light",
+    flow: "mint-sage", idle: "gray", edge: "gray", highlight: "white", auxiliary: "gray", dark: true,
+};
 
 let ctx: ReturnType<typeof context>;
 beforeEach(() => {
@@ -93,6 +96,25 @@ describe("FlowRenderer", () => {
         expect(new Set(drawn.slice(2).map(item => item.width)).size).toBe(1);
         expect(renderer.getStats()).toMatchObject({ ribbons: 2, animated: 2 });
         expect(frames.pending.size).toBe(1);
+    });
+
+    it("keeps each ribbon in one colour family and lights it with a brighter shade of it", () => {
+        const stops: string[][] = [];
+        ctx.createLinearGradient = vi.fn(() => {
+            const list: string[] = [];
+            stops.push(list);
+            return { addColorStop: vi.fn((_: number, color: string) => { list.push(color); }) };
+        });
+        const fills: unknown[] = [];
+        ctx.fillRect = vi.fn(() => { fills.push(ctx.fillStyle); });
+        const { frames, renderer } = setup();
+        renderer.setScene([edge("up", 1 << 20, 0), edge("down", 0, 1 << 20), edge("both", 1 << 20, 1 << 20)]);
+        frames.advance(34);
+        // Upload only: dim mint to mint; download only: sage to dim sage; both: sage to mint through their blend.
+        expect(stops.slice(-3)).toEqual([["mint-dim", "mint-dim", "mint"], ["sage", "sage-dim", "sage-dim"], ["sage", "mint-sage", "mint"]]);
+        // The travelling highlights are the lighter shades, never another hue.
+        expect(fills).toContain("mint-light");
+        expect(fills).toContain("sage-light");
     });
 
     it("keeps a ribbon 2.4-4 CSS px wide on screen at any zoom", () => {

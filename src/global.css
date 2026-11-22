@@ -53,20 +53,25 @@
     --color-info: #276680;
     --chart-download: #1F7FB8;
     --chart-upload: #B5762A;
-    /* Network topology only ("Flowing ribbons"): teal/cyan upload, violet/indigo
-       download, blue between them. Chart colors above stay as they are for every other graph. */
+    /* Network topology only. The ribbons are derived from the theme itself: upload is a
+       muted mint/teal from --color-info, download a soft sage from --color-success, and a
+       ribbon carrying both blends between the two, so it stays in one green family.
+       Chart colors above stay as they are for every other graph. */
     --topology-canvas: var(--canvas);
-    --topology-upload: #138B82;
-    --topology-upload-alt: #1F86B5;
-    --topology-download: #7A52D1;
-    --topology-download-alt: #4F55C9;
-    --topology-flow: #3D6FD1;
-    --topology-upload-text: #12786F;
-    --topology-download-text: #6A47C2;
-    --topology-edge-idle: #C9CFD3;
-    --topology-edge-active: #8E98A3;
-    --topology-edge-selected: #2D3640;
-    --topology-auxiliary: #A3ABB2;
+    --topology-upload: color-mix(in oklab, var(--color-info) 45%, #138A78);
+    --topology-upload-alt: color-mix(in oklab, var(--topology-upload) 70%, var(--topology-canvas));
+    --topology-download: color-mix(in oklab, var(--color-success) 60%, #7FA88A);
+    --topology-download-alt: color-mix(in oklab, var(--topology-download) 70%, var(--topology-canvas));
+    --topology-flow: color-mix(in oklab, var(--topology-upload), var(--topology-download));
+    /* The travelling highlight: a little brighter than its ribbon. */
+    --topology-upload-highlight: color-mix(in oklab, var(--topology-upload) 72%, #FFF);
+    --topology-download-highlight: color-mix(in oklab, var(--topology-download) 72%, #FFF);
+    --topology-upload-text: color-mix(in oklab, var(--topology-upload) 85%, #000);
+    --topology-download-text: var(--color-success);
+    --topology-edge-idle: color-mix(in oklab, var(--border) 80%, var(--topology-canvas));
+    --topology-edge-active: color-mix(in oklab, var(--border-strong) 75%, var(--topology-canvas));
+    --topology-edge-selected: var(--text-primary);
+    --topology-auxiliary: color-mix(in oklab, var(--border-strong) 60%, var(--topology-canvas));
     --color-violet: #79546D;
     --elevation-0: none;
     --elevation-1: 0 1px 2px rgb(28 32 24 / 7%);
@@ -154,18 +159,21 @@ html[data-bs-theme="dark"] {
     --color-info: #9BC9D7;
     --chart-download: #3E9BD1;
     --chart-upload: #C4863A;
-    --topology-canvas: #090B0D;
-    --topology-upload: #2CC9B9;
-    --topology-upload-alt: #3FB8E8;
-    --topology-download: #A779F2;
-    --topology-download-alt: #6E6CF0;
-    --topology-flow: #3E6FE6;
-    --topology-upload-text: #4FD6C7;
-    --topology-download-text: #B595F5;
-    --topology-edge-idle: #2C3238;
-    --topology-edge-active: #4E5862;
-    --topology-edge-selected: #E6EBF0;
-    --topology-auxiliary: #4A535C;
+    /* A deeper shade of the graphite canvas, so cards and ribbons read on it. */
+    --topology-canvas: color-mix(in oklab, var(--canvas) 62%, #000);
+    --topology-upload: color-mix(in oklab, var(--color-info) 40%, #37BFB8);
+    --topology-upload-alt: color-mix(in oklab, var(--topology-upload) 72%, var(--surface));
+    --topology-download: color-mix(in oklab, var(--color-success) 80%, #C6D49C);
+    --topology-download-alt: color-mix(in oklab, var(--topology-download) 72%, var(--surface));
+    --topology-flow: color-mix(in oklab, var(--topology-upload), var(--topology-download));
+    --topology-upload-highlight: color-mix(in oklab, var(--topology-upload) 70%, #FFF);
+    --topology-download-highlight: color-mix(in oklab, var(--topology-download) 70%, #FFF);
+    --topology-upload-text: var(--topology-upload);
+    --topology-download-text: var(--color-success);
+    --topology-edge-idle: color-mix(in oklab, var(--border) 80%, var(--topology-canvas));
+    --topology-edge-active: color-mix(in oklab, var(--border-strong) 55%, var(--topology-canvas));
+    --topology-edge-selected: var(--text-primary);
+    --topology-auxiliary: color-mix(in oklab, var(--border-strong) 45%, var(--topology-canvas));
     --color-violet: #D5AAC7;
     --elevation-2: 0 16px 40px -12px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 20%);
     --elevation-1: 0 1px 2px rgb(0 0 0 / 12%);
