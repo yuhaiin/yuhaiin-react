@@ -1,0 +1,204 @@
+{
+  "title": "네트워크 토폴로지",
+  "empty": "활성 연결이 없습니다. 실행 중인 Inbound는 유휴 상태로 표시됩니다.",
+  "dnsBand_one": "DNS 확인 · 최근 5분간 쿼리 {{count}}개 (기록, 실시간 아님)",
+  "dnsBand_other": "DNS 확인 · 최근 5분간 쿼리 {{count}}개 (기록, 실시간 아님)",
+  "stage": {
+    "label": "네트워크 토폴로지 캔버스",
+    "role": "대화형 토폴로지"
+  },
+  "controls": {
+    "label": "보기 제어",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "fit": "화면에 맞추기",
+    "reset": "보기 초기화 (100%)",
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료"
+  },
+  "legend": {
+    "label": "범례",
+    "upload": "업로드",
+    "download": "다운로드"
+  },
+  "columns": {
+    "source": "출발지",
+    "inbound": "Inbound",
+    "policy": "라우팅",
+    "outbound": "Outbound",
+    "destination": "목적지"
+  },
+  "dnsColumns": {
+    "source": "DNS 클라이언트",
+    "inbound": "DNS 진입점",
+    "policy": "DNS 라우팅",
+    "outbound": "리졸버",
+    "destination": "응답 출처"
+  },
+  "node": {
+    "local": "이 기기",
+    "others_one": "기타 {{count}}개",
+    "others_other": "기타 {{count}}개",
+    "direct": "직접 연결",
+    "block": "차단",
+    "gateway": "HTTP 게이트웨이",
+    "defaultRoute": "기본 경로",
+    "dnsRouteMode": "모드: {{mode}}",
+    "noResolver": "리졸버 없음",
+    "unknown": "알 수 없음",
+    "unresolvedOutbound": "확인되지 않은 Outbound",
+    "viaSelector": "{{name}} 경유",
+    "internal": "코어 내부",
+    "noInbound": "기록된 Inbound 없음"
+  },
+  "dnsEntry": {
+    "local_dns": "로컬 DNS 서버",
+    "dns_hijack": "DNS 하이재킹",
+    "unknown": "알 수 없는 진입점"
+  },
+  "dnsAnswer": {
+    "upstream": "업스트림",
+    "fakeip": "FakeIP 풀",
+    "cache": "캐시",
+    "hosts": "Hosts",
+    "custom_response": "사용자 지정 응답",
+    "local_response": "로컬 응답",
+    "blocked": "차단됨",
+    "unknown": "알 수 없음"
+  },
+  "kind": {
+    "app": "애플리케이션",
+    "device": "기기",
+    "local": "로컬",
+    "component": "코어 구성 요소",
+    "inbound": "Inbound",
+    "internal": "코어 내부",
+    "rule": "규칙",
+    "default-route": "기본 경로",
+    "direct": "직접 연결",
+    "proxy": "프록시",
+    "vpn": "VPN",
+    "block": "차단",
+    "gateway": "게이트웨이",
+    "domain": "도메인",
+    "ip": "IP 주소",
+    "others": "집계",
+    "unknown": "알 수 없음",
+    "dns-client": "DNS 클라이언트",
+    "dns-entry": "DNS 진입점",
+    "dns-route": "DNS 경로",
+    "dns-resolver": "리졸버",
+    "dns-upstream": "응답 출처"
+  },
+  "mode": {
+    "proxy": "프록시",
+    "direct": "직접 연결",
+    "block": "차단",
+    "gateway": "게이트웨이",
+    "bypass": "바이패스",
+    "unknown": "알 수 없는 모드"
+  },
+  "status": {
+    "active": "통신 중",
+    "open": "연결됨 (트래픽 없음)",
+    "idle": "유휴",
+    "degraded": "저하됨",
+    "offline": "오프라인",
+    "closed": "종료됨"
+  },
+  "card": {
+    "summary": "연결 {{count}}개, 업로드 {{up}}, 다운로드 {{down}}",
+    "dnsSummary": "쿼리 {{count}}개, 실패 {{failures}}개",
+    "queries_one": "쿼리 {{count}}개",
+    "queries_other": "쿼리 {{count}}개",
+    "failed_one": "실패 {{count}}",
+    "failed_other": "실패 {{count}}",
+    "connections_one": "연결 {{count}}",
+    "connections_other": "연결 {{count}}"
+  },
+  "stream": {
+    "live": "실시간",
+    "connecting": "연결 중",
+    "reconnecting": "다시 연결 중",
+    "paused": "일시 정지됨"
+  },
+  "toolbar": {
+    "connections_one": "개 연결",
+    "connections_other": "개 연결",
+    "connectionsOf_one": "/ 전체 {{count}}개 연결",
+    "connectionsOf_other": "/ 전체 {{count}}개 연결",
+    "rates": "표시된 연결의 업로드 및 다운로드 속도",
+    "search": "도메인, IP, 프로세스 또는 노드 검색",
+    "searchPlaceholder": "도메인, IP, 프로세스, 노드…",
+    "clearSearch": "검색 지우기",
+    "filters": "필터",
+    "dnsLayer": "DNS 확인 표시",
+    "pause": "일시 정지",
+    "resume": "실시간"
+  },
+  "filter": {
+    "network": "프로토콜",
+    "networkValue": {
+      "all": "TCP 및 UDP",
+      "tcp": "TCP",
+      "udp": "UDP"
+    },
+    "family": "주소 체계",
+    "familyValue": {
+      "all": "IPv4 및 IPv6",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6"
+    },
+    "class": "Outbound 유형",
+    "classValue": {
+      "direct": "직접 연결",
+      "proxy": "프록시",
+      "vpn": "VPN",
+      "block": "차단",
+      "other": "기타 / 확인되지 않음"
+    },
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "process": "프로세스",
+    "geo": "GeoIP",
+    "clear": "필터 지우기",
+    "outboundName": {
+      "direct": "직접 연결",
+      "block": "차단",
+      "gateway": "HTTP 게이트웨이",
+      "unresolved": "확인되지 않은 Outbound"
+    }
+  },
+  "details": {
+    "label": "선택 항목 세부 정보",
+    "nodeTitle": "노드 세부 정보",
+    "edgeTitle": "경로 세부 정보",
+    "close": "세부 정보 닫기",
+    "gone": "더 이상 활성 상태가 아님",
+    "goneHint": "이 노드 또는 경로에 더 이상 연결이 없습니다.",
+    "nodeId": "노드 ID",
+    "type": "유형",
+    "selector": "선택기",
+    "mode": "라우팅 모드",
+    "activeConnections": "활성 연결",
+    "connectionsShort": "연결",
+    "tcpUdp": "TCP / UDP",
+    "uploadRate": "업로드 속도",
+    "downloadRate": "다운로드 속도",
+    "queries": "쿼리",
+    "failures": "실패",
+    "fakeIpAnswers": "FakeIP 응답",
+    "averageDuration": "평균 소요 시간",
+    "openConfig": "설정 열기",
+    "related": "관련 Inbound 및 Outbound",
+    "from": "출발",
+    "to": "도착",
+    "fakeIpMapping": "FakeIP 매핑",
+    "destinations": "관련 목적지",
+    "connections": "연결",
+    "more_one": "표시되지 않은 연결 {{count}}개 더 있음",
+    "more_other": "표시되지 않은 연결 {{count}}개 더 있음",
+    "showNode": "{{name}} 보기",
+    "recentQueries": "최근 쿼리"
+  }
+}

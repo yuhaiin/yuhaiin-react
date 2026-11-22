@@ -31,7 +31,8 @@ const routes = [
   ['overview', '/', 'section[aria-label="Active Nodes"] li'], ['nodes', '/docs/group', 'section[aria-label="Connection settings"] input'],
   ['selectors', '/docs/group/selectors', 'section[aria-label="Shared destination settings"] input'],
   ['routing', '/docs/bypass', 'section[aria-label="Rule editor"]'], ['dns', '/docs/bypass/resolver', 'section[aria-label="Resolvers"]'],
-  ['connections', '/docs/connections/v2', '[aria-label="Refresh connections"]'], ['subscriptions', '/docs/group/subscribe', 'section[aria-label="Subscriptions"]'],
+  ['connections', '/docs/connections/v2', '[aria-label="Refresh connections"]'], ['topology', '/docs/connections/topology', '[data-topology-ready] [data-node-id]'],
+  ['subscriptions', '/docs/group/subscribe', 'section[aria-label="Subscriptions"]'],
   ['inbounds', '/docs/inbound', 'section[aria-label="Entry Points"]'], ['publish', '/docs/group/publish', 'section[aria-label="Publish Config"]'], ['settings', '/docs/webui', '[role="radiogroup"]'],
 ];
 // Resolve CSS colors through the browser, including color-mix and semantic aliases.
@@ -183,11 +184,11 @@ try {
       await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=${theme}-${accent}-${name}-${width}#${route}` });
       let loaded = false;
       for (let i = 0; i < 100; i++) {
-        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
+        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width < 700 && !['overview', 'connections', 'topology', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
         await sleep(100);
       }
       if (!loaded) throw new Error('Page did not render: ' + name + ' ' + width);
-      await waitForPreview(send, width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready);
+      await waitForPreview(send, width < 700 && !['overview', 'connections', 'topology', 'settings'].includes(name) ? 'aside' : ready);
       const evaluation = await send('Runtime.evaluate', { expression: `({theme: document.documentElement.dataset.bsTheme, accent: document.documentElement.dataset.accent, width: innerWidth, overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth + 1, clipped: [...document.querySelectorAll('main input,main textarea,main button[role=combobox]')].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.left < -1 || r.right > innerWidth + 1); }).map(el => el.getAttribute('aria-label') || el.tagName), contrast: (${measureContrast.toString()})()})`, returnByValue: true });
       const state = evaluation.result?.value;
       if (!state || state.theme !== theme || state.accent !== accent || state.overflow || state.clipped.length) throw new Error('Invalid theme/layout: ' + JSON.stringify(state));

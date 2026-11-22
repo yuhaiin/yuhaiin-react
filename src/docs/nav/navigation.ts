@@ -1,4 +1,4 @@
-import { Lock, Network, Route, Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Lock, Network, Route, Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, Smartphone, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Workflow, Wrench, type LucideIcon } from 'lucide-react';
 
 type Label = { namespace: 'nav' | 'ui' | 'routing' | 'android'; key: string };
 export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean; platform?: 'android' }
@@ -15,6 +15,7 @@ export const navigationSections: NavigationSection[] = [
         { path: '/', label: nav('home'), icon: House },
         { label: nav('connections'), icon: Activity, items: [
             { path: '/docs/connections/v2', label: ui('activeConnections'), icon: ArrowLeftRight },
+            { path: '/docs/connections/topology', label: nav('networkTopology'), icon: Workflow },
             { path: '/docs/connections/history', label: ui('history'), icon: History },
             { path: '/docs/connections/failed', label: ui('failedHistory'), icon: FileClock },
             { path: '/docs/bypass/block', label: ui('blockHistory'), icon: ShieldBan },

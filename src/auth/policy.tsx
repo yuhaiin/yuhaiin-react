@@ -19,7 +19,7 @@ export const routePermissions: Record<string, { read: string | string[]; write?:
     '/docs/bypass/list': { read: 'routes:read', write: 'routes:write' },
     '/docs/bypass/test': { read: 'routes:read' }, '/docs/bypass/block': { read: 'routes:read' },
     '/docs/bypass/resolver': { read: 'resolver:read', write: 'resolver:write' },
-    '/docs/connections/v2': { read: 'connections:read' },
+    '/docs/connections/v2': { read: 'connections:read' }, '/docs/connections/topology': { read: 'connections:read' },
     '/docs/connections/history': { read: 'connections:read' }, '/docs/connections/failed': { read: 'connections:read' },
     // Queried domains, clients and processes: a separate, privacy-sensitive permission.
     '/docs/dns/history': { read: 'dns-history:read', write: 'dns-history:write' },

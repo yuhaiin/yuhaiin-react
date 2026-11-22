@@ -1,0 +1,204 @@
+{
+  "title": "Network topology",
+  "empty": "No active connections. Running inbounds are shown as idle.",
+  "dnsBand_one": "DNS resolution · {{count}} query in the last 5 minutes (history, not live)",
+  "dnsBand_other": "DNS resolution · {{count}} queries in the last 5 minutes (history, not live)",
+  "stage": {
+    "label": "Network topology canvas",
+    "role": "interactive topology"
+  },
+  "controls": {
+    "label": "View controls",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to screen",
+    "reset": "Reset view (100%)",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen"
+  },
+  "legend": {
+    "label": "Legend",
+    "upload": "Upload",
+    "download": "Download"
+  },
+  "columns": {
+    "source": "Sources",
+    "inbound": "Inbounds",
+    "policy": "Routing",
+    "outbound": "Outbounds",
+    "destination": "Destinations"
+  },
+  "dnsColumns": {
+    "source": "DNS clients",
+    "inbound": "DNS entry",
+    "policy": "DNS routing",
+    "outbound": "Resolvers",
+    "destination": "Answer source"
+  },
+  "node": {
+    "local": "This device",
+    "others_one": "{{count}} other",
+    "others_other": "{{count}} others",
+    "direct": "Direct",
+    "block": "Block",
+    "gateway": "HTTP Gateway",
+    "defaultRoute": "Default route",
+    "dnsRouteMode": "Mode: {{mode}}",
+    "noResolver": "No resolver",
+    "unknown": "Unknown",
+    "unresolvedOutbound": "Unresolved outbound",
+    "viaSelector": "via {{name}}",
+    "internal": "Core internal",
+    "noInbound": "No inbound recorded"
+  },
+  "dnsEntry": {
+    "local_dns": "Local DNS server",
+    "dns_hijack": "DNS hijack",
+    "unknown": "Unknown entry"
+  },
+  "dnsAnswer": {
+    "upstream": "Upstream",
+    "fakeip": "FakeIP pool",
+    "cache": "Cache",
+    "hosts": "Hosts",
+    "custom_response": "Custom response",
+    "local_response": "Local response",
+    "blocked": "Blocked",
+    "unknown": "Unknown"
+  },
+  "kind": {
+    "app": "Application",
+    "device": "Device",
+    "local": "Local",
+    "component": "Core component",
+    "inbound": "Inbound",
+    "internal": "Core internal",
+    "rule": "Rule",
+    "default-route": "Default route",
+    "direct": "Direct",
+    "proxy": "Proxy",
+    "vpn": "VPN",
+    "block": "Block",
+    "gateway": "Gateway",
+    "domain": "Domain",
+    "ip": "IP address",
+    "others": "Aggregated",
+    "unknown": "Unknown",
+    "dns-client": "DNS client",
+    "dns-entry": "DNS entry",
+    "dns-route": "DNS route",
+    "dns-resolver": "Resolver",
+    "dns-upstream": "Answer source"
+  },
+  "mode": {
+    "proxy": "Proxy",
+    "direct": "Direct",
+    "block": "Block",
+    "gateway": "Gateway",
+    "bypass": "Bypass",
+    "unknown": "Unknown mode"
+  },
+  "status": {
+    "active": "Active",
+    "open": "Open, no traffic",
+    "idle": "Idle",
+    "degraded": "Degraded",
+    "offline": "Offline",
+    "closed": "Closed"
+  },
+  "card": {
+    "summary": "{{count}} connections, upload {{up}}, download {{down}}",
+    "dnsSummary": "{{count}} queries, {{failures}} failed",
+    "queries_one": "{{count}} query",
+    "queries_other": "{{count}} queries",
+    "failed_one": "{{count}} failed",
+    "failed_other": "{{count}} failed",
+    "connections_one": "{{count}} conn",
+    "connections_other": "{{count}} conn"
+  },
+  "stream": {
+    "live": "Live",
+    "connecting": "Connecting",
+    "reconnecting": "Reconnecting",
+    "paused": "Paused"
+  },
+  "toolbar": {
+    "connections_one": "connection",
+    "connections_other": "connections",
+    "connectionsOf_one": "of {{count}} connection",
+    "connectionsOf_other": "of {{count}} connections",
+    "rates": "Upload and download rate of the shown connections",
+    "search": "Search domain, IP, process or node",
+    "searchPlaceholder": "Domain, IP, process, node…",
+    "clearSearch": "Clear search",
+    "filters": "Filters",
+    "dnsLayer": "Show DNS resolution",
+    "pause": "Pause",
+    "resume": "Live"
+  },
+  "filter": {
+    "network": "Protocol",
+    "networkValue": {
+      "all": "TCP and UDP",
+      "tcp": "TCP",
+      "udp": "UDP"
+    },
+    "family": "Address family",
+    "familyValue": {
+      "all": "IPv4 and IPv6",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6"
+    },
+    "class": "Outbound type",
+    "classValue": {
+      "direct": "Direct",
+      "proxy": "Proxy",
+      "vpn": "VPN",
+      "block": "Block",
+      "other": "Other / unresolved"
+    },
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "process": "Process",
+    "geo": "GeoIP",
+    "clear": "Clear filters",
+    "outboundName": {
+      "direct": "Direct",
+      "block": "Block",
+      "gateway": "HTTP Gateway",
+      "unresolved": "Unresolved outbound"
+    }
+  },
+  "details": {
+    "label": "Selection details",
+    "nodeTitle": "Node details",
+    "edgeTitle": "Path details",
+    "close": "Close details",
+    "gone": "No longer active",
+    "goneHint": "This node or path has no connections any more.",
+    "nodeId": "Node ID",
+    "type": "Type",
+    "selector": "Selector",
+    "mode": "Route mode",
+    "activeConnections": "Active connections",
+    "connectionsShort": "Connections",
+    "tcpUdp": "TCP / UDP",
+    "uploadRate": "Upload rate",
+    "downloadRate": "Download rate",
+    "queries": "Queries",
+    "failures": "Failures",
+    "fakeIpAnswers": "FakeIP answers",
+    "averageDuration": "Average duration",
+    "openConfig": "Open configuration",
+    "related": "Related inbound and outbound",
+    "from": "from",
+    "to": "to",
+    "fakeIpMapping": "FakeIP mapping",
+    "destinations": "Related destinations",
+    "connections": "Connections",
+    "more_one": "{{count}} more connection not listed",
+    "more_other": "{{count}} more connections not listed",
+    "showNode": "Show {{name}}",
+    "recentQueries": "Recent queries"
+  }
+}

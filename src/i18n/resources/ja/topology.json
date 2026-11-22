@@ -1,0 +1,204 @@
+{
+  "title": "ネットワークトポロジー",
+  "empty": "アクティブな接続はありません。稼働中の Inbound はアイドルとして表示されます。",
+  "dnsBand_one": "DNS 解決 · 直近 5 分間に {{count}} 件のクエリ（履歴。リアルタイムではありません）",
+  "dnsBand_other": "DNS 解決 · 直近 5 分間に {{count}} 件のクエリ（履歴。リアルタイムではありません）",
+  "stage": {
+    "label": "ネットワークトポロジーのキャンバス",
+    "role": "インタラクティブなトポロジー"
+  },
+  "controls": {
+    "label": "表示の操作",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "fit": "画面に合わせる",
+    "reset": "表示をリセット（100%）",
+    "fullscreen": "全画面表示",
+    "exitFullscreen": "全画面表示を終了"
+  },
+  "legend": {
+    "label": "凡例",
+    "upload": "アップロード",
+    "download": "ダウンロード"
+  },
+  "columns": {
+    "source": "送信元",
+    "inbound": "Inbound",
+    "policy": "ルーティング",
+    "outbound": "Outbound",
+    "destination": "宛先"
+  },
+  "dnsColumns": {
+    "source": "DNS クライアント",
+    "inbound": "DNS 入口",
+    "policy": "DNS ルーティング",
+    "outbound": "リゾルバー",
+    "destination": "応答元"
+  },
+  "node": {
+    "local": "このデバイス",
+    "others_one": "その他 {{count}} 件",
+    "others_other": "その他 {{count}} 件",
+    "direct": "直接接続",
+    "block": "ブロック",
+    "gateway": "HTTP ゲートウェイ",
+    "defaultRoute": "デフォルトルート",
+    "dnsRouteMode": "モード: {{mode}}",
+    "noResolver": "リゾルバーなし",
+    "unknown": "不明",
+    "unresolvedOutbound": "未解決の Outbound",
+    "viaSelector": "{{name}} 経由",
+    "internal": "コア内部",
+    "noInbound": "Inbound の記録なし"
+  },
+  "dnsEntry": {
+    "local_dns": "ローカル DNS サーバー",
+    "dns_hijack": "DNS ハイジャック",
+    "unknown": "不明な入口"
+  },
+  "dnsAnswer": {
+    "upstream": "アップストリーム",
+    "fakeip": "FakeIP プール",
+    "cache": "キャッシュ",
+    "hosts": "Hosts",
+    "custom_response": "カスタム応答",
+    "local_response": "ローカル応答",
+    "blocked": "ブロック",
+    "unknown": "不明"
+  },
+  "kind": {
+    "app": "アプリケーション",
+    "device": "デバイス",
+    "local": "ローカル",
+    "component": "コアのコンポーネント",
+    "inbound": "Inbound",
+    "internal": "コア内部",
+    "rule": "ルール",
+    "default-route": "デフォルトルート",
+    "direct": "直接接続",
+    "proxy": "プロキシ",
+    "vpn": "VPN",
+    "block": "ブロック",
+    "gateway": "ゲートウェイ",
+    "domain": "ドメイン",
+    "ip": "IP アドレス",
+    "others": "集約",
+    "unknown": "不明",
+    "dns-client": "DNS クライアント",
+    "dns-entry": "DNS 入口",
+    "dns-route": "DNS ルート",
+    "dns-resolver": "リゾルバー",
+    "dns-upstream": "応答元"
+  },
+  "mode": {
+    "proxy": "プロキシ",
+    "direct": "直接接続",
+    "block": "ブロック",
+    "gateway": "ゲートウェイ",
+    "bypass": "バイパス",
+    "unknown": "不明なモード"
+  },
+  "status": {
+    "active": "通信中",
+    "open": "接続中（通信なし）",
+    "idle": "アイドル",
+    "degraded": "低下",
+    "offline": "オフライン",
+    "closed": "終了"
+  },
+  "card": {
+    "summary": "接続 {{count}} 件、アップロード {{up}}、ダウンロード {{down}}",
+    "dnsSummary": "クエリ {{count}} 件、失敗 {{failures}} 件",
+    "queries_one": "{{count}} クエリ",
+    "queries_other": "{{count}} クエリ",
+    "failed_one": "失敗 {{count}}",
+    "failed_other": "失敗 {{count}}",
+    "connections_one": "{{count}} 接続",
+    "connections_other": "{{count}} 接続"
+  },
+  "stream": {
+    "live": "ライブ",
+    "connecting": "接続中",
+    "reconnecting": "再接続中",
+    "paused": "一時停止中"
+  },
+  "toolbar": {
+    "connections_one": "件の接続",
+    "connections_other": "件の接続",
+    "connectionsOf_one": "/ {{count}} 件の接続",
+    "connectionsOf_other": "/ {{count}} 件の接続",
+    "rates": "表示中の接続のアップロード／ダウンロード速度",
+    "search": "ドメイン、IP、プロセス、ノードを検索",
+    "searchPlaceholder": "ドメイン、IP、プロセス、ノード…",
+    "clearSearch": "検索をクリア",
+    "filters": "フィルター",
+    "dnsLayer": "DNS 解決を表示",
+    "pause": "一時停止",
+    "resume": "ライブ"
+  },
+  "filter": {
+    "network": "プロトコル",
+    "networkValue": {
+      "all": "TCP と UDP",
+      "tcp": "TCP",
+      "udp": "UDP"
+    },
+    "family": "アドレスファミリー",
+    "familyValue": {
+      "all": "IPv4 と IPv6",
+      "ipv4": "IPv4",
+      "ipv6": "IPv6"
+    },
+    "class": "Outbound の種類",
+    "classValue": {
+      "direct": "直接接続",
+      "proxy": "プロキシ",
+      "vpn": "VPN",
+      "block": "ブロック",
+      "other": "その他／未解決"
+    },
+    "inbound": "Inbound",
+    "outbound": "Outbound",
+    "process": "プロセス",
+    "geo": "GeoIP",
+    "clear": "フィルターをクリア",
+    "outboundName": {
+      "direct": "直接接続",
+      "block": "ブロック",
+      "gateway": "HTTP ゲートウェイ",
+      "unresolved": "未解決の Outbound"
+    }
+  },
+  "details": {
+    "label": "選択項目の詳細",
+    "nodeTitle": "ノードの詳細",
+    "edgeTitle": "経路の詳細",
+    "close": "詳細を閉じる",
+    "gone": "アクティブではありません",
+    "goneHint": "このノードまたは経路には接続がなくなりました。",
+    "nodeId": "ノード ID",
+    "type": "種類",
+    "selector": "セレクター",
+    "mode": "ルートモード",
+    "activeConnections": "アクティブな接続",
+    "connectionsShort": "接続",
+    "tcpUdp": "TCP / UDP",
+    "uploadRate": "アップロード速度",
+    "downloadRate": "ダウンロード速度",
+    "queries": "クエリ",
+    "failures": "失敗",
+    "fakeIpAnswers": "FakeIP 応答",
+    "averageDuration": "平均所要時間",
+    "openConfig": "設定を開く",
+    "related": "関連する Inbound / Outbound",
+    "from": "から",
+    "to": "へ",
+    "fakeIpMapping": "FakeIP の対応",
+    "destinations": "関連する宛先",
+    "connections": "接続",
+    "more_one": "ほか {{count}} 件の接続は省略",
+    "more_other": "ほか {{count}} 件の接続は省略",
+    "showNode": "{{name}} を表示",
+    "recentQueries": "最近のクエリ"
+  }
+}
