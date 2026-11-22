@@ -57,6 +57,19 @@ function setup(mapping = defaultMapping) {
     return { frames, canvas, renderer };
 }
 
+/** Widths of strand and sheen strokes (each is drawn as its own beginPath ... stroke). */
+function strandWidths(run: () => void) {
+    const widths: number[] = [];
+    let open = false;
+    const begin = ctx.beginPath, stroke = ctx.stroke;
+    ctx.beginPath = vi.fn(() => { open = true; });
+    ctx.stroke = vi.fn(() => { if (open) widths.push(ctx.lineWidth); open = false; });
+    run();
+    ctx.beginPath = begin;
+    ctx.stroke = stroke;
+    return widths;
+}
+
 describe("FlowRenderer", () => {
     it("draws idle edges as a static line once, without a loop or strands", () => {
         const { frames, renderer } = setup();
@@ -87,13 +100,21 @@ describe("FlowRenderer", () => {
         frames.advance(34, 20);
         expect(ctx.arc).not.toHaveBeenCalled();
         expect(ctx.fill).not.toHaveBeenCalled();
-        // Every strand stroke has a constant width within a frame (no swelling heads).
-        const widths = new Set<number>();
-        const original = ctx.stroke;
-        ctx.stroke = vi.fn(() => { widths.add(ctx.lineWidth); });
-        frames.advance(34);
-        ctx.stroke = original;
-        expect(widths.size).toBeLessThanOrEqual(3);
+        // Strands and their sheen (the path-less strokes) share one width: nothing swells.
+        const widths = new Set(strandWidths(() => frames.advance(34)));
+        expect(widths.size).toBe(1);
+    });
+
+    it("keeps strands a constant width on screen at any zoom", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([edge("a", 1 << 24, 1 << 24)]);
+        for (const k of [0.3, 0.66, 1, 2]) {
+            renderer.setView({ x: 0, y: 0, k });
+            const widths = strandWidths(() => frames.advance(34)).map(width => width * k);
+            expect(widths.length).toBeGreaterThan(0);
+            // 1.6 CSS px in dark mode, whatever the zoom.
+            expect(widths.every(width => Math.abs(width - 1.6) < 1e-6)).toBe(true);
+        }
     });
 
     it("limits drawing to the configured frame rate", () => {

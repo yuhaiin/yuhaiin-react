@@ -79,6 +79,19 @@
     stroke: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+/* Shared trunks sit above their members' hit paths: clicking the trunk selects the bundle. */
+.hitBundle {
+    fill: none;
+    stroke: transparent;
+    stroke-linecap: round;
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.hitBundle:hover {
+    stroke: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
 .hitPathSelected {
     stroke: color-mix(in srgb, var(--accent) 22%, transparent);
 }

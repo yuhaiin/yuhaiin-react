@@ -8,11 +8,11 @@ import { FlowRenderer, type Palette, type View } from "./flow-renderer";
 import type { Layout, PlacedNode } from "./layout";
 import type { Column } from "./model";
 import type { FlowMapping } from "./ribbons";
-import type { Emphasis, SceneEdge } from "./scene";
+import type { Detail, Emphasis, SceneBundle, SceneEdge } from "./scene";
 import { NodeCard } from "./node-card";
 import styles from "./topology.module.css";
 
-export type Selection = { type: "node"; id: string } | { type: "edge"; id: string } | null;
+export type Selection = { type: "node"; id: string } | { type: "edge"; id: string } | { type: "bundle"; id: string } | null;
 
 export interface StageHandle {
     fit: () => void;
@@ -28,6 +28,10 @@ interface StageProps {
     /** Auxiliary DNS band, placed `dnsOffset` below the traffic graph. */
     dns?: { layout: Layout; offset: number; label: string };
     scene: SceneEdge[];
+    /** Shared trunks of bundled edges, for hit testing and selection. */
+    bundles: SceneBundle[];
+    /** Called when the zoom crosses into another level of detail (with hysteresis). */
+    onDetailChange: (detail: Detail) => void;
     emphasis: Emphasis | null;
     selection: Selection;
     paused: boolean;
@@ -40,6 +44,17 @@ interface StageProps {
 }
 
 const MIN_ZOOM = 0.2;
+
+/**
+ * Zoom -> level of detail, with hysteresis: entering a level needs a clearly
+ * different zoom than leaving it, so small zoom changes never flip bundling
+ * back and forth.
+ */
+export function detailFor(k: number, current: Detail): Detail {
+    if (current === "detail") return k < 0.95 ? (k < 0.5 ? "far" : "normal") : "detail";
+    if (current === "far") return k > 0.6 ? (k >= 1.05 ? "detail" : "normal") : "far";
+    return k >= 1.05 ? "detail" : k < 0.5 ? "far" : "normal";
+}
 const MAX_ZOOM = 2.5;
 const PADDING = 28;
 const READABLE_ZOOM = 0.66;
@@ -74,7 +89,7 @@ function useReducedMotion() {
 }
 
 export const TopologyStage = memo(forwardRef<StageHandle, StageProps>(function TopologyStage(props, ref) {
-    const { layout, dns, scene, emphasis, selection, paused, compact, mapping, columnLabels, fullscreenTarget, onSelect, children } = props;
+    const { layout, dns, scene, bundles, onDetailChange, emphasis, selection, paused, compact, mapping, columnLabels, fullscreenTarget, onSelect, children } = props;
     const { t } = useTranslation("topology");
     const { resolved, accent } = useTheme();
     const reducedMotion = useReducedMotion();
@@ -96,8 +111,16 @@ export const TopologyStage = memo(forwardRef<StageHandle, StageProps>(function T
         motion.current = { paused, reducedMotion };
     });
 
+    const detail = useRef<Detail>("normal");
+    const detailChanged = useRef(onDetailChange);
+    useLayoutEffect(() => { detailChanged.current = onDetailChange; });
     const apply = useCallback(() => {
         const { x, y, k } = view.current;
+        const next = detailFor(k, detail.current);
+        if (next !== detail.current) {
+            detail.current = next;
+            detailChanged.current(next);
+        }
         if (world.current) {
             world.current.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${k})`;
             world.current.dataset.lod = k < 0.5 ? "far" : k < 0.85 ? "mid" : "near";
@@ -411,6 +434,16 @@ export const TopologyStage = memo(forwardRef<StageHandle, StageProps>(function T
                             d={item.d}
                             className={cn(styles.hitPath, selectedEdge === item.edge.id && styles.hitPathSelected)}
                             onClick={event => { event.stopPropagation(); onSelect({ type: "edge", id: item.edge.id }); }}
+                        />
+                    ))}
+                    {bundles.map(bundle => (
+                        <path
+                            key={bundle.id}
+                            data-bundle-id={bundle.id}
+                            d={bundle.d}
+                            className={cn(styles.hitBundle, selection?.type === "bundle" && selection.id === bundle.id && styles.hitPathSelected)}
+                            style={{ strokeWidth: bundle.width }}
+                            onClick={event => { event.stopPropagation(); onSelect({ type: "bundle", id: bundle.id }); }}
                         />
                     ))}
                 </svg>

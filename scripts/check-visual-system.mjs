@@ -192,6 +192,26 @@ try {
       const evaluation = await send('Runtime.evaluate', { expression: `({theme: document.documentElement.dataset.bsTheme, accent: document.documentElement.dataset.accent, width: innerWidth, overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth + 1, clipped: [...document.querySelectorAll('main input,main textarea,main button[role=combobox]')].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.left < -1 || r.right > innerWidth + 1); }).map(el => el.getAttribute('aria-label') || el.tagName), contrast: (${measureContrast.toString()})()})`, returnByValue: true });
       const state = evaluation.result?.value;
       if (!state || state.theme !== theme || state.accent !== accent || state.overflow || state.clipped.length) throw new Error('Invalid theme/layout: ' + JSON.stringify(state));
+      if (name === 'topology') {
+        // Toolbar: title on one line, count/rates neither wrapped nor clipped, search usable, buttons on screen.
+        const toolbar = await evaluate(send, `(() => {
+          const bar = document.querySelector('[data-topology-toolbar]');
+          const box = el => el.getBoundingClientRect();
+          const title = bar.querySelector('h1');
+          const titleShown = title && getComputedStyle(title).position !== 'absolute';
+          const lines = el => Math.round(box(el).height / (parseFloat(getComputedStyle(el).lineHeight) || 20));
+          const parts = ['count', 'rates'].map(part => bar.querySelector('[data-part=' + part + ']'));
+          const inside = el => box(el).width > 0 && box(el).right <= box(bar).right + 0.5 && box(el).left >= box(bar).left - 0.5;
+          return {
+            title: titleShown ? lines(title) : 1,
+            wrapped: parts.filter(el => box(el).height > 24).map(el => el.dataset.part),
+            clipped: parts.filter(el => !inside(el)).map(el => el.dataset.part),
+            search: Math.round(box(bar.querySelector('[data-part=search]')).width),
+            offscreen: [...bar.querySelectorAll('[data-part=actions] button')].filter(el => box(el).right > innerWidth + 0.5).length,
+          };
+        })()`);
+        if (toolbar.title > 1 || toolbar.wrapped.length || toolbar.clipped.length || toolbar.search < 140 || toolbar.offscreen) throw new Error('Topology toolbar layout: ' + JSON.stringify(toolbar));
+      }
       const failures = state.contrast.filter(check => check.ratio < check.minimum);
       if (failures.length) throw new Error(`${theme}/${accent} contrast: ${JSON.stringify(failures)}`);
       results.push({ theme, accent, name, width, minimumTextContrast: Math.min(...state.contrast.filter(check => check.minimum === 4.5).map(check => check.ratio)) });

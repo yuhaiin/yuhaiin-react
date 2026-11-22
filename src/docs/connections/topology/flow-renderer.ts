@@ -1,4 +1,4 @@
-import { buildStrands, intensityFor, normalsOf, strandPoint, type FlowMapping, type FlowPath, type Strand } from "./ribbons";
+import { buildStrands, intensityFor, LANE_PX, normalsOf, resolveStrand, strandPoint, type FlowMapping, type FlowPath, type Strand, type StrandShape } from "./ribbons";
 
 export interface RenderEdge {
     id: string;
@@ -12,8 +12,11 @@ export interface RenderEdge {
     /** 0.14 dimmed by search or selection, 1 normal. */
     alpha: number;
     highlighted: boolean;
-    /** How far strands may fan out along the card edges at both ends (world units). */
+    /** Half-width of the edge's port slot (world units): its strands stay inside it. */
     spread: number;
+    /** Part of the path (0..1) that may wave; bundle trunks before and after it run straight. Defaults to the whole path. */
+    waveStart?: number;
+    waveEnd?: number;
     /** Auxiliary DNS edges carry history counts, not live rates: never animated. */
     auxiliary?: { weight: number };
 }
@@ -54,8 +57,14 @@ export interface RendererStats {
 
 /** Edges get a soft halo only above this intensity (about 1 MB/s); slow paths never do. */
 const GLOW_FROM = 0.68;
-/** Sheen pass: half-width (fraction of the strand) and opacity. */
-const SHEEN: readonly (readonly [number, number])[] = [[0.14, 0.26]];
+/**
+ * Sheen: nested passes (half-length as a fraction of the strand, opacity),
+ * widest first. Stacked, they form a soft bell of brightness that fades in
+ * and out along the strand, at the strand's own width.
+ */
+const SHEEN: readonly (readonly [number, number])[] = [[0.22, 0.17], [0.1, 0.22]];
+/** Strand width on screen (CSS px), dark and light; selected paths are a little wider. */
+const STRAND_PX = { dark: 1.6, light: 1.7, selected: 2.2 };
 /** Samples per strand; edge paths are sampled with the same count. */
 const MAX_SAMPLES = 64;
 
@@ -96,6 +105,9 @@ export class FlowRenderer {
     private destroyed = false;
     private readonly scratch = new Float32Array(MAX_SAMPLES * 2);
     private readonly point = new Float32Array(2);
+    private readonly shape: StrandShape = { lane: 0, amplitude: 0, phase: 0, waveStart: 0, waveEnd: 1 };
+    /** Strands per edge, for the bundle's base band. */
+    private edgeStrands: Uint8Array = new Uint8Array(0);
     private stats: RendererStats = { strands: 0, running: false, frames: 0, lastDrawMs: 0, maxDrawMs: 0 };
 
     constructor(private readonly canvas: HTMLCanvasElement, options: RendererOptions) {
@@ -121,8 +133,10 @@ export class FlowRenderer {
         this.edgeGeometry = edges.map(edge => geometry.get(edge.id));
         const animated = edges.map(edge => !edge.auxiliary);
         this.strands = buildStrands(edges.map(edge => edge.id), edges.map((edge, index) => ({
-            up: edge.up, down: edge.down, spread: edge.spread, length: edge.path.length, animated: animated[index],
+            up: edge.up, down: edge.down, length: edge.path.length, animated: animated[index],
         })), this.options.mapping);
+        this.edgeStrands = new Uint8Array(edges.length);
+        for (const strand of this.strands) this.edgeStrands[strand.edge] = strand.size;
         this.stats.strands = this.strands.length;
         this.buildGradients();
         this.schedule();
@@ -252,13 +266,15 @@ export class FlowRenderer {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.setTransform(this.ratio * k, 0, 0, this.ratio * k, this.ratio * x, this.ratio * y);
-        ctx.lineCap = "round";
-        // Bevel joins: indistinguishable on thin strokes and cheaper to rasterize than round ones.
+        // Butt caps and bevel joins: identical on thin strokes, cheaper to rasterize.
+        ctx.lineCap = "butt";
         ctx.lineJoin = "bevel";
-        // Keep strands about a device pixel wide when zoomed out.
-        const hair = 1 / Math.max(0.5, Math.min(1, k));
+        // Widths are set in CSS px and converted to world units: lines never turn
+        // sub-pixel when zoomed out, nor thick when zoomed in.
+        const px = 1 / Math.max(0.05, k);
 
-        // Spines: idle edges are a quiet static line; busy ones get a faint halo.
+        // Spines: idle edges are a quiet static line; busy ones get a faint base band
+        // under their strands (and a soft halo only when very busy).
         for (let index = 0; index < this.edges.length; index++) {
             const edge = this.edges[index];
             const geometry = this.edgeGeometry[index];
@@ -266,27 +282,36 @@ export class FlowRenderer {
             if (edge.auxiliary) {
                 ctx.globalAlpha = edge.alpha * (0.35 + 0.5 * edge.auxiliary.weight);
                 ctx.strokeStyle = palette.auxiliary;
-                ctx.lineWidth = (1 + 1.5 * edge.auxiliary.weight) * hair;
-                ctx.setLineDash([2, 4]);
+                ctx.lineWidth = (1 + 1.2 * edge.auxiliary.weight) * px;
+                ctx.setLineDash([2 * px, 4 * px]);
                 ctx.stroke(geometry.path);
                 continue;
             }
             const intensity = intensityFor(edge.up + edge.down, this.options.mapping);
-            ctx.setLineDash(edge.dashed ? [5, 5] : []);
+            const size = this.edgeStrands[index];
+            const half = size > 1 ? Math.min(edge.spread, ((size - 1) / 2) * LANE_PX * px) : 0;
+            ctx.setLineDash(edge.dashed ? [5 * px, 5 * px] : []);
             if (edge.highlighted) {
                 ctx.globalAlpha = edge.alpha * 0.14;
                 ctx.strokeStyle = palette.highlight;
-                ctx.lineWidth = 14 + edge.spread * 0.3;
+                ctx.lineWidth = 2 * half + 10 * px;
                 ctx.stroke(geometry.path);
             } else if (intensity > GLOW_FROM) {
-                ctx.globalAlpha = edge.alpha * (intensity - GLOW_FROM) * (palette.dark ? 0.32 : 0.2);
+                ctx.globalAlpha = edge.alpha * (intensity - GLOW_FROM) * (palette.dark ? 0.3 : 0.18);
                 ctx.strokeStyle = palette.flow;
-                ctx.lineWidth = 10 + 10 * intensity;
+                ctx.lineWidth = 2 * half + (8 + 8 * intensity) * px;
                 ctx.stroke(geometry.path);
             }
-            ctx.globalAlpha = edge.alpha * (intensity > 0 ? 0.28 : 0.9);
+            if (size) {
+                // The bundle's base band: binds its strands into one ribbon without hiding them.
+                ctx.globalAlpha = edge.alpha * (palette.dark ? 0.08 : 0.07);
+                ctx.strokeStyle = palette.flow;
+                ctx.lineWidth = 2 * half + 3 * px;
+                ctx.stroke(geometry.path);
+            }
+            ctx.globalAlpha = edge.alpha * (intensity > 0 ? 0.3 : 0.9);
             ctx.strokeStyle = intensity > 0 ? palette.edge : palette.idle;
-            ctx.lineWidth = hair;
+            ctx.lineWidth = px;
             ctx.stroke(geometry.path);
         }
         ctx.setLineDash([]);
@@ -294,39 +319,40 @@ export class FlowRenderer {
         const still = this.reducedMotion || this.paused;
         const time = this.clock;
         const points = this.scratch;
+        const shape = this.shape;
+        const strandWidth = (palette.dark ? STRAND_PX.dark : STRAND_PX.light) * px;
         for (let index = 0; index < this.strands.length; index++) {
             const strand = this.strands[index];
             const edge = this.edges[strand.edge];
             const geometry = this.edgeGeometry[strand.edge];
             if (!geometry) continue;
+            resolveStrand(strand, k, edge.spread, edge.waveStart ?? 0, edge.waveEnd ?? 1, shape);
             const count = Math.min(MAX_SAMPLES, edge.path.points.length / 2);
             for (let sample = 0; sample < count; sample++) {
-                strandPoint(strand, edge.path, geometry.normals, sample, time, this.point);
+                strandPoint(strand, shape, edge.path, geometry.normals, sample, time, this.point);
                 points[sample * 2] = this.point[0];
                 points[sample * 2 + 1] = this.point[1];
             }
-            const emphasis = edge.highlighted ? 1.3 : 1;
-            // Thin, uniform strokes; the bundle, not the width, gives the flow its weight.
-            const width = hair * (palette.dark ? 1.15 : 1.3) * emphasis;
-            ctx.globalAlpha = edge.alpha * Math.min(1, (palette.dark ? 0.5 : 0.6) + 0.4 * strand.intensity) * (edge.highlighted ? 1.2 : 1);
+            // Uniform strokes; the bundle, not the width, gives the flow its weight.
+            const width = edge.highlighted ? STRAND_PX.selected * px : strandWidth;
+            ctx.globalAlpha = edge.alpha * Math.min(1, (palette.dark ? 0.55 : 0.62) + 0.4 * strand.intensity) * (edge.highlighted ? 1.15 : 1);
             ctx.strokeStyle = this.gradients[index];
             ctx.lineWidth = width;
             ctx.beginPath();
             ctx.moveTo(points[0], points[1]);
             for (let sample = 1; sample < count; sample++) ctx.lineTo(points[sample * 2], points[sample * 2 + 1]);
             ctx.stroke();
-            // No sheen when far out: it would be sub-pixel, and it is the costliest part.
-            if (still || k < 0.45) continue;
+            if (still) continue;
 
-            // Sheen: a long, soft brightening of the same strand that drifts in the direction
-            // of flow. One low-alpha pass at the same width: no head, no dot, no change of width.
+            // Sheen: the strand's own colour brightens over a long stretch that drifts in
+            // the direction of flow, fading in and out; no head, no dot, no change of width.
             const travel = (time * strand.sheen + strand.sheenPhase) % 1;
             const centre = (strand.tone === 0 ? travel : 1 - travel) * (count - 1);
             ctx.strokeStyle = strand.tone === 0 ? (strand.hue ? palette.upAlt : palette.up) : (strand.hue ? palette.downAlt : palette.down);
             for (const [reach, alpha] of SHEEN) {
                 const from = Math.max(0, Math.round(centre - reach * count)), to = Math.min(count - 1, Math.round(centre + reach * count));
                 if (to - from < 1) continue;
-                ctx.globalAlpha = edge.alpha * alpha * (0.5 + 0.5 * strand.intensity);
+                ctx.globalAlpha = edge.alpha * alpha * (0.6 + 0.4 * strand.intensity);
                 ctx.beginPath();
                 ctx.moveTo(points[from * 2], points[from * 2 + 1]);
                 for (let sample = from + 1; sample <= to; sample++) ctx.lineTo(points[sample * 2], points[sample * 2 + 1]);

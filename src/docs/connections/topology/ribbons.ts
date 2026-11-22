@@ -22,7 +22,7 @@ export interface FlowMapping {
     budget: number;
 }
 
-export const defaultMapping: FlowMapping = { floorRate: 256, ceilingRate: 64 * 1024 * 1024, maxStrands: 5, budget: 260 };
+export const defaultMapping: FlowMapping = { floorRate: 256, ceilingRate: 64 * 1024 * 1024, maxStrands: 5, budget: 220 };
 /** Phones and coarse pointers: fewer strands. */
 export const compactMapping: FlowMapping = { ...defaultMapping, maxStrands: 3, budget: 120 };
 
@@ -71,14 +71,19 @@ export interface Strand {
     tone: 0 | 1;
     /** Which colour of the tone (neighbouring strands alternate). */
     hue: number;
-    /** Fixed offset from the edge path, inside the edge's port slot, from end to end. */
-    lane: number;
-    /** The bundle's wave: amplitude (world units), waves along the path, phase, drift (rad/s). */
-    amplitude: number;
+    /** Position in the edge's bundle (0..size-1) and the bundle size. */
+    slot: number;
+    size: number;
+    /** Lane as a fraction of the bundle's half-width (-1..1): upload first, then download. */
+    laneFraction: number;
+    /** Wave height on screen (CSS px) and its cap in world units (short edges wave less). */
+    amplitudePx: number;
+    maxAmplitude: number;
+    /** The bundle's wave: waves along the path, phase, drift (rad/s). */
     waves: number;
     phase: number;
     drift: number;
-    /** Speed (path lengths/s, in the direction of flow) and start of the soft sheen. */
+    /** Speed (path lengths/s, in the direction of flow) and start of the sheen. */
     sheen: number;
     sheenPhase: number;
     /** 0..1 opacity factor from the measured rate. */
@@ -88,8 +93,6 @@ export interface Strand {
 export interface StrandInput {
     up: number;
     down: number;
-    /** Half the width of the edge's port slot; strands stay inside it. */
-    spread: number;
     length: number;
     animated: boolean;
 }
@@ -100,6 +103,11 @@ function hash(edge: string, index: number) {
     for (let i = 0; i < edge.length; i++) value = Math.imul(value ^ edge.charCodeAt(i), 16777619);
     return ((value >>> 0) % 10000) / 10000;
 }
+
+/** Wave height on screen, before the per-bundle variation. */
+export const WAVE_PX = 12;
+/** Distance between neighbouring strands on screen: close enough to read as one ribbon, far enough not to merge. */
+export const LANE_PX = 3.2;
 
 /**
  * Strands for a scene. Counts follow the rate per direction and are scaled
@@ -115,27 +123,24 @@ export function buildStrands(ids: string[], inputs: StrandInput[], mapping: Flow
         const counts = [0, 1].map(tone => wanted[edge][tone] ? Math.max(1, Math.floor(wanted[edge][tone] * scale)) : 0);
         const size = counts[0] + counts[1];
         if (!size) return;
-        // One wave for the whole bundle: about half a wave over the edge, low and slow.
+        // One wave for the whole bundle: about half a wave over the edge, drifting with a 6-10 s period.
         const id = ids[edge];
         const strongest = Math.max(intensityFor(input.up, mapping), intensityFor(input.down, mapping));
         const waves = 0.45 + 0.25 * hash(id, 1);
         const phase = hash(id, 2) * Math.PI * 2;
-        const amplitude = Math.min(10, input.length * 0.05) * (0.6 + 0.4 * hash(id, 3));
-        const drift = 0.2 + 0.3 * strongest;
+        const amplitudePx = WAVE_PX * (0.85 + 0.45 * hash(id, 3));
+        const drift = (0.65 + 0.4 * strongest) * (0.9 + 0.2 * hash(id, 4));
         let slot = 0;
         for (const tone of [0, 1] as const) {
             const intensity = intensityFor(tone === 0 ? input.up : input.down, mapping);
             for (let index = 0; index < counts[tone]; index++, slot++) {
-                // Evenly spaced lanes across the slot: upload first, then download; strands never swap.
-                const lane = size === 1 ? 0 : -input.spread + (2 * input.spread * slot) / (size - 1);
                 strands.push({
-                    edge, tone, hue: index % 2, lane,
-                    // Barely different per strand: the bundle breathes instead of moving in lockstep.
-                    amplitude: amplitude * (1 - 0.05 * slot),
-                    waves,
-                    phase: phase + 0.08 * slot,
-                    drift,
-                    sheen: 0.06 + 0.16 * intensity,
+                    edge, tone, hue: index % 2, slot, size,
+                    laneFraction: size === 1 ? 0 : -1 + (2 * slot) / (size - 1),
+                    amplitudePx,
+                    maxAmplitude: input.length * 0.12,
+                    waves, phase, drift,
+                    sheen: 0.12 + 0.26 * intensity,
                     sheenPhase: hash(id, 100 + slot),
                     intensity,
                 });
@@ -152,14 +157,48 @@ export function buildStrands(ids: string[], inputs: StrandInput[], mapping: Flow
     return strands;
 }
 
+/** A strand resolved for the current zoom; one instance is reused for every strand of a frame. */
+export interface StrandShape {
+    lane: number;
+    amplitude: number;
+    phase: number;
+    /** Part of the path (0..1) that may wave; outside it (bundle trunks) strands run straight. */
+    waveStart: number;
+    waveEnd: number;
+}
+
+/**
+ * Resolves a strand for zoom `k` (CSS px per world unit) and the half-width
+ * of its edge's slot. Lanes sit LANE_PX apart on screen (never wider than the
+ * slot) and the wave is WAVE_PX high on screen (never more than the edge
+ * allows). Strands of one bundle differ in phase only by as much as keeps
+ * the offset difference under half a lane gap, so they never cross.
+ */
+export function resolveStrand(strand: Strand, k: number, spread: number, waveStart: number, waveEnd: number, out: StrandShape) {
+    const zoom = Math.max(0.05, k);
+    const half = Math.min(spread, ((strand.size - 1) / 2) * (LANE_PX / zoom));
+    const gap = strand.size > 1 ? (2 * half) / (strand.size - 1) : 0;
+    const amplitude = Math.min(strand.maxAmplitude, strand.amplitudePx / zoom);
+    const desync = amplitude > 0 ? Math.min(0.06, (0.45 * gap) / amplitude) : 0;
+    out.lane = strand.laneFraction * half;
+    out.amplitude = amplitude;
+    out.phase = strand.phase + strand.slot * desync;
+    out.waveStart = waveStart;
+    out.waveEnd = waveEnd;
+    return half;
+}
+
 /**
  * Writes the strand's point at path index `index` at `time` seconds into
- * out[0], out[1]. The wave envelope is zero at both ends, so every strand
- * starts and ends on its lane offset at the real cards.
+ * out[0], out[1]. The wave envelope is zero at both ends of the wave window,
+ * so strands meet the cards (and bundle trunks) exactly on their lanes.
  */
-export function strandPoint(strand: Strand, path: FlowPath, normals: Float32Array, index: number, time: number, out: Float32Array) {
+export function strandPoint(strand: Strand, shape: StrandShape, path: FlowPath, normals: Float32Array, index: number, time: number, out: Float32Array) {
     const u = path.length ? path.lengths[index] / path.length : 0;
-    const offset = strand.lane + strand.amplitude * Math.sin(Math.PI * u) * Math.sin(Math.PI * 2 * strand.waves * u + strand.phase - strand.drift * time);
+    const span = shape.waveEnd - shape.waveStart;
+    const v = span > 0 ? (u - shape.waveStart) / span : -1;
+    const envelope = v > 0 && v < 1 ? Math.sin(Math.PI * v) : 0;
+    const offset = shape.lane + shape.amplitude * envelope * Math.sin(Math.PI * 2 * strand.waves * v + shape.phase - strand.drift * time);
     out[0] = path.points[index * 2] + normals[index * 2] * offset;
     out[1] = path.points[index * 2 + 1] + normals[index * 2 + 1] * offset;
 }

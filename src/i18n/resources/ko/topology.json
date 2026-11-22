@@ -127,14 +127,18 @@
     "connections_other": "개 연결",
     "connectionsOf_one": "/ 전체 {{count}}개 연결",
     "connectionsOf_other": "/ 전체 {{count}}개 연결",
-    "rates": "표시된 연결의 업로드 및 다운로드 속도",
     "search": "도메인, IP, 프로세스 또는 노드 검색",
     "searchPlaceholder": "도메인, IP, 프로세스, 노드…",
     "clearSearch": "검색 지우기",
     "filters": "필터",
     "dnsLayer": "DNS 확인 표시",
     "pause": "일시 정지",
-    "resume": "실시간"
+    "resume": "실시간",
+    "connectionsAria_one": "활성 연결 {{count}}개",
+    "connectionsAria_other": "활성 연결 {{count}}개",
+    "connectionsOfAria_one": "활성 연결 {{count}}개 중 {{visible}}개 표시",
+    "connectionsOfAria_other": "활성 연결 {{count}}개 중 {{visible}}개 표시",
+    "ratesValue": "업로드 {{up}}, 다운로드 {{down}}"
   },
   "filter": {
     "network": "프로토콜",
@@ -199,6 +203,16 @@
     "more_one": "표시되지 않은 연결 {{count}}개 더 있음",
     "more_other": "표시되지 않은 연결 {{count}}개 더 있음",
     "showNode": "{{name}} 보기",
-    "recentQueries": "최근 쿼리"
+    "recentQueries": "최근 쿼리",
+    "bundleTitle": "공유 트렁크",
+    "bundleOut_one": "{{name}}에서 나가는 엣지 {{count}}개",
+    "bundleOut_other": "{{name}}에서 나가는 엣지 {{count}}개",
+    "bundleIn_one": "{{name}}(으)로 들어오는 엣지 {{count}}개",
+    "bundleIn_other": "{{name}}(으)로 들어오는 엣지 {{count}}개",
+    "fanOut": "팬아웃",
+    "fanIn": "팬인",
+    "bundleHint": "복잡한 화면을 읽기 쉽게 하기 위해 카드 근처에서 이 엣지들을 함께 그립니다. 각 엣지는 자신의 연결을 그대로 유지하며, 선택하면 세부 정보를 볼 수 있습니다.",
+    "memberEdges": "엣지",
+    "members": "이 트렁크의 엣지"
   }
 }

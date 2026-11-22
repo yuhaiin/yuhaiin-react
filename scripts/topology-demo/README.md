@@ -8,7 +8,8 @@ The page itself never shows demo data: it only renders what the core reports.
 ```sh
 YUHAIIN_SRC=../yuhaiin scripts/topology-demo/run.sh up       # build, start, configure
 scripts/topology-demo/run.sh traffic                         # laptop, phone and local generators
-scripts/topology-demo/run.sh load 1000                       # +1000 long-lived connections (0 stops)
+scripts/topology-demo/run.sh load 1000                       # +1000 long-lived connections over 5 inbounds (0 stops)
+scripts/topology-demo/run.sh flow both 4194304               # one steady flow (down, up or both; no argument stops)
 scripts/topology-demo/run.sh down
 ```
 
@@ -18,10 +19,10 @@ the work directory (`$TOPOLOGY_DEMO_WORK`, default `/tmp/yuhaiin-topology-demo`)
 
 | Container | Address | Role |
 | --- | --- | --- |
-| core | 10.89.77.10 | yuhaiin under test: SOCKS5 :1080, HTTP :8080, mixed 127.0.0.1:7890, DNS :5353 with FakeIP |
+| core | 10.89.77.10 | yuhaiin under test: SOCKS5 :1080 :1081 :1082, HTTP :8080 :8081, mixed 127.0.0.1:7890, DNS :5353 with FakeIP |
 | upstream | 10.89.77.20 | second yuhaiin: SOCKS5/HTTP relay and WireGuard server |
 | web-a/b/c | 10.89.77.31-33, fd77:89:77::33 | HTTP stream/sink, UDP echo; web-a also answers DNS for `*.demo.internal` |
-| laptop / phone / load | 10.89.77.50 / .51 / .60 | traffic generators |
+| laptop / phone / load / flow | 10.89.77.50 / .51 / .60 / .70 | traffic generators |
 
 Rules on the core: `media.demo.internal` via the WireGuard node, `metrics.demo.internal`
 via the SOCKS relay, `api`/`files` via the "Edge pool" selector, `ads` blocked, the rest

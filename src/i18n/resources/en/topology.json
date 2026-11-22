@@ -127,14 +127,18 @@
     "connections_other": "connections",
     "connectionsOf_one": "of {{count}} connection",
     "connectionsOf_other": "of {{count}} connections",
-    "rates": "Upload and download rate of the shown connections",
     "search": "Search domain, IP, process or node",
     "searchPlaceholder": "Domain, IP, process, node…",
     "clearSearch": "Clear search",
     "filters": "Filters",
     "dnsLayer": "Show DNS resolution",
     "pause": "Pause",
-    "resume": "Live"
+    "resume": "Live",
+    "connectionsAria_one": "{{count}} active connection",
+    "connectionsAria_other": "{{count}} active connections",
+    "connectionsOfAria_one": "{{visible}} of {{count}} active connection shown",
+    "connectionsOfAria_other": "{{visible}} of {{count}} active connections shown",
+    "ratesValue": "Upload {{up}}, download {{down}}"
   },
   "filter": {
     "network": "Protocol",
@@ -199,6 +203,16 @@
     "more_one": "{{count}} more connection not listed",
     "more_other": "{{count}} more connections not listed",
     "showNode": "Show {{name}}",
-    "recentQueries": "Recent queries"
+    "recentQueries": "Recent queries",
+    "bundleTitle": "Shared trunk",
+    "bundleOut_one": "{{count}} edge leaving {{name}}",
+    "bundleOut_other": "{{count}} edges leaving {{name}}",
+    "bundleIn_one": "{{count}} edge arriving at {{name}}",
+    "bundleIn_other": "{{count}} edges arriving at {{name}}",
+    "fanOut": "Fan-out",
+    "fanIn": "Fan-in",
+    "bundleHint": "These edges are drawn together near the card to keep a crowded view readable. Each one keeps its own connections; select one to see its details.",
+    "memberEdges": "Edges",
+    "members": "Edges in this trunk"
   }
 }

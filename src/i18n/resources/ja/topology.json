@@ -127,14 +127,18 @@
     "connections_other": "件の接続",
     "connectionsOf_one": "/ {{count}} 件の接続",
     "connectionsOf_other": "/ {{count}} 件の接続",
-    "rates": "表示中の接続のアップロード／ダウンロード速度",
     "search": "ドメイン、IP、プロセス、ノードを検索",
     "searchPlaceholder": "ドメイン、IP、プロセス、ノード…",
     "clearSearch": "検索をクリア",
     "filters": "フィルター",
     "dnsLayer": "DNS 解決を表示",
     "pause": "一時停止",
-    "resume": "ライブ"
+    "resume": "ライブ",
+    "connectionsAria_one": "アクティブな接続 {{count}} 件",
+    "connectionsAria_other": "アクティブな接続 {{count}} 件",
+    "connectionsOfAria_one": "アクティブな接続 {{count}} 件中 {{visible}} 件を表示",
+    "connectionsOfAria_other": "アクティブな接続 {{count}} 件中 {{visible}} 件を表示",
+    "ratesValue": "アップロード {{up}}、ダウンロード {{down}}"
   },
   "filter": {
     "network": "プロトコル",
@@ -199,6 +203,16 @@
     "more_one": "ほか {{count}} 件の接続は省略",
     "more_other": "ほか {{count}} 件の接続は省略",
     "showNode": "{{name}} を表示",
-    "recentQueries": "最近のクエリ"
+    "recentQueries": "最近のクエリ",
+    "bundleTitle": "共有トランク",
+    "bundleOut_one": "{{name}} から出る {{count}} 本のエッジ",
+    "bundleOut_other": "{{name}} から出る {{count}} 本のエッジ",
+    "bundleIn_one": "{{name}} に入る {{count}} 本のエッジ",
+    "bundleIn_other": "{{name}} に入る {{count}} 本のエッジ",
+    "fanOut": "ファンアウト",
+    "fanIn": "ファンイン",
+    "bundleHint": "混雑した表示を読みやすくするため、カードの近くでこれらのエッジをまとめて描画しています。各エッジはそれぞれの接続を保持しています。選択すると詳細を表示します。",
+    "memberEdges": "エッジ",
+    "members": "このトランクのエッジ"
   }
 }

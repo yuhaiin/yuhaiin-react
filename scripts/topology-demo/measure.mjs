@@ -115,7 +115,7 @@ const wall = (t1 - t0) / 1000;
 const frames = events.filter(event => event.name === 'FireAnimationFrame' && event.ph === 'X').map(event => event.dur / 1000).sort((a, b) => a - b);
 const pct = p => frames.length ? Number(frames[Math.min(frames.length - 1, Math.floor(p * frames.length))].toFixed(2)) : 0;
 const page = await evaluate(`({
-    connections: document.querySelector('h1')?.parentElement?.textContent.match(/(\\d+)\\s*(connection|of)/)?.[1],
+    connections: document.querySelector('[data-part=count] .sr-only')?.textContent.match(/\\d+/g)?.at(-1),
     cards: document.querySelectorAll('[data-node-id]').length,
     edges: document.querySelectorAll('[class*="hitLayer"] path').length,
     domNodes: document.getElementsByTagName('*').length,

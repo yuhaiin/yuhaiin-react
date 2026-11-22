@@ -10,6 +10,7 @@ import type { DnsTopology } from "./dns";
 import { destinationHost, networkOf, type TopologyEdge, type TopologyModel, type TopologyNode } from "./model";
 import { configLink, formatRate, nodeIcon, nodeName, nodeType, selectorLink, statusTone } from "./presentation";
 import type { Rate } from "./rates";
+import type { SceneBundle } from "./scene";
 import type { Selection } from "./stage";
 import styles from "./topology.module.css";
 
@@ -22,6 +23,8 @@ interface DetailsProps {
     ghost?: TopologyNode;
     connections: Record<string, Connection>;
     rates: Map<string, Rate>;
+    /** Shared trunks currently drawn. */
+    bundles?: SceneBundle[];
     onSelect: (selection: Selection) => void;
     onOpenConnection: (connection: Connection) => void;
     onClose?: () => void;
@@ -34,6 +37,11 @@ const LIST_LIMIT = 50;
 export function TopologyDetails(props: DetailsProps) {
     const { selection, model, dns } = props;
     if (!selection) return null;
+    if (selection.type === "bundle") {
+        const bundle = props.bundles?.find(item => item.id === selection.id);
+        if (!bundle) return <Gone onClose={props.onClose} sheet={props.sheet} />;
+        return <BundleDetails bundle={bundle} {...props} />;
+    }
     if (selection.type === "edge") {
         const edge = model.edges.find(item => item.id === selection.id) ?? dns?.edges.find(item => item.id === selection.id);
         if (!edge) return <Gone onClose={props.onClose} sheet={props.sheet} />;
@@ -200,6 +208,7 @@ function NodeDetails({ node, model, dns, dnsRecords, connections, rates, onSelec
                                 <button type="button" className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left text-sm hover:bg-ui-hover" onClick={() => onSelect({ type: "edge", id: edge.id })}>
                                     <span className="w-9 shrink-0 text-xs text-ui-tertiary">{inbound ? t("details.from") : t("details.to")}</span>
                                     <span className="notranslate min-w-0 flex-1 truncate text-ui-fg">{nameOf(other)}</span>
+                                    {!node.dns && edge.network !== "tcp" && <Badge className="shrink-0">{edge.network.toUpperCase()}</Badge>}
                                     <EdgeRates edge={edge} auxiliary={Boolean(node.dns)} />
                                 </button>
                             </li>
@@ -289,6 +298,56 @@ function EdgeDetails({ edge, model, dns, dnsRecords, connections, rates, onSelec
             {auxiliary
                 ? <DnsRecordList ids={recordIds} records={dnsRecords} />
                 : <ConnectionList ids={edge.connectionIds} connections={connections} rates={rates} onOpen={onOpenConnection} />}
+        </Panel>
+    );
+}
+
+/**
+ * A shared trunk: which edges travel together from (or into) one card, with
+ * their combined counts. Each member opens its own edge details; the trunk
+ * itself is only a drawing of that group, never a connection of its own.
+ */
+function BundleDetails({ bundle, model, connections, rates, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { bundle: SceneBundle }) {
+    const { t } = useTranslation("topology");
+    const anchor = model.nodes.find(node => node.id === bundle.node);
+    const anchorName = anchor ? nodeName(anchor, t) : bundle.node;
+    const members = bundle.edgeIds.map(id => model.edges.find(edge => edge.id === id)).filter((edge): edge is TopologyEdge => Boolean(edge));
+    const nameOf = (id: string) => {
+        const node = model.nodes.find(item => item.id === id);
+        return node ? nodeName(node, t) : id;
+    };
+    return (
+        <Panel
+            title={t(bundle.side === "out" ? "details.bundleOut" : "details.bundleIn", { name: anchorName, count: members.length })}
+            sheet={sheet}
+            onClose={onClose}
+            badges={<>
+                <Badge>{bundle.network.toUpperCase()}</Badge>
+                <Badge>{t(bundle.side === "out" ? "details.fanOut" : "details.fanIn")}</Badge>
+                <Badge variant={bundle.up + bundle.down > 0 ? "success" : "secondary"} dot>{bundle.up + bundle.down > 0 ? t("status.active") : t("status.open")}</Badge>
+            </>}
+        >
+            <p className="text-sm text-ui-muted">{t("details.bundleHint")}</p>
+            <div className="grid grid-cols-2 gap-2">
+                <Metric label={t("details.memberEdges")} value={members.length} />
+                <Metric label={t("details.connectionsShort")} value={bundle.connections} />
+                <Metric label={t("details.uploadRate")} value={formatRate(bundle.up)} tone="up" />
+                <Metric label={t("details.downloadRate")} value={formatRate(bundle.down)} tone="down" />
+            </div>
+            <Section title={t("details.members")} count={members.length}>
+                <ul className="divide-y divide-ui-border overflow-hidden rounded-ui-md border border-ui-border">
+                    {members.map(edge => (
+                        <li key={edge.id}>
+                            <button type="button" className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left text-sm hover:bg-ui-hover" onClick={() => onSelect({ type: "edge", id: edge.id })}>
+                                <span className="w-9 shrink-0 text-xs text-ui-tertiary">{bundle.side === "out" ? t("details.to") : t("details.from")}</span>
+                                <span className="notranslate min-w-0 flex-1 truncate text-ui-fg">{nameOf(bundle.side === "out" ? edge.to : edge.from)}</span>
+                                <EdgeRates edge={edge} />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </Section>
+            <ConnectionList ids={bundle.connectionIds} connections={connections} rates={rates} onOpen={onOpenConnection} />
         </Panel>
     );
 }

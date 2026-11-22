@@ -20,7 +20,7 @@ import { desktopLayout, edgeCurve, LayoutMemory, mobileLayout, samplePath, svgPa
 import { buildTopology, COLUMNS, desktopLimits, emptyFilter, filterOptions, highlightPaths, mobileLimits, searchConnections, type Column, type TopologyFilter, type TopologyNode } from "./model";
 import { compactMapping, defaultMapping } from "./ribbons";
 import { RateSampler, type Rate } from "./rates";
-import { buildScene, type Emphasis, type SceneEdge } from "./scene";
+import { buildScene, type Detail, type Emphasis, type SceneBundle, type SceneEdge } from "./scene";
 import { TopologyStage, type Selection, type StageHandle } from "./stage";
 import { TopologyToolbar } from "./toolbar";
 import { useTopologyCatalog } from "./use-catalog";
@@ -80,6 +80,9 @@ export default function NetworkTopologyPage() {
     const [search, setSearch] = useState("");
     const query = useDebounced(search, 150);
     const [selection, setSelection] = useState<Selection>(null);
+    // Zoom level of detail, reported by the stage only when it crosses a threshold.
+    const [detail, setDetail] = useState<Detail>("normal");
+    const bundlesRef = useRef<SceneBundle[]>([]);
     const [dnsLayer, setDnsLayer] = useState(true);
     const [opened, setOpened] = useState<Connection | undefined>();
     const [closing, setClosing] = useState(false);
@@ -150,6 +153,13 @@ export default function NetworkTopologyPage() {
             if (dnsNode) return dnsEmphasis(dns!, dnsNode);
             return null;
         }
+        if (selection.type === "bundle") {
+            const bundle = bundlesRef.current.find(item => item.id === selection.id);
+            if (!bundle) return null;
+            const emphasis = withSelf(highlightPaths(model, bundle.connectionIds), bundle.node);
+            // Only the trunk's own edges stand out; the rest of their paths stay visible but quiet.
+            return { nodes: emphasis.nodes, edges: new Set(bundle.edgeIds) };
+        }
         const edge = model.edges.find(item => item.id === selection.id);
         if (edge) return highlightPaths(model, edge.connectionIds);
         return null;
@@ -160,7 +170,8 @@ export default function NetworkTopologyPage() {
     useEffect(() => {
         if (!selection || revealed.current === selection.id) return;
         revealed.current = selection.id;
-        const ids = selection.type === "node" ? [selection.id] : (() => {
+        const bundle = selection.type === "bundle" ? bundlesRef.current.find(item => item.id === selection.id) : undefined;
+        const ids = selection.type === "node" ? [selection.id] : bundle ? [bundle.node, ...bundle.peers] : (() => {
             const edge = model.edges.find(item => item.id === selection.id) ?? dns?.edges.find(item => item.id === selection.id);
             return edge ? [edge.from, edge.to] : [];
         })();
@@ -194,12 +205,16 @@ export default function NetworkTopologyPage() {
     }, [query, emphasis]);
     useEffect(() => { if (!query.trim()) focusedSearch.current = ""; }, [query]);
 
-    const scene = useMemo<SceneEdge[]>(() => {
-        const main = buildScene(layout, model.edges, emphasis);
+    // Bundling: a search or a node/edge selection expands the paths involved; a selected
+    // trunk stays bundled so its members remain recognisable as one group.
+    const { edges: scene, bundles } = useMemo<{ edges: SceneEdge[]; bundles: SceneBundle[] }>(() => {
+        const expand = selection?.type === "bundle" ? null : emphasis?.edges ?? null;
+        const main = buildScene(layout, model.edges, emphasis, false, 0, detail, expand);
         if (!dns || !dnsLayout) return main;
-        const auxiliary = buildScene(dnsLayout, dns.edges, emphasis, true, dnsOffset);
-        return [...main, ...auxiliary, ...fakeIpLinks(layout, dnsLayout, dnsOffset, model.nodes, selection)];
-    }, [layout, model, emphasis, dns, dnsLayout, dnsOffset, selection]);
+        const auxiliary = buildScene(dnsLayout, dns.edges, emphasis, true, dnsOffset).edges;
+        return { edges: [...main.edges, ...auxiliary, ...fakeIpLinks(layout, dnsLayout, dnsOffset, model.nodes, selection)], bundles: main.bundles };
+    }, [layout, model, emphasis, dns, dnsLayout, dnsOffset, selection, detail]);
+    useEffect(() => { bundlesRef.current = bundles; }, [bundles]);
 
     const ghost = useMemo(() => selection?.type === "node" ? [...layout.nodes, ...(dnsLayout?.nodes ?? [])].find(node => node.ghost && node.node.id === selection.id)?.node : undefined, [selection, layout, dnsLayout]);
 
@@ -221,7 +236,7 @@ export default function NetworkTopologyPage() {
     if (!stream.hydrated) return <Loading />;
 
     const details = (
-        <TopologyDetails selection={selection} model={model} dns={dns} dnsRecords={dnsRecords} ghost={ghost}
+        <TopologyDetails selection={selection} model={model} dns={dns} dnsRecords={dnsRecords} ghost={ghost} bundles={bundles}
             connections={connections} rates={shownRates} onSelect={onSelect} onOpenConnection={setOpened}
             onClose={() => setSelection(null)} sheet={compact} />
     );
@@ -244,6 +259,8 @@ export default function NetworkTopologyPage() {
                     layout={layout}
                     dns={dns && dnsLayout ? { layout: dnsLayout, offset: dnsOffset, label: t("dnsBand", { count: dns.records }) } : undefined}
                     scene={scene}
+                    bundles={bundles}
+                    onDetailChange={setDetail}
                     emphasis={emphasis}
                     selection={selection}
                     paused={paused}
@@ -268,7 +285,7 @@ export default function NetworkTopologyPage() {
 
             <Modal open={compact && selection !== null} onOpenChange={open => !open && setSelection(null)}>
                 <ModalContent mobileSheet>
-                    <ModalHeader closeButton><ModalTitle>{selection?.type === "edge" ? t("details.edgeTitle") : t("details.nodeTitle")}</ModalTitle></ModalHeader>
+                    <ModalHeader closeButton><ModalTitle>{selection?.type === "edge" ? t("details.edgeTitle") : selection?.type === "bundle" ? t("details.bundleTitle") : t("details.nodeTitle")}</ModalTitle></ModalHeader>
                     <ModalBody className="pt-2">{compact && details}</ModalBody>
                 </ModalContent>
             </Modal>

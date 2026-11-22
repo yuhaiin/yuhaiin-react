@@ -1,0 +1,154 @@
+/*
+ * Network topology toolbar. It lays itself out by its own width (container
+ * queries), not the viewport: the overview (title, status, counts, rates)
+ * never wraps internally, and the actions drop to a second row as soon as
+ * they would squeeze the search field.
+ */
+
+.toolbar {
+    container: topology-toolbar / inline-size;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.overview {
+    display: flex;
+    /* Never squeezed: when the row is too short the actions move to the next row. */
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    align-items: center;
+    gap: 6px 12px;
+    flex-wrap: wrap;
+}
+
+.title {
+    white-space: nowrap;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: var(--font-meta);
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.countValue {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--font-label);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+}
+
+.rates {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--font-meta);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.rate {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.actions {
+    container: topology-actions / inline-size;
+    display: flex;
+    /* Grows into the rest of the row; below this basis it wraps to its own row. */
+    flex: 1 1 380px;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.search {
+    position: relative;
+    flex: 1 1 200px;
+    min-width: 140px;
+    max-width: 460px;
+}
+
+.search input {
+    text-overflow: ellipsis;
+}
+
+.button {
+    flex-shrink: 0;
+    height: var(--height-field-sm);
+    min-width: var(--height-field-sm);
+}
+
+.label,
+.countLong {
+    display: none;
+}
+
+.countShort {
+    display: inline;
+}
+
+/* On wider toolbars the search keeps a comfortable width: the actions wrap to
+   their own row before it would shrink below that. */
+@container topology-toolbar (min-width: 600px) {
+    .search {
+        min-width: 240px;
+    }
+}
+
+/* Labels follow the room the actions actually have (their own row or the rest of the first). */
+@container topology-actions (min-width: 520px) {
+    .label {
+        display: inline;
+    }
+}
+
+@container topology-toolbar (min-width: 480px) {
+    .countLong {
+        display: inline;
+    }
+
+    .countShort {
+        display: none;
+    }
+}
+
+@container topology-toolbar (min-width: 1100px) {
+    .title {
+        font-size: 24px;
+    }
+}
+
+@media (pointer: coarse) {
+    .button {
+        height: var(--height-touch);
+        min-width: var(--height-touch);
+    }
+}

@@ -565,7 +565,19 @@ func traffic(ctx context.Context, args []string) error {
 	_ = fs.Parse(args)
 	switch *profile {
 	case "load":
-		return load(ctx, socks5{*socksAddr}, httpProxy{*httpAddr}, *count)
+		// -socks and -http may list several inbounds; connections rotate over all of them.
+		var dialers []dialer
+		for _, address := range strings.Split(*socksAddr, ",") {
+			if address != "" {
+				dialers = append(dialers, socks5{address})
+			}
+		}
+		for _, address := range strings.Split(*httpAddr, ",") {
+			if address != "" {
+				dialers = append(dialers, httpProxy{address})
+			}
+		}
+		return load(ctx, dialers, *count)
 	case "flow":
 		// One steady flow until stopped: a fixed scene for screenshots.
 		log.Printf("[flow] %s %d B/s to %s", *direction, *rate, *target)
@@ -680,10 +692,13 @@ func traffic(ctx context.Context, args []string) error {
 
 // load keeps `count` slow, long-lived downloads open: half to distinct domains
 // (direct), the rest through the selector, the SOCKS relay and the WireGuard
-// node, alternating between the SOCKS5 and HTTP inbounds. Rates of 1-4 KB/s
-// keep every counter moving without saturating anything.
-func load(ctx context.Context, s socks5, h httpProxy, count int) error {
-	log.Printf("[load] %d connections", count)
+// node, rotating over the given inbounds. Rates of 1-4 KB/s keep every
+// counter moving without saturating anything.
+func load(ctx context.Context, dialers []dialer, count int) error {
+	if len(dialers) == 0 {
+		return errors.New("load needs at least one -socks or -http inbound")
+	}
+	log.Printf("[load] %d connections over %d inbounds", count, len(dialers))
 	fixed := []string{"api.demo.internal", "api.demo.internal", "metrics.demo.internal", "media.demo.internal", "files.demo.internal"}
 	var wg sync.WaitGroup
 	for index := range count {
@@ -693,10 +708,7 @@ func load(ctx context.Context, s socks5, h httpProxy, count int) error {
 		} else {
 			target = fixed[index%10-5] + ":80"
 		}
-		var d dialer = s
-		if index%2 == 1 {
-			d = h
-		}
+		d := dialers[index%len(dialers)]
 		rate := int64(1024 * (1 + index%4))
 		wg.Go(func() {
 			// Stagger the start so the connections arrive over ~10 s.

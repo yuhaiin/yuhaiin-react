@@ -11,7 +11,7 @@
 # fd77:89:77::/64); nothing on the host changes and no traffic leaves it.
 #
 #   core       10.89.77.10  yuhaiin under test (this UI, served with -eweb)
-#                           inbounds: SOCKS5 :1080, HTTP :8080, mixed 127.0.0.1:7890, DNS :5353
+#                           inbounds: SOCKS5 :1080 :1081 :1082, HTTP :8080 :8081, mixed 127.0.0.1:7890, DNS :5353
 #                           https://127.0.0.1:50071
 #   upstream   10.89.77.20  a second yuhaiin: SOCKS5/HTTP relay and WireGuard server
 #   web-a/b/c  10.89.77.31-33 (+ fd77:89:77::33)  HTTP stream/sink and UDP echo servers
@@ -128,7 +128,8 @@ load() {
 	podman rm -f $P-load >/dev/null 2>&1 || true
 	[ "${1:-0}" -gt 0 ] || return 0
 	podman run -d --network $NET --name $P-load --ip 10.89.77.60 -v "$WORK/bin:/demo:ro,z" $IMAGE \
-		/demo/topology-demo traffic -profile load -count "$1" -socks 10.89.77.10:1080 -http 10.89.77.10:8080 >/dev/null
+		/demo/topology-demo traffic -profile load -count "$1" -socks 10.89.77.10:1080,10.89.77.10:1081,10.89.77.10:1082 \
+		-http 10.89.77.10:8080,10.89.77.10:8081 >/dev/null
 	log "load: $1 connections from 10.89.77.60"
 }
 

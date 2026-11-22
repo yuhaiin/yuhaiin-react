@@ -121,6 +121,10 @@ async function configureCore() {
     await inbound('LAN SOCKS5', listen('0.0.0.0:1080'), { type: 'socks5', socks5: { username: '', password: '', udp: true } });
     await inbound('LAN HTTP proxy', listen('0.0.0.0:8080'), { type: 'http', http: { username: '', password: '' } });
     await inbound('Local mixed', listen('127.0.0.1:7890'), { type: 'mixed', mixed: { username: '', password: '' } });
+    // More entry points, so one client can fan out to several inbounds (bundling demo).
+    await inbound('Guest SOCKS5', listen('0.0.0.0:1081'), { type: 'socks5', socks5: { username: '', password: '', udp: true } });
+    await inbound('Lab SOCKS5', listen('0.0.0.0:1082'), { type: 'socks5', socks5: { username: '', password: '', udp: true } });
+    await inbound('Office HTTP proxy', listen('0.0.0.0:8081'), { type: 'http', http: { username: '', password: '' } });
 
     const socksRelay = await node('SOCKS relay', [simple(NET.upstream, 1080), { type: 'socks5', socks5: { user: '', password: '', hostname: '' } }]);
     const httpRelay = await node('HTTP relay', [simple(NET.upstream, 8080), { type: 'http', http: { user: '', password: '' } }]);
