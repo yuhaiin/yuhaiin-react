@@ -354,7 +354,7 @@ function fakeIpLinks(layout: ReturnType<LayoutMemory["layout"]>, dnsLayout: Retu
             edge: { id, from: fakeNode.node.id, to: target.id, network: "udp" as const, connections: target.connections, up: 0, down: 0, connectionIds: target.connectionIds },
             d,
             interactive: false,
-            render: { id, path: samplePath(curve), d, dashed: true, up: 0, down: 0, alpha: 1, highlighted: true, spread: 0, auxiliary: { weight: 1 } },
+            render: { id, d, ends: [curve[0].x, curve[0].y, curve[3].x, curve[3].y], vertical: orientation !== "horizontal", length: samplePath(curve).length, dashed: true, up: 0, down: 0, alpha: 1, highlighted: true, auxiliary: { weight: 1 } },
         }];
     });
 }

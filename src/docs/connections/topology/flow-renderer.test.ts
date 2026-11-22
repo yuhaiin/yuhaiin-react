@@ -29,15 +29,19 @@ function context() {
     return {
         setTransform: vi.fn(), clearRect: vi.fn(), stroke: vi.fn(), setLineDash: vi.fn(), fill: vi.fn(),
         beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), arc: vi.fn(),
-        createLinearGradient: vi.fn(() => gradient),
+        createLinearGradient: vi.fn(() => gradient), fillRect: vi.fn(),
+        // Patterns record a copy of every transform: the renderer reuses one matrix object.
+        createPattern: vi.fn(() => {
+            const placed: { e: number; f: number }[] = [];
+            const pattern = { placed, setTransform: vi.fn((matrix: { e: number; f: number }) => { placed.push({ e: matrix.e, f: matrix.f }); }) };
+            return pattern;
+        }),
         globalAlpha: 1, lineWidth: 1, lineCap: "butt", lineJoin: "miter", strokeStyle: "", fillStyle: "",
     };
 }
 
 function edge(id: string, up: number, down: number, length = 300): RenderEdge {
-    const points = new Float32Array(42), lengths = new Float32Array(21);
-    for (let index = 0; index <= 20; index++) { points[index * 2] = (length * index) / 20; lengths[index] = (length * index) / 20; }
-    return { id, d: `M0,0 L${length},0`, dashed: false, up, down, alpha: 1, highlighted: false, spread: 20, path: { points, lengths, length } };
+    return { id, d: `M0,0 C${length / 2},0 ${length / 2},0 ${length},0`, ends: [0, 0, length, 0], vertical: false, length, dashed: false, up, down, alpha: 1, highlighted: false };
 }
 
 const palette: Palette = { up: "teal", upAlt: "cyan", down: "violet", downAlt: "indigo", flow: "blue", idle: "gray", edge: "gray", highlight: "white", auxiliary: "gray", dark: true };
@@ -57,64 +61,74 @@ function setup(mapping = defaultMapping) {
     return { frames, canvas, renderer };
 }
 
-/** Widths of strand and sheen strokes (each is drawn as its own beginPath ... stroke). */
-function strandWidths(run: () => void) {
-    const widths: number[] = [];
-    let open = false;
-    const begin = ctx.beginPath, stroke = ctx.stroke;
-    ctx.beginPath = vi.fn(() => { open = true; });
-    ctx.stroke = vi.fn(() => { if (open) widths.push(ctx.lineWidth); open = false; });
+/** Width and style of every stroke drawn while `run` executes. */
+function strokes(run: () => void) {
+    const drawn: { width: number; style: unknown; alpha: number }[] = [];
+    const stroke = ctx.stroke;
+    ctx.stroke = vi.fn(() => { drawn.push({ width: ctx.lineWidth, style: ctx.strokeStyle, alpha: ctx.globalAlpha }); });
     run();
-    ctx.beginPath = begin;
     ctx.stroke = stroke;
-    return widths;
+    return drawn;
 }
 
 describe("FlowRenderer", () => {
-    it("draws idle edges as a static line once, without a loop or strands", () => {
+    it("draws idle edges as a quiet static line once, without a loop", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 0, 0)]);
         expect(frames.pending.size).toBe(1);
-        frames.advance(16);
+        const drawn = strokes(() => frames.advance(16));
         expect(frames.pending.size).toBe(0);
-        expect(ctx.stroke).toHaveBeenCalled();
-        expect(renderer.getStats()).toMatchObject({ strands: 0, running: false });
-        expect(ctx.lineTo).not.toHaveBeenCalled();
+        expect(drawn).toEqual([{ width: 1, style: "gray", alpha: 0.9 }]);
+        expect(renderer.getStats()).toMatchObject({ ribbons: 0, animated: 0, running: false });
     });
 
-    it("animates strands while there is traffic and keeps a single pending frame", () => {
+    it("draws one ribbon per edge with traffic, plus one highlight per active direction", () => {
         const { frames, renderer } = setup();
-        renderer.setScene([edge("a", 1 << 20, 1 << 20)]);
-        frames.advance(34, 30);
+        renderer.setScene([edge("up", 1 << 20, 0), edge("both", 1 << 20, 1 << 20)]);
+        const drawn = strokes(() => frames.advance(34));
+        // up: ribbon + upload highlight; both: ribbon + upload + download highlight.
+        expect(drawn).toHaveLength(5);
+        // A single width per ribbon: the highlight never swells or thins it.
+        expect(new Set(drawn.slice(0, 2).map(item => item.width)).size).toBe(1);
+        expect(new Set(drawn.slice(2).map(item => item.width)).size).toBe(1);
+        expect(renderer.getStats()).toMatchObject({ ribbons: 2, animated: 2 });
         expect(frames.pending.size).toBe(1);
-        const strands = renderer.getStats().strands;
-        expect(strands).toBeGreaterThan(1);
-        expect(ctx.lineTo).toHaveBeenCalled();
-        // Gradients are made with the scene and the palette, never per frame.
-        expect(ctx.createLinearGradient.mock.calls.length).toBeLessThanOrEqual(strands * 2);
     });
 
-    it("never draws particles or dots: only continuous strands", () => {
+    it("keeps a ribbon 2.4-4 CSS px wide on screen at any zoom", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([edge("a", 1 << 24, 0)]);
+        for (const k of [0.25, 0.66, 1, 2.5]) {
+            renderer.setView({ x: 0, y: 0, k });
+            const [base] = strokes(() => frames.advance(34));
+            expect(base.width * k).toBeGreaterThanOrEqual(2.4 - 1e-9);
+            expect(base.width * k).toBeLessThanOrEqual(4 + 1e-9);
+        }
+    });
+
+    it("moves only the highlight, in the direction of flow, never the shape", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([edge("up", 1 << 20, 0), edge("down", 0, 1 << 20)]);
+        const [up, down] = ctx.createPattern.mock.results.map(result => result.value as { placed: { e: number }[]; setTransform: ReturnType<typeof vi.fn> });
+        frames.advance(34);
+        frames.advance(34, 15);
+        const shift = (pattern: { placed: { e: number }[] }) => pattern.placed[pattern.placed.length - 1].e - pattern.placed[0].e;
+        expect(shift(up)).toBeGreaterThan(0);
+        expect(shift(down)).toBeLessThan(0);
+        // Every pattern placement reuses one matrix object: no allocation per frame.
+        expect(new Set(up.setTransform.mock.calls.map(call => call[0])).size).toBe(1);
+        // The ribbon geometry is built once: no new paths, gradients or patterns while animating.
+        const gradients = ctx.createLinearGradient.mock.calls.length;
+        frames.advance(34, 10);
+        expect(ctx.createLinearGradient.mock.calls.length).toBe(gradients);
+        expect(ctx.moveTo).not.toHaveBeenCalled();
+    });
+
+    it("never draws particles or dots", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 24, 1 << 24)]);
         frames.advance(34, 20);
         expect(ctx.arc).not.toHaveBeenCalled();
-        expect(ctx.fill).not.toHaveBeenCalled();
-        // Strands and their sheen (the path-less strokes) share one width: nothing swells.
-        const widths = new Set(strandWidths(() => frames.advance(34)));
-        expect(widths.size).toBe(1);
-    });
-
-    it("keeps strands a constant width on screen at any zoom", () => {
-        const { frames, renderer } = setup();
-        renderer.setScene([edge("a", 1 << 24, 1 << 24)]);
-        for (const k of [0.3, 0.66, 1, 2]) {
-            renderer.setView({ x: 0, y: 0, k });
-            const widths = strandWidths(() => frames.advance(34)).map(width => width * k);
-            expect(widths.length).toBeGreaterThan(0);
-            // 1.6 CSS px in dark mode, whatever the zoom.
-            expect(widths.every(width => Math.abs(width - 1.6) < 1e-6)).toBe(true);
-        }
     });
 
     it("limits drawing to the configured frame rate", () => {
@@ -126,24 +140,23 @@ describe("FlowRenderer", () => {
         expect(drawn).toBeLessThanOrEqual(32);
     });
 
-    it("freezes while paused and resumes without a time jump", () => {
+    it("draws still ribbons while paused and resumes without a time jump", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 20, 0)]);
+        const [pattern] = ctx.createPattern.mock.results.map(result => result.value as { placed: { e: number }[] });
         frames.advance(34, 10);
         renderer.setPaused(true);
         frames.advance(34, 2);
         expect(frames.pending.size).toBe(0);
-        ctx.lineTo.mockClear();
-        renderer.setView({ x: 0, y: 0, k: 1 });
-        frames.advance(34);
-        const paused = ctx.lineTo.mock.calls.map(call => call.join());
+        const paused = strokes(() => { renderer.setView({ x: 0, y: 0, k: 1 }); frames.advance(34); });
+        // Paused: the ribbon only, no highlight.
+        expect(paused).toHaveLength(1);
+        const before = pattern.placed[pattern.placed.length - 1].e;
         frames.advance(10_000);
         renderer.setPaused(false);
-        ctx.lineTo.mockClear();
         frames.advance(34);
-        // The first resumed frame steps by 0: strands are where they were paused (the sheen comes back on top).
-        const resumed = ctx.lineTo.mock.calls.map(call => call.join());
-        expect(paused.every(point => resumed.includes(point))).toBe(true);
+        // The first resumed frame steps by 0: the highlight is where it was.
+        expect(pattern.placed[pattern.placed.length - 1].e).toBeCloseTo(before, 6);
         expect(frames.pending.size).toBe(1);
     });
 
@@ -163,11 +176,10 @@ describe("FlowRenderer", () => {
         const { frames, renderer } = setup();
         renderer.setReducedMotion(true);
         renderer.setScene([edge("a", 1 << 20, 1 << 10)]);
-        frames.advance(34, 5);
+        const drawn = strokes(() => frames.advance(34, 5));
         expect(frames.pending.size).toBe(0);
         expect(renderer.getStats().running).toBe(false);
-        // Strands are drawn, just not moving.
-        expect(ctx.lineTo).toHaveBeenCalled();
+        expect(drawn).toHaveLength(1);
     });
 
     it("caps the backing store pixel ratio on resize", () => {
@@ -190,18 +202,19 @@ describe("FlowRenderer", () => {
         expect(frames.pending.size).toBe(0);
     });
 
-    it("stays within the strand budget with a large scene", () => {
+    it("animates at most the budget with a large scene, drawing the rest still", () => {
         const { frames, renderer } = setup(compactMapping);
         renderer.setScene(Array.from({ length: 500 }, (_, index) => edge(`e${index}`, 1 << 30, 1 << 30, 1500)));
-        frames.advance(34, 30);
-        expect(renderer.getStats().strands).toBe(compactMapping.budget);
+        const drawn = strokes(() => frames.advance(34));
+        expect(renderer.getStats()).toMatchObject({ ribbons: 500, animated: compactMapping.budget });
+        expect(drawn).toHaveLength(500 + compactMapping.budget * 2);
     });
 
     it("never animates auxiliary DNS edges", () => {
         const { frames, renderer } = setup();
         renderer.setScene([{ ...edge("dns", 1 << 20, 0), auxiliary: { weight: 1 } }]);
         frames.advance(34, 3);
-        expect(renderer.getStats().strands).toBe(0);
+        expect(renderer.getStats().animated).toBe(0);
         expect(frames.pending.size).toBe(0);
     });
 });

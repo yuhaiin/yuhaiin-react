@@ -298,20 +298,9 @@
     border-radius: var(--radius-full);
 }
 
-/* Each legend line brightens towards the end where its strands arrive, with the arrival dot. */
-.swatchUp { background: linear-gradient(90deg, var(--topology-flow), var(--topology-upload)); }
-.swatchDown { background: linear-gradient(270deg, var(--topology-flow), var(--topology-download)); }
-.swatchUp::after,
-.swatchDown::after {
-    content: "";
-    display: block;
-    width: 5px;
-    height: 5px;
-    margin-top: -1px;
-    border-radius: var(--radius-full);
-}
-.swatchUp::after { margin-left: 15px; background: var(--topology-upload); }
-.swatchDown::after { margin-left: -2px; background: var(--topology-download); }
+/* Each legend line is a short ribbon with the same gradient as on the canvas. */
+.swatchUp { background: linear-gradient(90deg, var(--topology-flow), var(--topology-upload-alt), var(--topology-upload)); }
+.swatchDown { background: linear-gradient(90deg, var(--topology-download), var(--topology-download-alt)); }
 
 .lineTcp,
 .lineUdp {

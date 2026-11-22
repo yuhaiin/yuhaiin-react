@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { desktopLayout, LayoutMemory, mobileLayout, type LayoutOptions } from "./layout";
 import type { Column, NetworkKind, TopologyEdge, TopologyNode } from "./model";
-import { BUNDLE_FROM, buildScene } from "./scene";
+import { RIBBON_PX } from "./ribbons";
+import { bendOf, BUNDLE_FROM, buildScene, type SceneEdge } from "./scene";
 import { detailFor } from "./stage";
 
 function node(id: string, column: Column): TopologyNode {
@@ -16,18 +17,81 @@ function place(nodes: TopologyNode[], options: LayoutOptions = desktopLayout) {
     return new LayoutMemory().layout(nodes, 0, options);
 }
 
-const first = (points: Float32Array) => ({ x: points[0], y: points[1] });
-const last = (points: Float32Array) => ({ x: points[points.length - 2], y: points[points.length - 1] });
+const numbers = (d: string) => (d.match(/-?\d+(\.\d+)?(e-?\d+)?/g) ?? []).map(Number);
 
-describe("buildScene bundling", () => {
-    it("keeps a sparse graph as individual edges", () => {
+/** The drawn ribbon's cubic: p0, p1, p2, p3. */
+function cubic(item: SceneEdge) {
+    const n = numbers(item.render.d);
+    expect(item.render.d).toMatch(/^M[^C]+C/);
+    return [0, 2, 4, 6].map(i => ({ x: n[i], y: n[i + 1] }));
+}
+
+/** Smallest radius of curvature along a cubic. */
+function minRadius(p: { x: number; y: number }[]) {
+    let min = Infinity;
+    for (let step = 0; step <= 200; step++) {
+        const t = step / 200, u = 1 - t;
+        const dx = 3 * u * u * (p[1].x - p[0].x) + 6 * u * t * (p[2].x - p[1].x) + 3 * t * t * (p[3].x - p[2].x);
+        const dy = 3 * u * u * (p[1].y - p[0].y) + 6 * u * t * (p[2].y - p[1].y) + 3 * t * t * (p[3].y - p[2].y);
+        const ddx = 6 * u * (p[2].x - 2 * p[1].x + p[0].x) + 6 * t * (p[3].x - 2 * p[2].x + p[1].x);
+        const ddy = 6 * u * (p[2].y - 2 * p[1].y + p[0].y) + 6 * t * (p[3].y - 2 * p[2].y + p[1].y);
+        const cross = Math.abs(dx * ddy - dy * ddx);
+        if (cross > 1e-9) min = Math.min(min, Math.hypot(dx, dy) ** 3 / cross);
+    }
+    return min;
+}
+
+const members = (scene: ReturnType<typeof buildScene>) => scene.edges.filter(item => item.interactive !== false);
+const trunks = (scene: ReturnType<typeof buildScene>) => scene.edges.filter(item => item.render.id.startsWith("trunk:"));
+
+describe("buildScene geometry", () => {
+    it("draws each edge of a sparse graph as one cubic ribbon from card edge to card edge", () => {
         const layout = place([node("s", "source"), node("a", "inbound"), node("b", "inbound")]);
         const scene = buildScene(layout, [edge("s", "a"), edge("s", "b")], null);
         expect(scene.bundles).toEqual([]);
-        expect(scene.edges.every(item => item.render.waveStart === 0 && item.render.waveEnd === 1)).toBe(true);
+        expect(trunks(scene)).toEqual([]);
+        const { nodeWidth: w, nodeHeight: h } = desktopLayout;
+        for (const item of scene.edges) {
+            const [p0, p1, p2, p3] = cubic(item);
+            const from = layout.byId.get(item.edge.from)!, to = layout.byId.get(item.edge.to)!;
+            expect(p0.x).toBeCloseTo(from.x + w);
+            expect(p3.x).toBeCloseTo(to.x);
+            expect(Math.abs(p0.y - (from.y + h / 2))).toBeLessThan(h / 2);
+            expect(Math.abs(p3.y - (to.y + h / 2))).toBeLessThan(h / 2);
+            // Leaves and arrives along the flow: perpendicular to both cards.
+            expect(p1.y).toBeCloseTo(p0.y);
+            expect(p2.y).toBeCloseTo(p3.y);
+            expect(item.render.ends).toEqual([p0.x, p0.y, p3.x, p3.y]);
+        }
     });
 
-    it("bundles a crowded fan-out into one trunk that branches to the real targets, in order", () => {
+    it("never bends tighter than the widest ribbon's half-width at the zoomed-out level", () => {
+        // A wide fan with large vertical offsets is the hardest case for a cubic.
+        const targets = Array.from({ length: 10 }, (_, index) => `d${index}`);
+        const layout = place([node("s", "outbound"), ...targets.map(id => node(id, "destination"))]);
+        for (const detail of ["detail", "normal", "far"] as const) {
+            const scene = buildScene(layout, targets.map(id => edge("s", id)), null, false, 0, detail);
+            // Ribbons are stroked, so the rasterizer never shows folded boundaries; this keeps
+            // the inner edge of every bend open down to where the zoomed-out level begins.
+            const halfWidthAtFar = (RIBBON_PX.max + RIBBON_PX.selectedExtra) / 2 / 0.45;
+            for (const item of members(scene)) expect(minRadius(cubic(item))).toBeGreaterThan(halfWidthAtFar);
+        }
+    });
+});
+
+describe("bendOf", () => {
+    it("keeps branch cubics monotonic along the flow", () => {
+        for (const span of [5, 12, 20, 60, 300]) {
+            const bend = bendOf(span);
+            expect(bend).toBeGreaterThan(0);
+            // a(t) of a cubic with controls at bend and span - bend advances while bend <= span.
+            expect(bend).toBeLessThanOrEqual(span);
+        }
+    });
+});
+
+describe("buildScene bundling", () => {
+    it("draws a crowded fan-out as one trunk ribbon, then one branch per real target, in order", () => {
         const targets = ["i1", "i2", "i3", "i4", "i5"];
         const layout = place([node("s", "source"), ...targets.map(id => node(id, "inbound"))]);
         const edges = targets.map(id => edge("s", id));
@@ -36,51 +100,59 @@ describe("buildScene bundling", () => {
         const [bundle] = scene.bundles;
         expect(bundle).toMatchObject({ node: "s", side: "out", network: "tcp", edgeIds: edges.map(item => item.id), peers: targets, connections: 5, up: 500, down: 1000 });
         expect(bundle.connectionIds).toHaveLength(5);
-        const { nodeWidth: w, nodeHeight: h } = desktopLayout;
+
+        // The trunk is drawn once, carrying the members' combined rates.
+        const [trunk] = trunks(scene);
+        expect(trunks(scene)).toHaveLength(1);
+        expect(trunk.render).toMatchObject({ up: 500, down: 1000, dashed: false });
+        const [tx0, ty0, tx1, ty1] = trunk.render.ends;
         const source = layout.byId.get("s")!;
+        expect(tx0).toBeCloseTo(source.x + desktopLayout.nodeWidth);
+        expect(ty1).toBeCloseTo(ty0);
+
         const ends: number[] = [];
-        for (const item of scene.edges) {
-            const start = first(item.render.path.points), end = last(item.render.path.points);
-            // Starts on the source card's right edge, inside the card's height.
-            expect(start.x).toBeCloseTo(source.x + w);
-            expect(Math.abs(start.y - (source.y + h / 2))).toBeLessThan(h / 2);
-            // Ends on its own target's left edge.
-            const target = layout.byId.get(item.edge.to)!;
-            expect(end.x).toBeCloseTo(target.x);
-            expect(Math.abs(end.y - (target.y + h / 2))).toBeLessThan(h / 2);
-            // Straight trunk first, then the waving branch.
-            expect(item.render.waveStart).toBeGreaterThan(0);
-            expect(item.render.path.points[3]).toBeCloseTo(start.y, 4);
+        for (const item of members(scene)) {
+            const [p0, p1, , p3] = cubic(item);
+            // Each branch starts on the trunk's centre line, inside its length, along the flow.
+            expect(p0.y).toBeCloseTo(ty0);
+            expect(p0.x).toBeGreaterThan(tx0);
+            expect(p0.x).toBeLessThanOrEqual(tx1 + 1e-6);
+            expect(p1.y).toBeCloseTo(p0.y);
+            // ...and ends on its own target card.
+            expect(p3.x).toBeCloseTo(layout.byId.get(item.edge.to)!.x);
+            // The hit path still covers the whole route, trunk included.
+            expect(numbers(item.d)[0]).toBeCloseTo(tx0);
             expect(item.bundles).toEqual([bundle.id]);
-            ends.push(end.y);
+            ends.push(p3.y);
         }
-        // Trunk members are packed tighter than individual ports, ordered like their targets.
-        const starts = scene.edges.map(item => first(item.render.path.points).y);
-        expect(Math.max(...starts) - Math.min(...starts)).toBeLessThan(5 * 14);
-        expect([...starts].sort((a, b) => a - b)).toEqual(starts);
         expect([...ends].sort((a, b) => a - b)).toEqual(ends);
     });
 
-    it("bundles a crowded fan-in into a trunk at the shared target", () => {
+    it("draws a crowded fan-in as branches joining one trunk at the shared target", () => {
         const sources = ["s1", "s2", "s3", "s4"];
         const layout = place([...sources.map(id => node(id, "source")), node("in", "inbound")]);
         const scene = buildScene(layout, sources.map(id => edge(id, "in")), null);
         expect(scene.bundles).toEqual([expect.objectContaining({ node: "in", side: "in", peers: sources })]);
-        for (const item of scene.edges) {
-            expect(item.render.waveEnd).toBeLessThan(1);
-            expect(last(item.render.path.points).x).toBeCloseTo(layout.byId.get("in")!.x);
+        const [trunk] = trunks(scene);
+        const [tx0, ty0, tx1] = trunk.render.ends;
+        expect(tx0).toBeCloseTo(layout.byId.get("in")!.x);
+        for (const item of members(scene)) {
+            const [, , p2, p3] = cubic(item);
+            expect(p3.y).toBeCloseTo(ty0);
+            expect(p3.x).toBeLessThan(tx0);
+            expect(p3.x).toBeGreaterThanOrEqual(tx1 - 1e-6);
+            expect(p2.y).toBeCloseTo(p3.y);
         }
     });
 
-    it("never puts TCP and UDP in the same trunk", () => {
+    it("never puts TCP and UDP in the same trunk, and keeps UDP dashed", () => {
         const targets = ["i1", "i2", "i3", "i4"];
         const layout = place([node("s", "source"), ...targets.map(id => node(id, "inbound"))]);
         const scene = buildScene(layout, [...targets.map(id => edge("s", id, "tcp")), ...targets.map(id => edge("s", id, "udp"))], null);
         expect(scene.bundles.map(bundle => bundle.network).sort()).toEqual(["tcp", "udp"]);
-        for (const bundle of scene.bundles) {
-            expect(bundle.edgeIds.every(id => id.endsWith(`#${bundle.network}`))).toBe(true);
-        }
-        expect(scene.edges.filter(item => item.edge.network === "udp").every(item => item.render.dashed)).toBe(true);
+        for (const bundle of scene.bundles) expect(bundle.edgeIds.every(id => id.endsWith(`#${bundle.network}`))).toBe(true);
+        expect(trunks(scene).map(item => item.render.dashed).sort()).toEqual([false, true]);
+        expect(members(scene).filter(item => item.edge.network === "udp").every(item => item.render.dashed)).toBe(true);
     });
 
     it("bundles more eagerly when zoomed out and less when zoomed in", () => {
@@ -93,18 +165,19 @@ describe("buildScene bundling", () => {
         expect(buildScene(layout, edges.slice(0, BUNDLE_FROM.far), null, false, 0, "normal").bundles).toHaveLength(0);
     });
 
-    it("expands groups that contain a searched or selected edge", () => {
+    it("expands groups that contain a searched or selected edge, and keeps a selected trunk", () => {
         const targets = ["i1", "i2", "i3", "i4", "i5"];
         const layout = place([node("s", "source"), ...targets.map(id => node(id, "inbound"))]);
         const edges = targets.map(id => edge("s", id));
         const emphasis = { nodes: new Set(["s", "i3"]), edges: new Set([edges[2].id]) };
         const expanded = buildScene(layout, edges, emphasis);
         expect(expanded.bundles).toHaveLength(0);
+        expect(trunks(expanded)).toHaveLength(0);
         expect(expanded.edges.find(item => item.edge.id === edges[2].id)!.render.highlighted).toBe(true);
         expect(expanded.edges.find(item => item.edge.id === edges[0].id)!.render.alpha).toBeLessThan(1);
-        // A selected trunk stays bundled while its members are highlighted.
         const kept = buildScene(layout, edges, { nodes: new Set(["s"]), edges: new Set(edges.map(item => item.id)) }, false, 0, "normal", null);
         expect(kept.bundles).toHaveLength(1);
+        expect(trunks(kept)[0].render.highlighted).toBe(true);
     });
 
     it("bundles along the vertical phone layout too", () => {
@@ -113,17 +186,22 @@ describe("buildScene bundling", () => {
         const scene = buildScene(layout, targets.map(id => edge("s", id)), null, false, 0, "normal");
         expect(scene.bundles).toHaveLength(1);
         const source = layout.byId.get("s")!;
-        for (const item of scene.edges) {
-            const start = first(item.render.path.points);
-            expect(start.y).toBeCloseTo(source.y + mobileLayout.nodeHeight);
-            expect(Math.abs(start.x - (source.x + mobileLayout.nodeWidth / 2))).toBeLessThan(mobileLayout.nodeWidth / 2);
+        const [trunk] = trunks(scene);
+        expect(trunk.render.vertical).toBe(true);
+        expect(trunk.render.ends[1]).toBeCloseTo(source.y + mobileLayout.nodeHeight);
+        for (const item of members(scene)) {
+            const [p0, p1] = cubic(item);
+            expect(p0.x).toBeCloseTo(trunk.render.ends[0]);
+            expect(p1.x).toBeCloseTo(p0.x);
         }
     });
 
     it("never bundles the DNS history band", () => {
         const targets = ["i1", "i2", "i3", "i4", "i5"];
         const layout = place([node("s", "source"), ...targets.map(id => node(id, "inbound"))]);
-        expect(buildScene(layout, targets.map(id => edge("s", id)), null, true, 0, "far").bundles).toEqual([]);
+        const scene = buildScene(layout, targets.map(id => edge("s", id)), null, true, 0, "far");
+        expect(scene.bundles).toEqual([]);
+        expect(trunks(scene)).toEqual([]);
     });
 });
 

@@ -16,8 +16,8 @@ export type Detail = "detail" | "normal" | "far";
 
 /** Same-protocol edges on one card side needed before they share a trunk. */
 export const BUNDLE_FROM: Record<Detail, number> = { detail: 8, normal: 4, far: 3 };
-/** Distance between bundle members inside a trunk (world units). */
-const TRUNK_STEP: Record<Detail, number> = { detail: 3, normal: 3.4, far: 4.6 };
+/** Room a trunk takes on its card side (world units); all members share its centre line. */
+const TRUNK_ROOM = 10;
 
 export interface SceneEdge {
     edge: TopologyEdge;
@@ -94,8 +94,6 @@ function frameOf(layout: Layout, offsetY: number): Frame {
 interface Port {
     /** Across offset from the card edge's centre. */
     offset: number;
-    /** Half-width available to the edge's strands. */
-    spread: number;
     bundle?: string;
 }
 
@@ -105,9 +103,9 @@ interface BundleDraft { node: string; side: "out" | "in"; network: NetworkKind; 
  * Ports on every card side. Edges are ordered by the position of the node at
  * their other end, so ribbons leave and arrive in neighbour order. When a
  * card side carries at least BUNDLE_FROM[detail] edges of one protocol (and
- * none of them is to be expanded), those edges form one unit packed TRUNK_STEP
- * apart: they leave (or arrive) as one trunk and branch out to their real
- * targets. TCP and UDP never share a trunk.
+ * none of them is to be expanded), those edges share one port and one centre
+ * line: they leave (or arrive) as a single trunk ribbon and branch out to
+ * their real targets. TCP and UDP never share a trunk.
  */
 function assignPorts(layout: Layout, frame: Frame, edges: TopologyEdge[], detail: Detail | null, expand: Set<string> | null) {
     const across = (id: string) => {
@@ -146,26 +144,34 @@ function assignPorts(layout: Layout, frame: Frame, edges: TopologyEdge[], detail
         }
         for (const edge of list) if (!bundled.has(edge.network)) units.push({ edges: [edge], at: other(edge) });
         units.sort((a, b) => a.at - b.at);
-        const trunkStep = detail ? TRUNK_STEP[detail] : 0;
-        const trunkSpace = units.reduce((sum, unit) => sum + (unit.bundle ? unit.edges.length * trunkStep : 0), 0);
-        const singles = units.filter(unit => !unit.bundle).length;
-        const step = singles ? Math.max(3, Math.min(PORT_GAP, (frame.band - trunkSpace) / singles)) : 0;
-        const total = trunkSpace + singles * step;
+        const trunks = units.filter(unit => unit.bundle).length;
+        const singles = units.length - trunks;
+        const step = singles ? Math.max(3, Math.min(PORT_GAP, (frame.band - trunks * TRUNK_ROOM) / singles)) : 0;
+        const total = trunks * TRUNK_ROOM + singles * step;
         let cursor = -total / 2;
         for (const unit of units) {
-            const width = unit.bundle ? trunkStep : step;
-            for (const edge of unit.edges) {
-                ports[side].set(edge.id, { offset: cursor + width / 2, spread: Math.max(1.2, width * 0.4), bundle: unit.bundle });
-                cursor += width;
-            }
+            const width = unit.bundle ? TRUNK_ROOM : step;
+            // A trunk's members share its centre: the shared part is one ribbon, not a stack of them.
+            for (const edge of unit.edges) ports[side].set(edge.id, { offset: cursor + width / 2, bundle: unit.bundle });
+            cursor += width;
         }
     }
     return { ports, bundles };
 }
 
 /** Appends a sampled piece in flow coordinates: straight, or a cubic leaving and arriving along the flow. */
+/**
+ * Control distance of a branch cubic. Tangents run along the flow at both
+ * ends; a longer control distance flattens the ends (larger radius where the
+ * ribbon meets a card or trunk). Up to the full span the curve still
+ * advances monotonically, so 0.62 (never more than 0.9) adds no overshoot.
+ */
+export function bendOf(span: number) {
+    return Math.min(Math.max(1, span) * 0.9, Math.max(12, span * 0.62));
+}
+
 function sample(out: number[], from: { a: number; b: number }, to: { a: number; b: number }, segments: number, curved: boolean, skipFirst: boolean) {
-    const bend = Math.max(12, (to.a - from.a) * 0.5);
+    const bend = bendOf(to.a - from.a);
     for (let index = skipFirst ? 1 : 0; index <= segments; index++) {
         const t = index / segments;
         if (!curved) {
@@ -183,9 +189,10 @@ function sample(out: number[], from: { a: number; b: number }, to: { a: number; 
 
 /**
  * Geometry for every edge whose two ends are placed, and the bundles that
- * share trunks at crowded card sides. A bundled edge runs straight along
- * its trunk next to the other members, then branches with a smooth curve to
- * its real target (or into the target's fan-in trunk). Members whose other
+ * share trunks at crowded card sides. The members of a trunk share its
+ * centre line; the trunk is drawn once, and each member draws only its
+ * branch: a smooth curve from where it leaves the trunk to its real target
+ * (or into the target's fan-in trunk). Members whose other
  * end lies farther across split off earlier, so branches fan out in order
  * instead of crossing. Groups containing an edge in `expand` (a search
  * match or the selected node's paths) are drawn as individual edges; with an
@@ -225,17 +232,21 @@ export function buildScene(layout: Layout, edges: TopologyEdge[], emphasis: Emph
         sample(coords, branchStart, branchEnd, 18, true, lead > 0);
         if (tail) sample(coords, branchEnd, end, 3, false, true);
         const points = new Float32Array(coords.length);
-        const lengths = new Float32Array(coords.length / 2);
         let length = 0;
         for (let index = 0; index < coords.length / 2; index++) {
             const p = frame.point(coords[index * 2], coords[index * 2 + 1]);
             points[index * 2] = p.x;
             points[index * 2 + 1] = p.y;
             if (index) length += Math.hypot(p.x - points[index * 2 - 2], p.y - points[index * 2 - 1]);
-            lengths[index] = length;
         }
+        // Hit path: the edge's whole route, trunks included.
         let d = `M${points[0]},${points[1]}`;
         for (let index = 1; index < points.length / 2; index++) d += ` L${points[index * 2]},${points[index * 2 + 1]}`;
+        // Drawn ribbon: a true cubic, from where the edge leaves its trunk to where it joins the next one.
+        // It starts and ends along the flow, so it meets trunks and cards at the same tangent.
+        const bend = bendOf(branchEnd.a - branchStart.a);
+        const p0 = frame.point(branchStart.a, branchStart.b), p1 = frame.point(branchStart.a + bend, branchStart.b);
+        const p2 = frame.point(branchEnd.a - bend, branchEnd.b), p3 = frame.point(branchEnd.a, branchEnd.b);
         const highlighted = emphasis?.edges.has(edge.id) ?? false;
         result.push({
             edge,
@@ -243,12 +254,10 @@ export function buildScene(layout: Layout, edges: TopologyEdge[], emphasis: Emph
             bundles: [out.bundle, into.bundle].filter((id): id is string => Boolean(id)),
             render: {
                 id: edge.id,
-                path: { points, lengths, length },
-                spread: Math.min(out.spread, into.spread),
-                // Strands wave only along the branch: trunks are calm, parallel runs.
-                waveStart: length > 0 ? lead / length : 0,
-                waveEnd: length > 0 ? 1 - tail / length : 1,
-                d,
+                d: `M${p0.x},${p0.y} C${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`,
+                ends: [p0.x, p0.y, p3.x, p3.y],
+                vertical: !frame.horizontal,
+                length,
                 dashed: edge.network === "udp",
                 up: edge.up,
                 down: edge.down,
@@ -264,20 +273,38 @@ export function buildScene(layout: Layout, edges: TopologyEdge[], emphasis: Emph
         const node = layout.byId.get(bundle.node);
         if (!node) continue;
         const anchor = bundle.side === "out" ? frame.exit(node) : frame.entry(node);
-        const offsets = bundle.members.map(edge => (bundle.side === "out" ? ports.out : ports.in).get(edge.id)!.offset);
-        const centre = anchor.b + (Math.min(...offsets) + Math.max(...offsets)) / 2;
+        const centre = anchor.b + (bundle.side === "out" ? ports.out : ports.in).get(bundle.members[0].id)!.offset;
         const reach = (trunks.get(id) ?? 0) * (bundle.side === "out" ? 1 : -1);
         const a = frame.point(anchor.a, centre), b = frame.point(anchor.a + reach, centre);
+        const highlighted = bundle.members.some(edge => emphasis?.edges.has(edge.id));
+        const up = bundle.members.reduce((sum, edge) => sum + edge.up, 0);
+        const down = bundle.members.reduce((sum, edge) => sum + edge.down, 0);
+        // The shared trunk is one ribbon of its own, carrying the members' combined rates.
+        result.push({
+            edge: { id: `trunk:${id}`, from: bundle.node, to: bundle.node, network: bundle.network, connections: 0, up, down, connectionIds: [] },
+            d: `M${a.x},${a.y} L${b.x},${b.y}`,
+            interactive: false,
+            render: {
+                id: `trunk:${id}`,
+                d: `M${a.x},${a.y} L${b.x},${b.y}`,
+                ends: [a.x, a.y, b.x, b.y],
+                vertical: !frame.horizontal,
+                length: Math.abs(reach),
+                dashed: bundle.network === "udp",
+                up, down,
+                alpha: emphasis && !highlighted ? 0.14 : 1,
+                highlighted,
+            },
+        });
         sceneBundles.push({
             id, node: bundle.node, side: bundle.side, network: bundle.network,
             edgeIds: bundle.members.map(edge => edge.id),
             connectionIds: [...new Set(bundle.members.flatMap(edge => edge.connectionIds))],
             connections: bundle.members.reduce((sum, edge) => sum + edge.connections, 0),
-            up: bundle.members.reduce((sum, edge) => sum + edge.up, 0),
-            down: bundle.members.reduce((sum, edge) => sum + edge.down, 0),
+            up, down,
             peers: bundle.members.map(edge => bundle.side === "out" ? edge.to : edge.from),
             d: `M${a.x},${a.y} L${b.x},${b.y}`,
-            width: Math.max(...offsets) - Math.min(...offsets) + 10,
+            width: 14,
         });
     }
     return { edges: result, bundles: sceneBundles };

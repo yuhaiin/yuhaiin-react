@@ -1,30 +1,25 @@
 /**
- * Flowing ribbons: every edge with traffic is drawn as a bundle of thin,
- * evenly spaced strands that share one slow, gentle wave.
+ * Single ribbons: every edge with traffic is one continuous band of light
+ * along a stable curve.
  *
- * Strands are not data points. A direction's measured byte rate decides how
- * many strands it gets, how bright they are and how fast a soft sheen drifts
- * along them, on a clamped log scale; a global budget bounds the total. Each
- * strand keeps its lane inside the edge's own port slot from end to end, so
- * strands of a bundle never cross and the bundle attaches exactly to the
- * real source and destination cards. An edge without traffic is one quiet
- * static line.
+ * The ribbon's shape never animates. A direction's measured byte rate sets,
+ * on a clamped log scale, how wide (within a narrow range) and how bright the
+ * ribbon is and how fast a soft band of brightness travels along it in the
+ * direction of flow. An edge without traffic is a quiet static line.
  */
 
 export interface FlowMapping {
     /** Rates at or below this are drawn as the faintest flow. */
     floorRate: number;
-    /** Rates at or above this get full brightness and speed. */
+    /** Rates at or above this get full width, brightness and speed. */
     ceilingRate: number;
-    /** Strands per direction at most. */
-    maxStrands: number;
-    /** Strands in the whole scene at most. */
+    /** Ribbons animated at most (the busiest are kept); the rest are drawn still. */
     budget: number;
 }
 
-export const defaultMapping: FlowMapping = { floorRate: 256, ceilingRate: 64 * 1024 * 1024, maxStrands: 5, budget: 220 };
-/** Phones and coarse pointers: fewer strands. */
-export const compactMapping: FlowMapping = { ...defaultMapping, maxStrands: 3, budget: 120 };
+export const defaultMapping: FlowMapping = { floorRate: 256, ceilingRate: 64 * 1024 * 1024, budget: 200 };
+/** Phones and coarse pointers: fewer animated ribbons. */
+export const compactMapping: FlowMapping = { ...defaultMapping, budget: 90 };
 
 /** 0 for no traffic, then 0.02..1 on a log scale between floorRate and ceilingRate. */
 export function intensityFor(rate: number, mapping: FlowMapping = defaultMapping): number {
@@ -34,171 +29,63 @@ export function intensityFor(rate: number, mapping: FlowMapping = defaultMapping
     return Math.min(1, Math.max(0.02, value));
 }
 
-/** Strands for one direction: none without traffic, then 2..maxStrands (a bundle, never a lone line). */
-export function strandsFor(rate: number, mapping: FlowMapping = defaultMapping): number {
-    const intensity = intensityFor(rate, mapping);
-    if (intensity === 0) return 0;
-    const least = Math.min(2, mapping.maxStrands);
-    return Math.min(mapping.maxStrands, least + Math.round(intensity * (mapping.maxStrands - least)));
-}
+/** Ribbon width on screen (CSS px): within a narrow range, so busy paths never turn into slabs. */
+export const RIBBON_PX = { min: 2.4, max: 4, idle: 1, selectedExtra: 1 };
 
-export interface FlowPath {
-    /** Polyline x,y pairs in world coordinates, from source to target. */
-    points: Float32Array;
-    /** Cumulative length at each point. */
-    lengths: Float32Array;
-    length: number;
-}
+/** Length on screen (CSS px) after which the travelling highlight repeats. */
+export const HIGHLIGHT_PERIOD_PX = 260;
 
-/** Unit normals of a polyline (x,y pairs), one per point. */
-export function normalsOf(points: Float32Array): Float32Array {
-    const count = points.length / 2;
-    const normals = new Float32Array(points.length);
-    for (let index = 0; index < count; index++) {
-        const a = Math.max(0, index - 1), b = Math.min(count - 1, index + 1);
-        const dx = points[b * 2] - points[a * 2], dy = points[b * 2 + 1] - points[a * 2 + 1];
-        const norm = Math.hypot(dx, dy) || 1;
-        normals[index * 2] = -dy / norm;
-        normals[index * 2 + 1] = dx / norm;
-    }
-    return normals;
-}
-
-export interface Strand {
-    /** Index of the edge the strand belongs to. */
-    edge: number;
-    /** 0 = upload (source -> destination), 1 = download (back). */
-    tone: 0 | 1;
-    /** Which colour of the tone (neighbouring strands alternate). */
-    hue: number;
-    /** Position in the edge's bundle (0..size-1) and the bundle size. */
-    slot: number;
-    size: number;
-    /** Lane as a fraction of the bundle's half-width (-1..1): upload first, then download. */
-    laneFraction: number;
-    /** Wave height on screen (CSS px) and its cap in world units (short edges wave less). */
-    amplitudePx: number;
-    maxAmplitude: number;
-    /** The bundle's wave: waves along the path, phase, drift (rad/s). */
-    waves: number;
-    phase: number;
-    drift: number;
-    /** Speed (path lengths/s, in the direction of flow) and start of the sheen. */
-    sheen: number;
-    sheenPhase: number;
-    /** 0..1 opacity factor from the measured rate. */
+export interface RibbonStyle {
+    /** 0..1 from the busier direction. */
     intensity: number;
+    /** CSS px. */
+    width: number;
+    /** 0..1 base opacity. */
+    alpha: number;
+    /** Highlight speed (CSS px/s) per direction; 0 when the direction is idle. */
+    upSpeed: number;
+    downSpeed: number;
+    /** Highlight opacity per direction. */
+    upGlow: number;
+    downGlow: number;
 }
 
-export interface StrandInput {
-    up: number;
-    down: number;
-    length: number;
-    animated: boolean;
+function directionSpeed(rate: number, mapping: FlowMapping) {
+    const intensity = intensityFor(rate, mapping);
+    return intensity === 0 ? 0 : 36 + 150 * intensity;
 }
 
-/** Deterministic per-strand variation, so strands keep their look across scene updates. */
-function hash(edge: string, index: number) {
-    let value = 2166136261 ^ index;
-    for (let i = 0; i < edge.length; i++) value = Math.imul(value ^ edge.charCodeAt(i), 16777619);
+function directionGlow(rate: number, mapping: FlowMapping) {
+    const intensity = intensityFor(rate, mapping);
+    return intensity === 0 ? 0 : 0.32 + 0.4 * intensity;
+}
+
+export function ribbonStyle(up: number, down: number, mapping: FlowMapping = defaultMapping): RibbonStyle {
+    const intensity = Math.max(intensityFor(up, mapping), intensityFor(down, mapping));
+    return {
+        intensity,
+        width: intensity === 0 ? RIBBON_PX.idle : RIBBON_PX.min + (RIBBON_PX.max - RIBBON_PX.min) * intensity,
+        alpha: intensity === 0 ? 0 : 0.5 + 0.35 * intensity,
+        upSpeed: directionSpeed(up, mapping),
+        downSpeed: directionSpeed(down, mapping),
+        upGlow: directionGlow(up, mapping),
+        downGlow: directionGlow(down, mapping),
+    };
+}
+
+/** Deterministic per-ribbon phase, so a ribbon keeps its highlight position across scene updates. */
+export function phaseOf(id: string) {
+    let value = 2166136261;
+    for (let index = 0; index < id.length; index++) value = Math.imul(value ^ id.charCodeAt(index), 16777619);
     return ((value >>> 0) % 10000) / 10000;
 }
 
-/** Wave height on screen, before the per-bundle variation. */
-export const WAVE_PX = 12;
-/** Distance between neighbouring strands on screen: close enough to read as one ribbon, far enough not to merge. */
-export const LANE_PX = 3.2;
-
 /**
- * Strands for a scene. Counts follow the rate per direction and are scaled
- * down together (keeping at least one per active direction) when the total
- * would exceed the budget, which is never exceeded.
+ * Indices of the ribbons that animate within the budget: the busiest first.
+ * The others are still drawn, as their ribbon without a moving highlight.
  */
-export function buildStrands(ids: string[], inputs: StrandInput[], mapping: FlowMapping = defaultMapping): Strand[] {
-    const wanted = inputs.map(input => input.animated ? [strandsFor(input.up, mapping), strandsFor(input.down, mapping)] as const : [0, 0] as const);
-    const total = wanted.reduce((sum, [up, down]) => sum + up + down, 0);
-    const scale = total > mapping.budget ? mapping.budget / total : 1;
-    const strands: Strand[] = [];
-    inputs.forEach((input, edge) => {
-        const counts = [0, 1].map(tone => wanted[edge][tone] ? Math.max(1, Math.floor(wanted[edge][tone] * scale)) : 0);
-        const size = counts[0] + counts[1];
-        if (!size) return;
-        // One wave for the whole bundle: about half a wave over the edge, drifting with a 6-10 s period.
-        const id = ids[edge];
-        const strongest = Math.max(intensityFor(input.up, mapping), intensityFor(input.down, mapping));
-        const waves = 0.45 + 0.25 * hash(id, 1);
-        const phase = hash(id, 2) * Math.PI * 2;
-        const amplitudePx = WAVE_PX * (0.85 + 0.45 * hash(id, 3));
-        const drift = (0.65 + 0.4 * strongest) * (0.9 + 0.2 * hash(id, 4));
-        let slot = 0;
-        for (const tone of [0, 1] as const) {
-            const intensity = intensityFor(tone === 0 ? input.up : input.down, mapping);
-            for (let index = 0; index < counts[tone]; index++, slot++) {
-                strands.push({
-                    edge, tone, hue: index % 2, slot, size,
-                    laneFraction: size === 1 ? 0 : -1 + (2 * slot) / (size - 1),
-                    amplitudePx,
-                    maxAmplitude: input.length * 0.12,
-                    waves, phase, drift,
-                    sheen: 0.12 + 0.26 * intensity,
-                    sheenPhase: hash(id, 100 + slot),
-                    intensity,
-                });
-            }
-        }
-    });
-    // Hard cap: if even one strand per direction is too many, the busiest
-    // directions keep theirs; the others still show as their edge's line.
-    if (strands.length > mapping.budget) {
-        strands.sort((a, b) => b.intensity - a.intensity || a.edge - b.edge || a.tone - b.tone);
-        strands.length = mapping.budget;
-        strands.sort((a, b) => a.edge - b.edge || a.tone - b.tone);
-    }
-    return strands;
-}
-
-/** A strand resolved for the current zoom; one instance is reused for every strand of a frame. */
-export interface StrandShape {
-    lane: number;
-    amplitude: number;
-    phase: number;
-    /** Part of the path (0..1) that may wave; outside it (bundle trunks) strands run straight. */
-    waveStart: number;
-    waveEnd: number;
-}
-
-/**
- * Resolves a strand for zoom `k` (CSS px per world unit) and the half-width
- * of its edge's slot. Lanes sit LANE_PX apart on screen (never wider than the
- * slot) and the wave is WAVE_PX high on screen (never more than the edge
- * allows). Strands of one bundle differ in phase only by as much as keeps
- * the offset difference under half a lane gap, so they never cross.
- */
-export function resolveStrand(strand: Strand, k: number, spread: number, waveStart: number, waveEnd: number, out: StrandShape) {
-    const zoom = Math.max(0.05, k);
-    const half = Math.min(spread, ((strand.size - 1) / 2) * (LANE_PX / zoom));
-    const gap = strand.size > 1 ? (2 * half) / (strand.size - 1) : 0;
-    const amplitude = Math.min(strand.maxAmplitude, strand.amplitudePx / zoom);
-    const desync = amplitude > 0 ? Math.min(0.06, (0.45 * gap) / amplitude) : 0;
-    out.lane = strand.laneFraction * half;
-    out.amplitude = amplitude;
-    out.phase = strand.phase + strand.slot * desync;
-    out.waveStart = waveStart;
-    out.waveEnd = waveEnd;
-    return half;
-}
-
-/**
- * Writes the strand's point at path index `index` at `time` seconds into
- * out[0], out[1]. The wave envelope is zero at both ends of the wave window,
- * so strands meet the cards (and bundle trunks) exactly on their lanes.
- */
-export function strandPoint(strand: Strand, shape: StrandShape, path: FlowPath, normals: Float32Array, index: number, time: number, out: Float32Array) {
-    const u = path.length ? path.lengths[index] / path.length : 0;
-    const span = shape.waveEnd - shape.waveStart;
-    const v = span > 0 ? (u - shape.waveStart) / span : -1;
-    const envelope = v > 0 && v < 1 ? Math.sin(Math.PI * v) : 0;
-    const offset = shape.lane + shape.amplitude * envelope * Math.sin(Math.PI * 2 * strand.waves * v + shape.phase - strand.drift * time);
-    out[0] = path.points[index * 2] + normals[index * 2] * offset;
-    out[1] = path.points[index * 2 + 1] + normals[index * 2 + 1] * offset;
+export function animatedWithinBudget(styles: RibbonStyle[], mapping: FlowMapping = defaultMapping): Set<number> {
+    const active = styles.map((style, index) => ({ index, intensity: style.intensity })).filter(item => item.intensity > 0);
+    active.sort((a, b) => b.intensity - a.intensity || a.index - b.index);
+    return new Set(active.slice(0, mapping.budget).map(item => item.index));
 }
