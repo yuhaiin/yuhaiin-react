@@ -44,6 +44,9 @@ function RulesView({ data, refreshing, onRefresh }: { data: ProtectionRules; ref
     const { t } = useTranslation('systemNetwork');
     const format = useLocaleFormat();
     const clipboard = useClipboard({ usePromptAsFallback: true });
+    // Rule order only decides the outcome on macOS PF; nftables and WFP make
+    // a block in any chain or sublayer final.
+    const backend = ['pf', 'nftables', 'wfp'].includes(data.backend ?? '') ? data.backend! : 'pf';
     const filters = data.main.filter(m => m.kind === 'filter');
     const firstFilterIsOurs = filters.length === 0 || filters[0].yuhaiin;
     return <div className="grid min-w-0 gap-5">
@@ -60,7 +63,7 @@ function RulesView({ data, refreshing, onRefresh }: { data: ProtectionRules; ref
 
         <section className="grid min-w-0 gap-2" aria-label={t('protection.rules.main')}>
             <h3 className="m-0 text-sm font-medium text-ui-heading">{t('protection.rules.main')}</h3>
-            <p className="m-0 text-xs text-ui-muted">{t('protection.rules.mainHelp')}</p>
+            <p className="m-0 text-xs text-ui-muted">{t(`protection.rules.mainHelp.${backend}`)}</p>
             {!firstFilterIsOurs && <p role="alert" className="m-0 text-xs text-ui-warning">{t('protection.rules.notFirst')}</p>}
             {data.main.length === 0 ? <p className="m-0 text-sm text-ui-muted">{t('protection.rules.empty')}</p>
                 : <ol className="m-0 grid list-none gap-1 p-0">
@@ -78,9 +81,10 @@ function RulesView({ data, refreshing, onRefresh }: { data: ProtectionRules; ref
         {data.rulesets.map(rs => <Ruleset key={rs.name} set={rs} />)}
 
         <section className="grid min-w-0 gap-2">
-            <h3 className="m-0 text-sm font-medium text-ui-heading">{t('protection.rules.config', { path: data.config.path ?? '' })}</h3>
-            {data.config.error ? <p className="m-0 text-xs text-ui-danger">{data.config.error}</p>
-                : (data.config.lines ?? []).length === 0 ? <p className="m-0 text-sm text-ui-muted">{t('protection.rules.configNone')}</p>
+            <h3 className="m-0 text-sm font-medium text-ui-heading">{t(`protection.rules.configTitle.${backend}`, { path: data.config.path ?? '' })}</h3>
+            {backend === 'wfp' ? <p className="m-0 text-sm text-ui-fg">{t(data.config.registered ? 'protection.rules.bootYes' : 'protection.rules.bootNo')}</p>
+                : data.config.error ? <p className="m-0 text-xs text-ui-danger">{data.config.error}</p>
+                : (data.config.lines ?? []).length === 0 ? <p className="m-0 text-sm text-ui-muted">{t(`protection.rules.configNone.${backend}`)}</p>
                     : <ul className="m-0 grid gap-1 p-0">{(data.config.lines ?? []).map(l => <li key={l.number} className="flex min-w-0 items-start gap-2 text-xs">
                         <span className="w-8 shrink-0 text-right font-mono text-ui-muted">{l.number}</span>
                         <code className="min-w-0 grow break-all font-mono">{l.text}</code>
