@@ -96,7 +96,8 @@
     "block": "ブロック",
     "gateway": "ゲートウェイ",
     "bypass": "バイパス",
-    "unknown": "不明なモード"
+    "unknown": "不明なモード",
+    "mixed": "複数のモード"
   },
   "status": {
     "active": "通信中",

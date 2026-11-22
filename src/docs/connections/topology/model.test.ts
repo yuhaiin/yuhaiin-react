@@ -31,12 +31,12 @@ describe("buildTopology", () => {
     it("maps one connection onto a five-column path", () => {
         const model = buildTopology({ connections: [connection("1", { process: "curl" })], rates: rates({ "1": { up: 100, down: 900 } }) });
         expect(model.paths.get("1")).toEqual([
-            "source:app:curl", "inbound:in-socks", "policy:rule-1||", "outbound:node-a", "destination:example.com",
+            "source:app:curl", "inbound:in-socks", "policy:rule-1|", "outbound:node-a", "destination:example.com",
         ]);
         expect(model.edges.map(edge => edge.id)).toEqual([
             "source:app:curl>inbound:in-socks#tcp",
-            "inbound:in-socks>policy:rule-1||#tcp",
-            "policy:rule-1||>outbound:node-a#tcp",
+            "inbound:in-socks>policy:rule-1|#tcp",
+            "policy:rule-1|>outbound:node-a#tcp",
             "outbound:node-a>destination:example.com#tcp",
         ]);
         for (const node of model.nodes) {
@@ -54,9 +54,9 @@ describe("buildTopology", () => {
             ],
             rates: rates({ "1": { up: 10, down: 20 }, "2": { up: 1, down: 2 }, "3": { up: 5, down: 0 } }),
         });
-        const tcp = model.edges.find(edge => edge.id === "inbound:in-socks>policy:rule-1||#tcp")!;
+        const tcp = model.edges.find(edge => edge.id === "inbound:in-socks>policy:rule-1|#tcp")!;
         expect(tcp).toMatchObject({ connections: 2, up: 11, down: 22, connectionIds: ["1", "2"] });
-        const udp = model.edges.find(edge => edge.id === "inbound:in-socks>policy:rule-1||#udp")!;
+        const udp = model.edges.find(edge => edge.id === "inbound:in-socks>policy:rule-1|#udp")!;
         expect(udp).toMatchObject({ connections: 1, up: 5, down: 0 });
         const inbound = model.nodes.find(node => node.id === "inbound:in-socks")!;
         expect(inbound).toMatchObject({ connections: 3, tcp: 2, udp: 1, up: 16, down: 22 });
@@ -95,8 +95,25 @@ describe("buildTopology", () => {
             connections: [connection("1", { source: "", inboundId: "", inboundName: "", ruleId: "", ruleName: "", nodeId: "", nodeName: "", addr: "", domain: "", ip: "", mode: "proxy" })],
             rates: new Map(),
         });
-        expect(model.paths.get("1")).toEqual(["source:unknown", "inbound:unknown", "policy:default||proxy", "outbound:unresolved", "destination:unknown"]);
+        expect(model.paths.get("1")).toEqual(["source:unknown", "inbound:unknown", "policy:default|", "outbound:unresolved", "destination:unknown"]);
         expect(model.nodes.map(node => node.kind)).toEqual(["unknown", "unknown", "default-route", "unknown", "unknown"]);
+    });
+
+    it("keeps one default route whatever mode its connections ended up in", () => {
+        const model = buildTopology({
+            connections: [
+                connection("1", { ruleId: "", ruleName: "", mode: "proxy" }),
+                connection("2", { ruleId: "", ruleName: "", mode: "direct" }),
+                connection("3", { ruleId: "", ruleName: "", mode: "proxy" }),
+            ],
+            rates: new Map(),
+        });
+        const routes = model.nodes.filter(node => node.kind === "default-route");
+        expect(routes).toHaveLength(1);
+        expect(routes[0]).toMatchObject({ connections: 3, mode: "mixed" });
+        // One mode only: the card keeps naming it.
+        const proxyOnly = buildTopology({ connections: [connection("1", { ruleId: "", ruleName: "", mode: "proxy" })], rates: new Map() });
+        expect(proxyOnly.nodes.find(node => node.kind === "default-route")?.mode).toBe("proxy");
     });
 
     it("tells VPN nodes from proxies only from the node chain", () => {

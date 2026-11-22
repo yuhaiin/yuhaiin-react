@@ -96,7 +96,8 @@
     "block": "Block",
     "gateway": "Gateway",
     "bypass": "Bypass",
-    "unknown": "Unknown mode"
+    "unknown": "Unknown mode",
+    "mixed": "Mixed modes"
   },
   "status": {
     "active": "Active",

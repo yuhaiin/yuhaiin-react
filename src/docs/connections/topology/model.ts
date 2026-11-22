@@ -262,7 +262,9 @@ function policyKey(connection: Connection) {
     const rule = connection.ruleId || connection.ruleName;
     const selector = connection.selectorId || connection.selectorName;
     return {
-        id: `policy:${rule || "default"}|${selector}|${rule ? "" : mode}`,
+        // The default route is one policy whatever mode each connection ended up in;
+        // the outbound column already separates Direct from proxies.
+        id: `policy:${rule || "default"}|${selector}`,
         kind: (rule ? "rule" : "default-route") as NodeKind,
         name: connection.ruleName || connection.ruleId,
         refId: connection.ruleId || undefined,
@@ -413,6 +415,9 @@ export function buildTopology(input: BuildInput): TopologyModel {
             column: "policy", kind: policy.kind, name: policy.name, type: policy.mode, refId: policy.refId,
             selectorId: policy.selectorId, selectorName: policy.selectorName, mode: policy.mode,
         });
+        // Connections of one policy in different modes (e.g. the default route sending some
+        // direct): show it once, as mixed, rather than claiming the first connection's mode.
+        if (policyNode.mode !== policy.mode) policyNode.mode = policyNode.type = "mixed";
 
         const outbound = outboundKey(connection, catalog);
         const outboundNode = node(outbound.id, { column: "outbound", kind: outbound.kind, name: outbound.name, type: outbound.type, refId: outbound.refId });

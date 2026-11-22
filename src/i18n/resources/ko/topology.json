@@ -96,7 +96,8 @@
     "block": "차단",
     "gateway": "게이트웨이",
     "bypass": "바이패스",
-    "unknown": "알 수 없는 모드"
+    "unknown": "알 수 없는 모드",
+    "mixed": "여러 모드"
   },
   "status": {
     "active": "통신 중",
