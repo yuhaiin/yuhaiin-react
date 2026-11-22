@@ -302,6 +302,183 @@ export namespace Go {
       failed: string;
     }
   }
+  export namespace dnshistory {
+    export interface Record {
+      id: number;
+      createdAt: string;
+      durationNs: number;
+      transport: string;
+      sourceType: string;
+      clientIp?: string;
+      clientPort?: number;
+      inboundId?: string;
+      inboundName?: string;
+      processName?: string;
+      pid?: number;
+      uid?: number;
+      userId?: string;
+      credentialId?: string;
+      groupIds?: string[];
+      domain: string;
+      queryType: string;
+      queryClass: string;
+      transactionId: number;
+      resolver?: string;
+      resolverLabel?: string;
+      server?: string;
+      serverType?: string;
+      routeMode?: string;
+      routeRuleId?: string;
+      routeRuleName?: string;
+      cacheStatus: string;
+      resolutionSource: string;
+      fakeip: FakeIP;
+      outcome: string;
+      rcode?: string;
+      failureStage?: string;
+      failureReason?: string;
+      error?: string;
+      requestSize: number;
+      responseSize: number;
+      sentBytes: number;
+      answerCount: number;
+      authorityCount: number;
+      additionalCount: number;
+      answerSummary?: string;
+      answer?: ResourceRecord[];
+      authority?: ResourceRecord[];
+      additional?: ResourceRecord[];
+      flags?: ResponseFlags;
+      details?: Details;
+    }
+    export interface FakeIP {
+      requested: boolean;
+      returned: boolean;
+      ipv4?: string;
+      ipv6?: string;
+      poolIpv4?: string;
+      poolIpv6?: string;
+      reason: string;
+      allocation: string;
+      error?: string;
+      force: boolean;
+      global: boolean;
+      skipCheck: boolean;
+    }
+    export interface ResourceRecord {
+      name: string;
+      type: string;
+      class: string;
+      ttl: number;
+      data: string;
+      dataTruncated?: boolean;
+    }
+    export interface ResponseFlags {
+      aa: boolean;
+      tc: boolean;
+      rd: boolean;
+      ra: boolean;
+      ad: boolean;
+      cd: boolean;
+      serverTruncated: boolean;
+      answerOmitted?: number;
+      authorityOmitted?: number;
+      additionalOmitted?: number;
+    }
+    export interface Details {
+      admission?: string;
+      queueWaitNs?: number;
+      selectionReason?: string;
+      serverTransport?: string;
+      cacheStale?: boolean;
+      sharedQuery?: boolean;
+      hostsRewrite?: string;
+      requestRd: boolean;
+      requestCd: boolean;
+      requestAd: boolean;
+      requestDo: boolean;
+      requestUdpSize?: number;
+      attempts?: Attempt[];
+    }
+    export interface Attempt {
+      resolver: string;
+      server?: string;
+      transport?: string;
+      offsetNs: number;
+      durationNs: number;
+      result: string;
+      rcode?: string;
+      error?: string;
+    }
+    export interface ListRequest {
+      page?: number;
+      cursor?: string;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: string;
+      domain?: string;
+      query?: string;
+      queryType?: string;
+      transport?: string;
+      sourceType?: string;
+      inboundId?: string;
+      process?: string;
+      resolver?: string;
+      server?: string;
+      outcome?: string;
+      rcode?: string;
+      fakeipOnly?: boolean;
+      from?: number;
+      to?: number;
+    }
+    export interface ListResponse {
+      items: Record[];
+      nextCursor?: string;
+      total: number;
+      page: number;
+      limit: number;
+    }
+    export interface GetRequest {
+      id: number;
+    }
+    export interface StatsRequest {
+      from?: number;
+      to?: number;
+    }
+    export interface Stats {
+      from: number;
+      to: number;
+      total: number;
+      success: number;
+      failed: number;
+      dropped: number;
+      timeout: number;
+      writeErrors: number;
+      fakeip: number;
+      cacheHits: number;
+      cacheMisses: number;
+      avgLatencyNs: number;
+      recorder: RecorderStatus;
+    }
+    export interface RecorderStatus {
+      enabled: boolean;
+      queueLength: number;
+      queueCapacity: number;
+      persisted: number;
+      recordsDropped: number;
+      persistenceErrors: number;
+      lastPersistenceError?: string;
+      startedAt: string;
+    }
+    export interface Settings {
+      enabled: boolean;
+      retentionHours: number;
+      maxRecords: number;
+    }
+    export interface ClearResponse {
+      deleted: number;
+    }
+  }
   export namespace gateway {
     export interface Config {
       revision: number;
@@ -494,6 +671,48 @@ export namespace Go {
       rejected: number;
       errors: string[];
     }
+    export interface StatisticsReport {
+      gateways: GatewayStatistics[];
+    }
+    export interface GatewayStatistics {
+      id: string;
+      sinceUnixMs: number;
+      activeRequests: number;
+      bytesIn: number;
+      bytesOut: number;
+      statusClasses: number[];
+      latency: LatencyBucket[];
+      rules: RuleHits[];
+      filterHits: number;
+      defaultHits: number;
+      topHosts: HostHits[];
+      hostCountError: number;
+      history: StatisticsHistory;
+    }
+    export interface LatencyBucket {
+      leMs: number;
+      count: number;
+    }
+    export interface RuleHits {
+      id: string;
+      hits: number;
+    }
+    export interface HostHits {
+      host: string;
+      requests: number;
+      blocked: number;
+    }
+    export interface StatisticsHistory {
+      intervalMs: number;
+      endUnixMs: number;
+      requests: number[];
+      blocked: number[];
+      forwarded: number[];
+      errors: number[];
+      durationNs: number[];
+      bytesIn: number[];
+      bytesOut: number[];
+    }
     export interface Workspace {
       version: number;
       revision: number;
@@ -543,6 +762,7 @@ export namespace Go {
       publicEndpoint6?: string;
       stunServer?: string;
       clientToClient?: boolean;
+      tcpSettings?: Go.transport.TCPSettings;
       privateKey?: string;
       clients?: LANLinkClient[];
     }
@@ -1911,8 +2131,8 @@ export namespace Go {
       enabled: boolean;
       ipv4Range: string;
       ipv6Range: string;
-      whitelist: string[];
-      skipCheckList: string[];
+      whitelistListIds?: string[];
+      skipCheckListIds?: string[];
     }
     export interface Server {
       server: string;
@@ -2531,6 +2751,111 @@ export namespace Go {
       link?: boolean;
       reason?: string;
     }
+    export interface ProtectionSettings {
+      enabled: boolean;
+      startAtBoot: boolean;
+    }
+    export interface ProtectionProblem {
+      code: string;
+      message: string;
+      hint?: string;
+    }
+    export interface ProtectionStatus {
+      state: string;
+      supported: boolean;
+      backend?: string;
+      backendName?: string;
+      mode?: string;
+      desired: ProtectionSettings;
+      effective: boolean;
+      service?: string;
+      serviceVersion?: string;
+      filter: ProtectionFilter;
+      checkedAt?: number;
+      updatedAt?: number;
+      error?: string;
+      problems?: ProtectionProblem[];
+      physicalInterfaces: string[];
+      tunnelInterfaces: string[];
+      privateNetworks: string[];
+      bypassNetworks: string[];
+      bypassCount: number;
+      ownTraffic: ProtectionOwnTraffic;
+      tunnelIpv4: boolean;
+      tunnelIpv6: boolean;
+      blocked?: ProtectionCounters;
+    }
+    export interface ProtectionFilter {
+      enabled?: boolean;
+      registered?: boolean;
+      persistent?: boolean;
+      loaded?: boolean;
+      reference?: boolean;
+      name?: string;
+    }
+    export interface ProtectionOwnTraffic {
+      allowed: boolean;
+      method?: string;
+      group?: string;
+      groupId?: number;
+      connections?: number;
+      reason?: string;
+    }
+    export interface ProtectionCounters {
+      packets: number;
+      bytes: number;
+      lastAt?: number;
+    }
+    export interface ProtectionRules {
+      backend?: string;
+      available: boolean;
+      reason?: string;
+      readAt: number;
+      rulesets: ProtectionRuleset[];
+      main: ProtectionMainRule[];
+      config: ProtectionConfigFile;
+      raw: string;
+      errors?: string[];
+    }
+    export interface ProtectionRuleset {
+      name: string;
+      purpose: string;
+      rules: ProtectionRule[];
+      tables?: ProtectionRuleTable[];
+      error?: string;
+    }
+    export interface ProtectionRule {
+      text: string;
+      label?: string;
+      category: string;
+      counters: boolean;
+      evaluations: number;
+      packets: number;
+      bytes: number;
+      states: number;
+    }
+    export interface ProtectionRuleTable {
+      name: string;
+      count: number;
+      entries: string[];
+      truncated?: boolean;
+    }
+    export interface ProtectionMainRule {
+      kind: string;
+      text: string;
+      yuhaiin: boolean;
+    }
+    export interface ProtectionConfigFile {
+      path?: string;
+      registered: boolean;
+      lines: ProtectionConfigLine[];
+      error?: string;
+    }
+    export interface ProtectionConfigLine {
+      number: number;
+      text: string;
+      managed: boolean;
+    }
     export interface Capabilities {
       platform: string;
       routeManagement: boolean;
@@ -2732,6 +3057,86 @@ export namespace Go {
     }
   }
   export namespace tools {
+    export interface LogQuery {
+      limit?: number;
+      level?: string;
+      contains?: string;
+    }
+    export interface RecentLogs {
+      lines: string[];
+      truncated: boolean;
+      partial: boolean;
+    }
+    export interface ProfileRequest {
+      type: string;
+      seconds: number;
+    }
+    export interface ProfileSession {
+      id: string;
+      type: string;
+      seconds: number;
+      status: string;
+      createdAt: string;
+      completedAt: string;
+      size: number;
+      error?: string;
+    }
+    export interface ProfileSessions {
+      enabled: boolean;
+      sessions: ProfileSession[];
+    }
+    export interface ProfileAnalysisRequest {
+      id: string;
+      sampleType?: string;
+      mode?: string;
+      limit?: number;
+      focus?: string;
+      wait?: boolean;
+    }
+    export interface ProfileFunction {
+      function: string;
+      file?: string;
+      flat: number;
+      flatPercent: number;
+      cumulative: number;
+      cumulativePercent: number;
+    }
+    export interface ProfileStack {
+      value: number;
+      percent: number;
+      frames: string[];
+    }
+    export interface ProfileAnalysis {
+      session: ProfileSession;
+      sampleType: string;
+      unit: string;
+      sampleTypes: string[];
+      total: number;
+      duration?: string;
+      functions?: ProfileFunction[];
+      stacks?: ProfileStack[];
+    }
+    export interface RuntimeStats {
+      goVersion: string;
+      os: string;
+      arch: string;
+      cpus: number;
+      gomaxprocs: number;
+      goroutines: number;
+      uptimeSeconds: number;
+      heapAllocBytes: number;
+      heapInuseBytes: number;
+      heapObjects: number;
+      stackInuseBytes: number;
+      sysBytes: number;
+      totalAllocBytes: number;
+      nextGcBytes: number;
+      numGc: number;
+      gcPauseTotal: string;
+      lastGcPause: string;
+      gcCpuFraction: number;
+      cgoCalls: number;
+    }
     export interface DiagnosticRequest {
       host: string;
       tcpOnly?: boolean;
@@ -2832,6 +3237,7 @@ export namespace Go {
       invitation: string;
       privateKey?: string;
       allowIncoming?: boolean;
+      tcpSettings?: TCPSettings;
     }
     export interface LANLinkInvitation {
       coordinator: string;

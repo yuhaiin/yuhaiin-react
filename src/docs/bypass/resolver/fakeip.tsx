@@ -9,6 +9,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import type { FakeIPEntry } from '@/contract/resolver';
 import { useAsyncAction, useCloseGuard } from '@/hooks/use-editor-draft';
 import { useFillViewport } from '@/hooks/use-fill-viewport';
+import { useHashSearch } from '@/hooks/useHashLocation';
 import { useServerPageClamp } from '@/hooks/use-pagination';
 import { RotateCw, Search, Trash } from 'lucide-react';
 import { useContext, useState } from 'react';
@@ -25,7 +26,9 @@ export function FakeIPList() {
     const ctx = useContext(GlobalToastContext);
     const [panelRef, panelMaxHeight] = useFillViewport();
     const [page, setPage] = useState(1);
-    const [query, setQuery] = useState('');
+    // DNS history links here with ?fakeip=<address> to show one mapping.
+    const linked = new URLSearchParams(useHashSearch()).get('fakeip') ?? '';
+    const [query, setQuery] = useState(linked);
     const [debouncedQuery] = useDebounceValue(query.trim(), 250);
     const settled = debouncedQuery === query.trim();
     const { mutate: mutatePages } = useSWRConfig();

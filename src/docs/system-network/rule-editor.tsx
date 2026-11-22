@@ -6,7 +6,7 @@ import { matchError, targetError, type RouteRule, type SystemNetworkCapabilities
 import type { Go } from '@/api/generated-contracts';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RouteMatchEditor } from './match-editor';
+import { NonPrivateAdvanced, RouteMatchEditor } from './match-editor';
 import { TargetPicker } from './target-picker';
 
 function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
@@ -50,6 +50,7 @@ export function RouteRuleEditor({ rule, isNew, capabilities, interfaces, preview
                 <details>
                     <summary className="cursor-pointer text-sm text-ui-muted">{t('editor.advanced')}</summary>
                     <div className="mt-3 grid gap-3">
+                        {draft.match.mode === 'non_private' && <NonPrivateAdvanced value={draft.match} onChange={match => setDraft({ ...draft, match })} />}
                         <SettingInputVertical label={t('editor.priority')} type="number" min={0} max={65535} value={String(draft.priority)}
                             onChange={value => setDraft({ ...draft, priority: Math.max(0, Math.min(65535, Math.trunc(Number(value) || 0))) })} />
                         <p className="text-xs text-ui-muted">{t('editor.priorityHelp')}</p>

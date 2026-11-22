@@ -18,6 +18,11 @@ export type SystemRouteEntry = Go.sysnet.SystemRouteEntry;
 export type OutboundRouting = Go.sysnet.OutboundRouting;
 export type OutboundInterface = Go.sysnet.OutboundInterface;
 export type OutboundScopedRoute = Go.sysnet.OutboundScopedRoute;
+export type ProtectionStatus = Go.sysnet.ProtectionStatus;
+export type ProtectionSettings = Go.sysnet.ProtectionSettings;
+export type ProtectionProblem = Go.sysnet.ProtectionProblem;
+export type ProtectionRules = Go.sysnet.ProtectionRules;
+export type ProtectionRuleset = Go.sysnet.ProtectionRuleset;
 export type MatchMode = 'global' | 'non_private' | 'custom';
 
 export function blankSystemNetworkConfig(): SystemNetworkConfig {

@@ -6,12 +6,14 @@ const loading = Loading;
 
 const TrafficControlPage = dynamic(() => import('@/docs/traffic-control/page'), { loading });
 const GatewayPage = dynamic(() => import('@/docs/gateway/page'), { loading });
+const GatewayStatisticsPage = dynamic(() => import('@/docs/gateway/statistics/page'), { loading });
 const CertificatesPage = dynamic(() => import('@/docs/certificates/page'), { loading });
 const SecurityPage = dynamic(() => import('@/docs/security/page'), { loading });
 const CredentialsPage = dynamic(() => import('@/docs/security/credentials/page'), { loading });
 const UsagePage = dynamic(() => import('@/docs/security/usage/page'), { loading });
 const AdministrationPage = dynamic(() => import('@/docs/security/admin/page'), { loading });
 const LoginPage = dynamic(() => import('@/docs/login/page'), { loading });
+const ConsentPage = dynamic(() => import('@/docs/oauth/consent/page'), { loading });
 const HomePage = dynamic(() => import('@/docs/home/page'), { loading });
 const GroupPage = dynamic(() => import('@/docs/group/page'), { loading });
 const GroupSubscribePage = dynamic(() => import('@/docs/group/subscribe/page'), { loading });
@@ -29,6 +31,7 @@ const BypassBlockPage = dynamic(() => import('@/docs/bypass/block/page'), { load
 const ConnectionsV2Page = dynamic(() => import('@/docs/connections/v2/page'), { loading });
 const ConnectionsHistoryPage = dynamic(() => import('@/docs/connections/history/page'), { loading });
 const ConnectionsFailedPage = dynamic(() => import('@/docs/connections/failed/page'), { loading });
+const DNSHistoryPage = dynamic(() => import('@/docs/dns/history/page'), { loading });
 const ConfigPage = dynamic(() => import('@/docs/config/page'), { loading });
 const WebUIPage = dynamic(() => import('@/docs/webui/page'), { loading });
 const ConfigBackupPage = dynamic(() => import('@/docs/config/backup/page'), { loading });
@@ -48,12 +51,14 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security/usage", component: UsagePage },
     { path: "/docs/security/admin", component: AdministrationPage },
     { path: "/login", component: LoginPage },
+    { path: "/oauth/consent/:id", component: ConsentPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },
     { path: "/docs/group/subscribe", component: GroupSubscribePage },
     { path: "/docs/group/publish", component: GroupPublishPage },
     { path: "/docs/group/activates", component: GroupActivatesPage },
     { path: "/docs/gateway", component: GatewayPage },
+    { path: "/docs/gateway/statistics", component: GatewayStatisticsPage },
     { path: "/docs/certificates", component: CertificatesPage },
     { path: "/docs/traffic-control", component: TrafficControlPage },
     { path: "/docs/inbound", component: InboundPage },
@@ -68,6 +73,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/connections/v2", component: ConnectionsV2Page },
     { path: "/docs/connections/history", component: ConnectionsHistoryPage },
     { path: "/docs/connections/failed", component: ConnectionsFailedPage },
+    { path: "/docs/dns/history", component: DNSHistoryPage },
     { path: "/docs/config", component: ConfigPage },
     { path: "/docs/webui", component: WebUIPage },
     { path: "/docs/config/backup", component: ConfigBackupPage },

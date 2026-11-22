@@ -23,6 +23,8 @@ vi.mock('@/api/route', () => ({ listGeoIPCountries: vi.fn().mockResolvedValue({ 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string, o?: Record<string, unknown>) => o ? `${key}:${JSON.stringify(o)}` : key, i18n: { language: 'en', resolvedLanguage: 'en' } }),
 }));
+// The real debounce timer can fire after jsdom is torn down and call setState without a window.
+vi.mock('usehooks-ts', () => ({ useDebounceValue: <T,>(value: T) => [value] }));
 const confirm = vi.hoisted(() => ({ confirmAction: vi.fn() }));
 vi.mock('@/component/v2/confirmation', () => confirm);
 vi.mock('@/auth/context', () => ({ usePermission: () => true, useSession: () => ({ principal: { permissions: ['settings:write'] } }) }));

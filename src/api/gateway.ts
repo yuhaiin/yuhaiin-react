@@ -35,3 +35,5 @@ export const refreshGatewayFilter = async (id: string): Promise<Config> =>
 export async function getGatewaySecrets(signal?: AbortSignal): Promise<Config> {
  return flattenWorkspace(await requestJSON<GatewayWorkspaceDocument>("GET", "/api/v2/gateway/workspace", undefined, undefined, signal, { revealSecrets: true }));
 }
+export const gatewayStatistics = () =>
+  requestJSON<Go.gateway.StatisticsReport>("GET", "/api/v2/gateway/statistics");

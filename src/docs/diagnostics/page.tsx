@@ -3,6 +3,7 @@ import { useHashSearch } from '@/hooks/useHashLocation';
 import { runDiagnostics } from '@/api/tools';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
+import { PageTabs } from '@/component/v2/page-tabs';
 import { Card, CardBody } from '@/component/v2/card';
 import { useClipboard } from '@/component/v2/clipboard';
 import { Input } from '@/component/v2/input';
@@ -74,52 +75,58 @@ export default function DiagnosticsPage() {
         URL.revokeObjectURL(url);
     };
 
+    const diagnose = <div className="min-w-0 space-y-5">
+                <Card noMargin className={clsx(stackDetail)}>
+                    <CardBody>
+                        <form onSubmit={event => { event.preventDefault(); void run(); }} className="space-y-3">
+                            <label className="block text-sm font-medium" htmlFor="diagnostic-host">{t('target')}</label>
+                            <div className="flex flex-wrap gap-2">
+                                <Input id="diagnostic-host" className="min-w-0 flex-1 basis-full sm:basis-0" value={host} onChange={event => setHost(event.target.value)} disabled={busy} placeholder="www.cloudflare.com" autoCapitalize="none" spellCheck={false} />
+                                <Button type="submit" variant="primary" disabled={busy}>{busy ? <Spinner size="sm" /> : <Activity size={16} />}{busy ? t('running') : t('run')}</Button>
+                                {busy && <Button type="button" onClick={() => controller.current?.abort()}><Square size={14} />{t('cancel')}</Button>}
+                            </div>
+                            <p className="text-xs text-ui-muted">{t('targetHint')}</p>
+                            <div role="status" aria-live="polite" className="text-sm text-ui-muted">{busy && t('progress')}</div>
+                        </form>
+                        {error && <p role="alert" className="mt-3 text-sm text-ui-danger">{error}</p>}
+                    </CardBody>
+                </Card>
+                {report && <div className={clsx('space-y-5', stackDetail)}>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="min-w-0 break-words text-sm text-ui-muted">{report.host} · {report.platform} · {new Date(report.startedAt).toLocaleString()} · {report.durationMs} ms</div>
+                        <div className="flex flex-wrap gap-2">
+                            <Button onClick={() => void copy(report.report)}><Copy size={16} />{copied ? t('copied') : t('copy')}</Button>
+                            <Button onClick={download}><Download size={16} />{t('download')}</Button>
+                        </div>
+                    </div>
+                    <Card noMargin><CardBody>
+                        <h2 className="mb-3 text-base font-semibold text-ui-heading">{t('findings')}</h2>
+                        <ul className="list-disc space-y-2 pl-5 text-sm">
+                            {report.findings.map(code => <li key={code}>{t(`findingsText.${code}`, { defaultValue: code })}</li>)}
+                        </ul>
+                    </CardBody></Card>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {report.checks.map(check => <Card key={check.id} noMargin><CardBody>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-base font-semibold text-ui-heading">{t(`checks.${check.id}`, { defaultValue: check.id })}</h2>
+                                <Badge variant={check.status === 'pass' ? 'success' : check.status === 'fail' ? 'danger' : check.status === 'warning' ? 'warning' : 'muted'}>{t(`status.${check.status}`, { defaultValue: check.status })}</Badge>
+                            </div>
+                            <p className="mt-2 text-sm">{t(`messages.${check.message}`, { defaultValue: check.message })}</p>
+                            <ul className="mt-2 space-y-1 break-all font-mono text-xs text-ui-muted">{check.evidence.map((line, index) => <li key={index}>{line}</li>)}</ul>
+                            <p className="mt-2 text-xs text-ui-muted">{check.durationMs} ms</p>
+                        </CardBody></Card>)}
+                    </div>
+                    <p className="text-xs text-ui-muted">{t('privacy')}</p>
+                </div>}
+                </div>;
+
     return (
         <div className="w-full min-w-0 space-y-5">
             <PageHeader title={t('title')} description={t('description')} className={clsx(stackDetail)} />
-            <Card noMargin className={clsx(stackDetail)}>
-                <CardBody>
-                    <form onSubmit={event => { event.preventDefault(); void run(); }} className="space-y-3">
-                        <label className="block text-sm font-medium" htmlFor="diagnostic-host">{t('target')}</label>
-                        <div className="flex flex-wrap gap-2">
-                            <Input id="diagnostic-host" className="min-w-0 flex-1 basis-full sm:basis-0" value={host} onChange={event => setHost(event.target.value)} disabled={busy} placeholder="www.cloudflare.com" autoCapitalize="none" spellCheck={false} />
-                            <Button type="submit" variant="primary" disabled={busy}>{busy ? <Spinner size="sm" /> : <Activity size={16} />}{busy ? t('running') : t('run')}</Button>
-                            {busy && <Button type="button" onClick={() => controller.current?.abort()}><Square size={14} />{t('cancel')}</Button>}
-                        </div>
-                        <p className="text-xs text-ui-muted">{t('targetHint')}</p>
-                        <div role="status" aria-live="polite" className="text-sm text-ui-muted">{busy && t('progress')}</div>
-                    </form>
-                    {error && <p role="alert" className="mt-3 text-sm text-ui-danger">{error}</p>}
-                </CardBody>
-            </Card>
-            <TCPStackPanel />
-            {report && <div className={clsx('space-y-5', stackDetail)}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="min-w-0 break-words text-sm text-ui-muted">{report.host} · {report.platform} · {new Date(report.startedAt).toLocaleString()} · {report.durationMs} ms</div>
-                    <div className="flex flex-wrap gap-2">
-                        <Button onClick={() => void copy(report.report)}><Copy size={16} />{copied ? t('copied') : t('copy')}</Button>
-                        <Button onClick={download}><Download size={16} />{t('download')}</Button>
-                    </div>
-                </div>
-                <Card noMargin><CardBody>
-                    <h2 className="mb-3 text-base font-semibold text-ui-heading">{t('findings')}</h2>
-                    <ul className="list-disc space-y-2 pl-5 text-sm">
-                        {report.findings.map(code => <li key={code}>{t(`findingsText.${code}`, { defaultValue: code })}</li>)}
-                    </ul>
-                </CardBody></Card>
-                <div className="grid gap-3 sm:grid-cols-2">
-                    {report.checks.map(check => <Card key={check.id} noMargin><CardBody>
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h2 className="text-base font-semibold text-ui-heading">{t(`checks.${check.id}`, { defaultValue: check.id })}</h2>
-                            <Badge variant={check.status === 'pass' ? 'success' : check.status === 'fail' ? 'danger' : check.status === 'warning' ? 'warning' : 'muted'}>{t(`status.${check.status}`, { defaultValue: check.status })}</Badge>
-                        </div>
-                        <p className="mt-2 text-sm">{t(`messages.${check.message}`, { defaultValue: check.message })}</p>
-                        <ul className="mt-2 space-y-1 break-all font-mono text-xs text-ui-muted">{check.evidence.map((line, index) => <li key={index}>{line}</li>)}</ul>
-                        <p className="mt-2 text-xs text-ui-muted">{check.durationMs} ms</p>
-                    </CardBody></Card>)}
-                </div>
-                <p className="text-xs text-ui-muted">{t('privacy')}</p>
-            </div>}
+            <PageTabs label={t('sections')} fallback={stackDetail ? 'overview' : undefined} listClassName={clsx(stackDetail)} items={[
+                { value: 'run', label: t('tabs.run'), content: diagnose },
+                { value: 'overview', label: t('tabs.overview'), content: <TCPStackPanel /> },
+            ]} />
             {manualCopyModal}
         </div>
     );

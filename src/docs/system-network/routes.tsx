@@ -65,7 +65,7 @@ export function RoutesTab() {
                     </div>
                     {!data && !error && <p className="text-sm text-ui-muted">{t('routes.loading')}</p>}
                     {data && visible.length === 0 && <p className="text-sm text-ui-muted">{t('routes.empty')}</p>}
-                    <ul className="grid min-w-0 gap-2" aria-label={t('routes.title')}>
+                    <ul className="grid min-w-0 gap-1" aria-label={t('routes.title')}>
                         {visible.slice(0, limit).map((r, i, list) => {
                             const table = r.table ?? 0;
                             const heading = tables.size > 1 && (i === 0 || (list[i - 1].table ?? 0) !== table);
@@ -95,22 +95,21 @@ function RouteRow({ route: r, heading }: { route: SystemRouteEntry; heading?: st
     const source = r.source || 'rule';
     return <>
         {heading && <li role="presentation" className="pt-2 text-xs font-semibold uppercase tracking-wide text-ui-muted first:pt-0">{heading}</li>}
-        <li className={cn('grid min-w-0 gap-1 rounded-ui-md border border-ui-border px-3 py-2',
+        <li className={cn('flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 rounded-ui-sm border border-ui-border px-3 py-1.5',
+            'md:grid md:gap-x-4 md:grid-cols-[minmax(11rem,1.1fr)_minmax(7rem,0.8fr)_minmax(6rem,0.7fr)_minmax(5.5rem,0.5fr)_minmax(9rem,1.2fr)]',
             r.yuhaiin && 'border-l-4 border-l-ui-primary bg-ui-selected/40')}>
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <div className="flex min-w-0 basis-full flex-wrap items-center gap-2 md:basis-auto">
                 <span className="min-w-0 break-all font-mono text-sm font-medium text-ui-heading">{r.destination}</span>
                 {r.yuhaiin && <Badge variant={source === 'stale' ? 'warning' : 'primary'} title={t(`routes.sourceHelp.${source}`)}>
                     {t('routes.yuhaiin')}</Badge>}
                 {r.type && r.type !== 'unicast' && <span className={ui.chip}>{r.type}</span>}
             </div>
-            <p className="min-w-0 break-words text-xs text-ui-fg">
-                {r.gateway ? t('routes.via', { gateway: r.gateway }) + ' ' : ''}
-                {r.interface || r.interfaceIndex ? t('routes.dev', { name: r.interface || `#${r.interfaceIndex}` }) : ''}
-                {r.metric ? <span className="text-ui-muted"> · {t('routes.metric', { metric: r.metric })}</span> : null}
-            </p>
-            {r.yuhaiin && <p className="text-xs text-ui-primary">
-                {t(`routes.source.${source}`)}{r.ruleName || r.ruleId ? `: ${r.ruleName || r.ruleId}` : ''}
-            </p>}
+            <span className="min-w-0 break-all font-mono text-xs text-ui-fg">{r.gateway ? t('routes.via', { gateway: r.gateway }) : ''}</span>
+            <span className="min-w-0 break-all text-xs text-ui-fg">{r.interface || r.interfaceIndex ? t('routes.dev', { name: r.interface || `#${r.interfaceIndex}` }) : ''}</span>
+            <span className="text-xs text-ui-muted">{r.metric ? t('routes.metric', { metric: r.metric }) : ''}</span>
+            <span className="min-w-0 basis-full truncate text-xs text-ui-primary md:basis-auto" title={r.ruleName || r.ruleId || undefined}>
+                {r.yuhaiin ? `${t(`routes.source.${source}`)}${r.ruleName || r.ruleId ? `: ${r.ruleName || r.ruleId}` : ''}` : ''}
+            </span>
         </li>
     </>;
 }

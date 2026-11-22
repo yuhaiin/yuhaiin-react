@@ -3,9 +3,9 @@ import type { NodeProtocol } from '@/contract/node';
 import { getProtocolConfig, patchProtocolConfig } from '@/contract/node';
 
 type VPNType = 'wireguard' | 'amneziawg' | 'openvpn' | 'l2tp' | 'l2tpv3' | 'globalprotect' | 'softether'
-    | 'ikev2' | 'anyconnect' | 'sstp' | 'fortinet' | 'nebula' | 'zerotier' | 'tailscale' | 'masque' | 'cloudflare_warp_masque';
+    | 'ikev2' | 'anyconnect' | 'sstp' | 'fortinet' | 'nebula' | 'zerotier' | 'tailscale' | 'masque' | 'cloudflare_warp_masque' | 'lan_link';
 const vpnTypes = new Set<string>(['wireguard', 'amneziawg', 'openvpn', 'l2tp', 'l2tpv3', 'globalprotect', 'softether',
-    'ikev2', 'anyconnect', 'sstp', 'fortinet', 'nebula', 'zerotier', 'tailscale', 'masque', 'cloudflare_warp_masque']);
+    'ikev2', 'anyconnect', 'sstp', 'fortinet', 'nebula', 'zerotier', 'tailscale', 'masque', 'cloudflare_warp_masque', 'lan_link']);
 function isVPN(protocol: NodeProtocol): protocol is NodeProtocol<VPNType> { return vpnTypes.has(protocol.type); }
 
 export function OutboundTCPSettings({ protocol, editable, onChange }: {

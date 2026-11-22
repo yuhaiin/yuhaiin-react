@@ -67,7 +67,19 @@ export type HistoryColumn<T> = {
     filter?: HistoryColumnFilter;
     tone?: HistoryTone;
     mono?: boolean;
+    /** Shown in the table only from xl: secondary detail too wide for narrower tables. */
+    from?: "xl";
 };
+
+/** md and xl grid templates; xl-only columns are left out of the md one. */
+function historyTemplates<T>(columns: HistoryColumn<T>[]) {
+    return {
+        "--history-columns": columns.filter(column => !column.from).map(column => column.width).join(" "),
+        "--history-columns-xl": columns.map(column => column.width).join(" "),
+    } as React.CSSProperties;
+}
+
+const gridTemplates = "md:[grid-template-columns:var(--history-columns)] xl:[grid-template-columns:var(--history-columns-xl)]";
 
 export type HistoryColumnFilter = {
     label: string;
@@ -80,18 +92,18 @@ function ColumnFilter({ filter, align }: { filter: HistoryColumnFilter; align: "
     const active = filter.value !== filter.options[0]?.value;
     const current = filter.options.find(option => option.value === filter.value)?.label ?? filter.value;
     return <Dropdown>
-        <DropdownTrigger asChild>
-            <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
-                className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
-                <ListFilter size={13} aria-hidden="true" />
-                {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
-            </button>
-        </DropdownTrigger>
-        <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
-            <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
-                {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
-            </DropdownRadioGroup>
-        </DropdownContent>
+    <DropdownTrigger asChild>
+        <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
+        className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
+        <ListFilter size={13} aria-hidden="true" />
+        {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
+        </button>
+    </DropdownTrigger>
+    <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
+        <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
+        {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
+        </DropdownRadioGroup>
+    </DropdownContent>
     </Dropdown>;
 }
 
@@ -103,20 +115,20 @@ export function HistoryTitle({ title, detail, detailTone = "neutral" }: { title:
     </>;
 }
 
-function HistoryHeader<T>({ columns, template, sortBy, sortOrder, onSort }: {
-    columns: HistoryColumn<T>[]; template: string; sortBy?: string; sortOrder?: HistorySortOrder; onSort?: (field: string) => void;
+function HistoryHeader<T>({ columns, templates, sortBy, sortOrder, onSort }: {
+    columns: HistoryColumn<T>[]; templates: React.CSSProperties; sortBy?: string; sortOrder?: HistorySortOrder; onSort?: (field: string) => void;
 }) {
     return <div role="rowgroup" className="hidden border-b border-ui-border bg-ui-surface-muted/40 md:block">
-        <div role="row" className="grid items-center gap-x-3 px-3 py-1" style={{ gridTemplateColumns: template }}>
+        <div role="row" className={cn("grid items-center gap-x-3 px-3 py-1", gridTemplates)} style={templates}>
             {columns.map(column => {
                 const active = column.sortKey !== undefined && column.sortKey === sortBy;
                 const sort = active ? sortOrder === "asc" ? "ascending" : "descending" : "none";
                 const filter = column.filter && <ColumnFilter filter={column.filter} align={column.numeric ? "end" : "start"} />;
-                if (!column.sortKey || !onSort) return <div key={column.id} role="columnheader" className={clsx("flex min-h-9 min-w-0 items-center gap-1 text-xs text-ui-muted", column.numeric && "justify-end")}>
+                if (!column.sortKey || !onSort) return <div key={column.id} role="columnheader" className={clsx("min-h-9 min-w-0 items-center gap-1 text-xs text-ui-muted", column.from ? "hidden xl:flex" : "flex", column.numeric && "justify-end")}>
                     <span className="min-w-0 truncate">{column.header}</span>{filter}
                 </div>;
                 // Numeric columns align right, so their sort arrow sits before the label.
-                return <div key={column.id} role="columnheader" aria-sort={sort} className="flex min-w-0 items-center gap-1">
+                return <div key={column.id} role="columnheader" aria-sort={sort} className={clsx("min-w-0 items-center gap-1", column.from ? "hidden xl:flex" : "flex")}>
                     <button type="button" onClick={() => onSort(column.sortKey!)}
                         className={cn("relative inline-flex min-h-9 w-full min-w-0 items-center rounded-ui-sm text-xs font-medium hover:text-ui-heading", column.numeric ? "justify-end" : "justify-start", ui.focusRing, active ? "text-ui-heading" : "text-ui-muted")}>
                         <span className={cn("relative min-w-0 max-w-full", column.numeric ? "pl-4" : "pr-4")}>
@@ -137,28 +149,30 @@ function cellClass<T>(column: HistoryColumn<T>) {
     return clsx("min-w-0 truncate", column.numeric && "text-right tabular-nums", column.mono && "font-mono", column.role !== "primary" && "text-xs", textTones[column.tone ?? "neutral"]);
 }
 
-function HistoryTableRow<T>({ item, columns, template, onClick, fresh }: {
-    item: T; columns: HistoryColumn<T>[]; template: string; onClick: (item: T) => void; fresh: boolean;
+function HistoryTableRow<T>({ item, columns, templates, onClick, fresh }: {
+    item: T; columns: HistoryColumn<T>[]; templates: React.CSSProperties; onClick: (item: T) => void; fresh: boolean;
 }) {
     const primary = columns.find(column => column.role === "primary") ?? columns[0];
     const aside = columns.find(column => column.role === "aside");
     const rest = columns.filter(column => column !== primary && column !== aside);
+    // A column whose mobile cell is empty stays off the collapsed line.
+    const mobile = rest.map(column => ({ column, content: (column.mobileCell ?? column.cell)(item) })).filter(({ content }) => content !== null && content !== undefined && content !== "");
     const Row = fresh ? motion.div : "div";
     // From md up every cell is a grid column in declaration order; below md the
     // rest collapse into one dotted line under the title.
     return <Row role="row" onClick={() => onClick(item)} {...(fresh ? { "data-history-fresh": "", initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.4, ease: "easeOut" as const } } : {})}
-        style={{ "--history-columns": template } as React.CSSProperties}
-        className="grid min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 border-b border-ui-border/60 bg-ui-surface px-3 py-2 text-sm last:border-b-0 hover:bg-ui-hover focus-within:bg-ui-hover min-h-[52px] md:[grid-template-columns:var(--history-columns)]">
+        style={templates}
+        className={cn("grid min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 border-b border-ui-border/60 bg-ui-surface px-3 py-2 text-sm last:border-b-0 hover:bg-ui-hover focus-within:bg-ui-hover min-h-[52px]", gridTemplates)}>
         {columns.map(column => {
             if (column === primary) return <div key={column.id} role="cell" className="col-start-1 row-start-1 min-w-0 md:col-auto md:row-auto">
                 <button type="button" aria-label={column.label?.(item)} className={cn("block w-full min-w-0 rounded-ui-sm text-left", ui.focusRing)}>{column.cell(item)}</button>
             </div>;
             if (column === aside) return <div key={column.id} role="cell" className={clsx(cellClass(column), "col-start-2 row-start-1 md:col-auto md:row-auto")}>{column.cell(item)}</div>;
-            return <div key={column.id} role="cell" className={clsx(cellClass(column), "hidden md:block")}>{column.cell(item)}</div>;
+            return <div key={column.id} role="cell" className={clsx(cellClass(column), column.from ? "hidden xl:block" : "hidden md:block")}>{column.cell(item)}</div>;
         })}
         {/* Below md the secondary cells share one line under the title. */}
-        {rest.length > 0 && <div className="col-span-2 row-start-2 min-w-0 truncate text-xs text-ui-muted md:hidden">
-            {rest.map((column, index) => <React.Fragment key={column.id}>{index > 0 && <span aria-hidden="true"> · </span>}<span className={textTones[column.tone ?? "neutral"]}>{(column.mobileCell ?? column.cell)(item)}</span></React.Fragment>)}
+        {mobile.length > 0 && <div className="col-span-2 row-start-2 min-w-0 truncate text-xs text-ui-muted md:hidden">
+            {mobile.map(({ column, content }, index) => <React.Fragment key={column.id}>{index > 0 && <span aria-hidden="true"> · </span>}<span className={textTones[column.tone ?? "neutral"]}>{content}</span></React.Fragment>)}
         </div>}
     </Row>;
 }
@@ -192,24 +206,36 @@ export function HistoryToolbar({ onSearch, filter, onRefresh, refreshing, sortOr
             <Button size="sm" className={historyToolbarButton} aria-label={uiT("refresh")} onClick={onRefresh} disabled={refreshing}>
                 {refreshing ? <Spinner size="sm" /> : <RotateCw size={16} />}
             </Button>
-            <Dropdown>
-                <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
-                <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
-                    <div className="mb-3">
-                        <SettingLabel>{uiT("sortOrder")}</SettingLabel>
-                        <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && onSortOrderChange(v as "asc" | "desc")} className="w-full">
-                            <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
-                            <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
-                        </ToggleGroup>
-                    </div>
-                    <SettingLabel>{uiT("sortBy")}</SettingLabel>
-                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && onSortByChange(v)} className="flex w-full flex-wrap whitespace-nowrap">
-                        {sortOptions.map(option => <ToggleItem key={option.value} value={option.value} className="grow px-3">{option.label}</ToggleItem>)}
-                    </ToggleGroup>
-                </DropdownContent>
-            </Dropdown>
+            <HistorySortMenu sortOrder={sortOrder} onSortOrderChange={onSortOrderChange} sortBy={sortBy} onSortByChange={onSortByChange} sortOptions={sortOptions} />
         </div>
     );
+}
+
+/** Phones have no table header, so sorting lives in this menu below md. */
+export function HistorySortMenu({ sortOrder, onSortOrderChange, sortBy, onSortByChange, sortOptions }: {
+    sortOrder: "asc" | "desc";
+    onSortOrderChange: (order: "asc" | "desc") => void;
+    sortBy: string;
+    onSortByChange: (field: string) => void;
+    sortOptions: { value: string; label: string }[];
+}) {
+    const { t: uiT } = useTranslation("ui");
+    return <Dropdown>
+        <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
+        <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
+            <div className="mb-3">
+                <SettingLabel>{uiT("sortOrder")}</SettingLabel>
+                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && onSortOrderChange(v as "asc" | "desc")} className="w-full">
+                    <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
+                    <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
+                </ToggleGroup>
+            </div>
+            <SettingLabel>{uiT("sortBy")}</SettingLabel>
+            <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && onSortByChange(v)} className="flex w-full flex-wrap whitespace-nowrap">
+                {sortOptions.map(option => <ToggleItem key={option.value} value={option.value} className="grow px-3">{option.label}</ToggleItem>)}
+            </ToggleGroup>
+        </DropdownContent>
+    </Dropdown>;
 }
 
 const tableFrame = "min-w-0 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface";
@@ -271,7 +297,7 @@ export function HistoryList<T>({ label, items, columns, getKey, onClickItem, pag
     const direction = !moved ? view.direction : view.resetKey === resetKey ? Math.sign(page - view.page) : 0;
     if (moved) setView({ page, resetKey, direction });
     const fresh = useFreshKeys(items.map(getKey), position);
-    const template = columns.map(column => column.width).join(" ");
+    const templates = historyTemplates(columns);
 
     useLayoutEffect(() => {
         if (lastPosition.current === position) return;
@@ -283,10 +309,10 @@ export function HistoryList<T>({ label, items, columns, getKey, onClickItem, pag
     return (
         <div ref={root} className="space-y-3">
             <section role="table" aria-label={label} aria-rowcount={totalItems} className={tableFrame}>
-                <HistoryHeader columns={columns} template={template} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort} />
+                <HistoryHeader columns={columns} templates={templates} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort} />
                 <motion.div key={position} role="rowgroup" initial={{ opacity: 0, x: direction * 16 }} animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: motionTiming.slow, ease: "easeOut" }}>
-                    {items.map(item => <HistoryTableRow key={getKey(item)} item={item} columns={columns} template={template}
+                    {items.map(item => <HistoryTableRow key={getKey(item)} item={item} columns={columns} templates={templates}
                         onClick={onClickItem} fresh={fresh.has(getKey(item))} />)}
                     {!items.length && <div className="min-h-[160px] p-6 text-center text-sm text-ui-muted">{empty ?? t("state.noRecords")}</div>}
                 </motion.div>

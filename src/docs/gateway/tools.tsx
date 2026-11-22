@@ -9,14 +9,29 @@ import { Button } from "@/component/v2/button";
 import type { Config, Headers } from "@/contract/gateway";
 import { errorMessage } from "@/contract/gateway";
 import { Choice, HeaderEditor, TextField } from "./fields";
+import { routingTestHref } from "./test-links";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 
-export function RuleTester({ config }: { config: Config }) {
+export function RuleTester({
+  config,
+  initialGatewayId = "",
+  initialURL = "",
+}: {
+  config: Config;
+  initialGatewayId?: string;
+  initialURL?: string;
+}) {
   const { t } = useTranslation("gateway");
-  const [gatewayId, setGateway] = useState(config.gateways[0]?.id ?? "");
-  const [url, setURL] = useState("https://example.com/ads/banner.js");
+  const [gatewayId, setGateway] = useState(
+    config.gateways.some((g) => g.id === initialGatewayId)
+      ? initialGatewayId
+      : (config.gateways[0]?.id ?? ""),
+  );
+  const [url, setURL] = useState(
+    initialURL || "https://example.com/ads/banner.js",
+  );
   const [method, setMethod] = useState("GET");
   const [inboundId, setInbound] = useState("");
   const [sourceIp, setSourceIP] = useState("");
@@ -82,14 +97,19 @@ export function RuleTester({ config }: { config: Config }) {
         value={headers}
         onChange={setHeaders}
       />
-      <Button
-        variant="primary"
-        loading={pending}
-        disabled={!gatewayId}
-        onClick={() => void run()}
-      >
-        {t("runTest")}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="primary"
+          loading={pending}
+          disabled={!gatewayId}
+          onClick={() => void run()}
+        >
+          {t("runTest")}
+        </Button>
+        <Button asChild variant="outline-secondary">
+          <a href={routingTestHref(url)}>{t("openRoutingTest")}</a>
+        </Button>
+      </div>
       {error && (
         <p role="alert" className="text-sm text-ui-danger">
           {error}

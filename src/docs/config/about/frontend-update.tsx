@@ -6,6 +6,8 @@ import { usePermission } from '@/auth/context';
 import { frontendStatus, frontendCheck, frontendApply, frontendRollback, type FrontendCheck } from '@/api/frontend';
 import { Card, CardBody, CardHeader, IconBox } from '@/component/v2/card';
 import { Button } from '@/component/v2/button';
+import { Badge } from '@/component/v2/badge';
+import { cn } from '@/component/v2/styles';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { useTranslation } from 'react-i18next';
 
@@ -60,11 +62,12 @@ export function FrontendUpdatePanel() {
         description={t('frontendUpdateDescription')} tone="violet" />
     </CardHeader>
     <CardBody className="space-y-4">
-      <div className="grid gap-2 text-sm sm:grid-cols-2">
-        <div><span className="text-ui-muted">{t('frontendActiveVersion')}: </span><span className="break-all font-mono">{status?.active.version ?? '…'}</span></div>
-        <div><span className="text-ui-muted">{t('frontendSource')}: </span><span>{status?.source ?? '…'}</span></div>
-        <div><span className="text-ui-muted">{t('frontendEmbeddedVersion')}: </span><span className="break-all font-mono">{status?.embedded.version ?? '…'}</span></div>
-      </div>
+      <dl className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <VersionTile label={t('frontendActiveVersion')} value={status?.active.version} mono highlight />
+        <VersionTile label={t('frontendEmbeddedVersion')} value={status?.embedded.version} mono />
+        <VersionTile label={t('frontendSource')} value={status?.source}
+          badge={status?.source ? (status.source === 'external' ? 'warning' : status.source === 'downloaded' ? 'primary' : 'secondary') : undefined} />
+      </dl>
       {status?.reason === 'embedded_frontend_newer_or_equal' && (
         <p role="status" className="text-sm text-ui-muted">{t('frontendEmbeddedTakesPriority')}</p>
       )}
@@ -100,4 +103,16 @@ export function FrontendUpdatePanel() {
       {status?.source === 'external' && <p className="text-sm text-ui-muted">{t('frontendExternalOverride')}</p>}
     </CardBody>
   </Card>;
+}
+
+function VersionTile({ label, value, mono, highlight, badge }: {
+  label: string; value?: string; mono?: boolean; highlight?: boolean; badge?: 'primary' | 'secondary' | 'warning';
+}) {
+  return <div className={cn('min-w-0 rounded-ui-md border border-ui-border px-3 py-2.5', highlight && 'border-l-4 border-l-ui-primary bg-ui-selected/40')}>
+    <dt className="text-xs text-ui-muted">{label}</dt>
+    <dd className="mt-1 min-w-0">
+      {badge && value ? <Badge variant={badge}>{value}</Badge>
+        : <span className={cn('break-all text-sm text-ui-heading', mono && 'font-mono')}>{value ?? '…'}</span>}
+    </dd>
+  </div>;
 }

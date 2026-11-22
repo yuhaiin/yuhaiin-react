@@ -14,7 +14,11 @@ export type ResolverList = {
 };
 
 export type ResolverHosts = Go.resolver.Hosts;
-export type FakeDNS = Go.resolver.FakeDNS;
+/**
+ * Cores that predate shared-list references return inline `whitelist` and
+ * `skipCheckList` arrays instead; their presence identifies such a Core.
+ */
+export type FakeDNS = Go.resolver.FakeDNS & { whitelist?: string[]; skipCheckList?: string[] };
 export type ResolverServer = Go.resolver.Server;
 export type DNSCacheRecord = Go.resolver.DNSCacheRecord;
 export type DNSCacheEntry = Go.resolver.DNSCacheEntry;
@@ -55,9 +59,16 @@ export function normalizeFakeDNS(value: Partial<FakeDNS> | undefined): FakeDNS {
     enabled: value?.enabled ?? false,
     ipv4Range: value?.ipv4Range ?? "",
     ipv6Range: value?.ipv6Range ?? "",
-    whitelist: value?.whitelist ?? [],
-    skipCheckList: value?.skipCheckList ?? [],
+    whitelistListIds: value?.whitelistListIds ?? [],
+    skipCheckListIds: value?.skipCheckListIds ?? [],
+    // Kept only for an older Core, which would otherwise clear them on save.
+    ...(isLegacyFakeDNS(value) ? { whitelist: value?.whitelist ?? [], skipCheckList: value?.skipCheckList ?? [] } : {}),
   };
+}
+
+/** True when the Core stores FakeDNS entries inline rather than in shared lists. */
+export function isLegacyFakeDNS(value: Partial<FakeDNS> | undefined): boolean {
+  return Array.isArray(value?.whitelist) || Array.isArray(value?.skipCheckList);
 }
 
 export type FakeIPEntry = Go.resolver.FakeIPEntry;

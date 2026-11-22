@@ -33,6 +33,12 @@ export type RPCOperation =
   | "connections.total"
   | "connections.trace"
   | "connections.traffic"
+  | "dns.history.clear"
+  | "dns.history.get"
+  | "dns.history.list"
+  | "dns.history.settings.get"
+  | "dns.history.settings.put"
+  | "dns.history.stats"
   | "frontend.apply"
   | "frontend.check"
   | "frontend.reset"
@@ -42,6 +48,7 @@ export type RPCOperation =
   | "gateway.ca.import"
   | "gateway.ca.status"
   | "gateway.filters.refresh"
+  | "gateway.statistics"
   | "gateway.statistics.reset"
   | "gateway.status"
   | "gateway.test"
@@ -64,6 +71,7 @@ export type RPCOperation =
   | "inbounds.post"
   | "inbounds.status"
   | "info"
+  | "logs.recent"
   | "node.close"
   | "node.delete"
   | "node.extra"
@@ -90,6 +98,16 @@ export type RPCOperation =
   | "outbound.selector.references"
   | "outbound.selector.status"
   | "outbound.selectors.get"
+  | "profiler.analyze"
+  | "profiler.delete"
+  | "profiler.sessions"
+  | "profiler.start"
+  | "share.feed.create"
+  | "share.feed.delete"
+  | "share.feed.preview"
+  | "share.feed.put"
+  | "share.feed.rotate"
+  | "share.feeds"
   | "resolver.cache.delete"
   | "resolver.cache.get"
   | "resolver.delete"
@@ -141,14 +159,9 @@ export type RPCOperation =
   | "route.rules.post"
   | "route.rules.priority"
   | "route.rules.test"
+  | "runtime.stats"
   | "settings.get"
   | "settings.put"
-  | "share.feed.create"
-  | "share.feed.delete"
-  | "share.feed.preview"
-  | "share.feed.put"
-  | "share.feed.rotate"
-  | "share.feeds"
   | "subscriptions.delete"
   | "subscriptions.get"
   | "subscriptions.put"
@@ -158,6 +171,9 @@ export type RPCOperation =
   | "systemNetwork.interfaces"
   | "systemNetwork.outbound"
   | "systemNetwork.preview"
+  | "systemNetwork.protection.get"
+  | "systemNetwork.protection.put"
+  | "systemNetwork.protection.rules"
   | "systemNetwork.routes"
   | "systemNetwork.status"
   | "tools.diagnostics"
@@ -179,6 +195,12 @@ export type RPCOperation =
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
+  { method: "POST", pattern: "/api/v2/logs/recent", operation: "logs.recent" },
+  { method: "GET", pattern: "/api/v2/runtime/stats", operation: "runtime.stats" },
+  { method: "GET", pattern: "/api/v2/profiler", operation: "profiler.sessions" },
+  { method: "POST", pattern: "/api/v2/profiler", operation: "profiler.start" },
+  { method: "DELETE", pattern: "/api/v2/profiler/{id}", operation: "profiler.delete" },
+  { method: "POST", pattern: "/api/v2/profiler/{id}/analyze", operation: "profiler.analyze" },
   { method: "GET", pattern: "/api/v2/certificates", operation: "certificates.list" },
   { method: "PUT", pattern: "/api/v2/certificates", operation: "certificate.save" },
   { method: "DELETE", pattern: "/api/v2/certificates/{id}", operation: "certificate.delete" },
@@ -190,6 +212,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.put" },
   { method: "GET", pattern: "/api/v2/gateway/status", operation: "gateway.status" },
   { method: "POST", pattern: "/api/v2/gateway/statistics/reset", operation: "gateway.statistics.reset" },
+  { method: "GET", pattern: "/api/v2/gateway/statistics", operation: "gateway.statistics" },
   { method: "POST", pattern: "/api/v2/gateway/test", operation: "gateway.test" },
   { method: "GET", pattern: "/api/v2/gateway/ca", operation: "gateway.ca.status" },
   { method: "POST", pattern: "/api/v2/gateway/ca/generate", operation: "gateway.ca.generate" },
@@ -247,6 +270,12 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/resolver/fakedns", operation: "resolver.fakedns.put" },
   { method: "GET", pattern: "/api/v2/resolver/server", operation: "resolver.server.get" },
   { method: "PUT", pattern: "/api/v2/resolver/server", operation: "resolver.server.put" },
+  { method: "GET", pattern: "/api/v2/dns/history", operation: "dns.history.list" },
+  { method: "GET", pattern: "/api/v2/dns/history/stats", operation: "dns.history.stats" },
+  { method: "GET", pattern: "/api/v2/dns/history/settings", operation: "dns.history.settings.get" },
+  { method: "PUT", pattern: "/api/v2/dns/history/settings", operation: "dns.history.settings.put" },
+  { method: "GET", pattern: "/api/v2/dns/history/{id}", operation: "dns.history.get" },
+  { method: "DELETE", pattern: "/api/v2/dns/history", operation: "dns.history.clear" },
   { method: "GET", pattern: "/api/v2/resolver/fakeip/entries", operation: "resolver.fakeip.entries" },
   { method: "DELETE", pattern: "/api/v2/resolver/fakeip/entries/{ip}/{domain}", operation: "resolver.fakeip.entry.delete" },
   { method: "GET", pattern: "/api/v2/resolver/cache", operation: "resolver.cache.get" },
@@ -275,6 +304,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/system-network/preview", operation: "systemNetwork.preview" },
   { method: "GET", pattern: "/api/v2/system-network/routes", operation: "systemNetwork.routes" },
   { method: "GET", pattern: "/api/v2/system-network/outbound", operation: "systemNetwork.outbound" },
+  { method: "GET", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.get" },
+  { method: "PUT", pattern: "/api/v2/system-network/protection", operation: "systemNetwork.protection.put" },
+  { method: "GET", pattern: "/api/v2/system-network/protection/rules", operation: "systemNetwork.protection.rules" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
   { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
   { method: "POST", pattern: "/api/v2/inbounds/{id}/lan-link/invite", operation: "inbound.lan_link.invite" },

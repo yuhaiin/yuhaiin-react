@@ -3,6 +3,26 @@ import { setupWorker } from 'msw/browser';
 import { createDefaultSettings } from '/src/contract/settings.ts';
 import { establishSession } from '/src/auth/session.ts';
 import { operationPermissions } from '/src/auth/operations.ts';
+let protectionRules={backend:'pf',available:true,readAt:1763500000,raw:'### pfctl -s rules\nscrub-anchor "com.apple/*" all fragment reassemble\nanchor "io.github.yuhaiin/*" all\nanchor "com.apple/*" all\n',
+  main:[{kind:'translation',text:'nat-anchor "com.apple/*" all',yuhaiin:false},{kind:'translation',text:'rdr-anchor "com.apple/*" all',yuhaiin:false},{kind:'translation',text:'nat-anchor "io.github.yuhaiin/*" all',yuhaiin:true},
+    {kind:'normalization',text:'scrub-anchor "com.apple/*" all fragment reassemble',yuhaiin:false},{kind:'filter',text:'anchor "io.github.yuhaiin/*" all',yuhaiin:true},{kind:'filter',text:'anchor "com.apple/*" all',yuhaiin:false}],
+  rulesets:[{name:'io.github.yuhaiin/protection',purpose:'protection',rules:[
+    {text:'pass out on lo0 all flags any keep state label "yuhaiin-loopback" tag io.github.yuhaiin.pass',label:'yuhaiin-loopback',category:'loopback',counters:true,evaluations:820,packets:6400,bytes:512000,states:12},
+    {text:'pass out from any to <yuhaiin_private> flags any keep state label "yuhaiin-private" tag io.github.yuhaiin.pass',label:'yuhaiin-private',category:'private',counters:true,evaluations:300,packets:2200,bytes:180000,states:6},
+    {text:'pass out inet6 proto ipv6-icmp all icmp6-type neighbrsol keep state label "yuhaiin-nd" tag io.github.yuhaiin.pass',label:'yuhaiin-nd',category:'local',counters:true,evaluations:40,packets:40,bytes:3200,states:0},
+    {text:'pass out from any to <yuhaiin_bypass> flags any keep state label "yuhaiin-bypass" tag io.github.yuhaiin.pass',label:'yuhaiin-bypass',category:'bypass',counters:true,evaluations:12,packets:90,bytes:7000,states:1},
+    {text:'pass out on utun4 all flags any keep state (if-bound) label "yuhaiin-tunnel" tag io.github.yuhaiin.pass',label:'yuhaiin-tunnel',category:'tunnel',counters:true,evaluations:900,packets:81000,bytes:9200000,states:44},
+    {text:'pass out proto tcp all group = 340 flags any keep state label "yuhaiin-own-tcp" tag io.github.yuhaiin.pass',label:'yuhaiin-own-tcp',category:'own',counters:true,evaluations:60,packets:42000,bytes:51000000,states:7},
+    {text:'block return out quick all label "yuhaiin-block-3fbc2130dfdb4ee8" ! tagged io.github.yuhaiin.pass',label:'yuhaiin-block-3fbc2130dfdb4ee8',category:'block',counters:true,evaluations:1284,packets:1284,bytes:93112,states:0}],
+    tables:[{name:'yuhaiin_private',count:9,entries:['10.0.0.0/8','100.64.0.0/10','172.16.0.0/12','192.168.0.0/16','127.0.0.0/8','169.254.0.0/16','fc00::/7','::1','fe80::/10']},{name:'yuhaiin_bypass',count:2,entries:['198.51.100.0/24','203.0.113.0/24']}]},
+    {name:'io.github.yuhaiin/forward',purpose:'forward',rules:[]}],
+  config:{path:'/etc/pf.conf',registered:true,lines:[{number:27,text:'nat-anchor "io.github.yuhaiin/*" # managed by Yuhaiin (io.github.yuhaiin)',managed:true},{number:29,text:'anchor "io.github.yuhaiin/*" # managed by Yuhaiin (io.github.yuhaiin)',managed:true}]}};
+let protection={state:'protected',supported:true,backend:'pf',backendName:'macOS Packet Filter',mode:'standard',desired:{enabled:true,startAtBoot:true},effective:true,service:'running',
+  filter:{enabled:true,registered:true,persistent:true,loaded:true,reference:true,name:'io.github.yuhaiin/protection'},checkedAt:1763500000,updatedAt:1763499000,
+  problems:[{code:'preexisting_state',message:'The packet filter was already in use when protection started; connections opened before then may continue until they close'}],
+  physicalInterfaces:['en0','en5','bridge0'],tunnelInterfaces:['utun4'],privateNetworks:['10.0.0.0/8','100.64.0.0/10','172.16.0.0/12','192.168.0.0/16','fc00::/7','127.0.0.0/8','169.254.0.0/16','::1','fe80::/10'],
+  bypassNetworks:['198.51.100.0/24','203.0.113.0/24'],bypassCount:2,ownTraffic:{allowed:true,method:'socket_group',group:'_yuhaiin',groupId:340,connections:7},
+  tunnelIpv4:true,tunnelIpv6:false,blocked:{packets:1284,bytes:93112,lastAt:1763499900}};
 const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
 const protectedUpdateReady = new URLSearchParams(location.search).get('protected') === 'ready';
 let updateOperationId = '';
@@ -32,6 +52,41 @@ if (scenario === 'l2tp') {
   nodes[0] = { ...nodes[0], name:'L2TP test node', chain:[{type:'l2tp',l2tp:{gateway:'vpn.example.invalid:1701',username:'alice',auth_type:'mschap-v2',ipv6:true,ipv6_address:'fd88::2/64',mtu:1400}}] };
   nodes[1] = { ...nodes[1], name:'L2TPv3 test node', chain:[{type:'l2tpv3',l2tpv3:{gateway:'vpn.example.invalid:1701',static:true,local_session_id:4294967295,peer_session_id:200,local_cookie:'1122334455667788',peer_cookie:'aabbccdd',sublayer:true,address:'10.89.0.2/24',router:'10.89.0.1',ipv6_address:'fd89::2/64',ipv6_router:'fd89::1',mtu:1400}}] };
 }
+// DNS history preview: every outcome, FakeIP, cache, hosts and upstream attempts.
+let dnsHistorySettings={enabled:scenario!=='dns-disabled',retentionHours:72,maxRecords:20000};
+const dnsFakeIP=(returned,ip)=>({requested:returned,returned,ipv4:returned?ip:undefined,poolIpv4:returned?'198.18.0.0/15':undefined,reason:returned?'force_fakeip':'disabled',allocation:returned?'allocated':'not_requested',force:returned,global:false,skipCheck:false});
+const dnsSamples=[
+  ['www.example.com','A','success','NOERROR','fakeip','miss',true,'198.18.0.12'],
+  ['api.github.com','AAAA','success','NOERROR','upstream','miss',false,'2606:50c0:8000::154'],
+  ['very-long-subdomain-name-for-mobile-layout-testing.cdn.example.invalid','HTTPS','success','NOERROR','cache','hit',false,'1 . alpn="h2,h3"'],
+  ['missing.example.invalid','A','nxdomain','NXDOMAIN','upstream','miss',false,''],
+  ['ipv6-only.example','A','nodata','NOERROR','upstream','miss',false,''],
+  ['slow.example','A','timeout','','','miss',false,''],
+  ['burst.example','A','dropped','','','',false,''],
+  ['router.lan','A','success','NOERROR','hosts','bypass',false,'192.168.1.1'],
+  ['_spf.example.com','TXT','success','NOERROR','upstream','miss',false,'"v=spf1 include:_spf.example.com -all"'],
+  ['broken.example','A','servfail','SERVFAIL','upstream','miss',false,''],
+  ['ads.example','A','nodata','NOERROR','blocked','bypass',false,''],
+  ['quota.example','A','rejected','','','',false,''],
+];
+const dnsFailure={timeout:['upstream','timeout','i/o timeout'],dropped:['dns_admission','queue_full','dns request buffer is full'],rejected:['traffic_control','download_quota','download quota exceeded']};
+const dnsHistory=Array.from({length:scenario==='empty'?0:140},(_,i)=>{
+  const [domain,queryType,outcome,rcode,source,cache,fake,data]=dnsSamples[i%dnsSamples.length];
+  const failure=dnsFailure[outcome]||['','',''];
+  return {id:1000-i,createdAt:new Date(Date.now()-i*37000).toISOString(),durationNs:outcome==='timeout'?10_000_000_000:cache==='hit'?180_000:(i%7+1)*3_200_000,transport:i%5===0?'tcp':'udp',sourceType:i%3===0?'local_dns':'dns_hijack',
+    clientIp:i%3===0?'127.0.0.1':'172.19.0.1',clientPort:40000+i,inboundId:i%3===0?'':'tun',inboundName:i%3===0?'':'TUN',processName:i%4===0?'/Applications/Safari.app/Contents/MacOS/Safari':i%4===1?'/usr/bin/curl':'',pid:i%4<2?4000+i:0,
+    domain,queryType,queryClass:'IN',transactionId:0x1a2b+i,resolver:source==='blocked'?'block':'r-cloudflare',resolverLabel:source==='blocked'?'':'Cloudflare',server:source==='blocked'?'':'1.1.1.1:53',serverType:source==='blocked'?'':'udp',routeMode:source==='blocked'?'block':'proxy',routeRuleId:'rule-0',routeRuleName:source==='blocked'?'Block ads':'Work traffic',
+    cacheStatus:cache||'unknown',resolutionSource:source||'unknown',fakeip:dnsFakeIP(fake,'198.18.0.'+(12+i%200)),outcome,rcode:rcode||undefined,failureStage:failure[0]||undefined,failureReason:failure[1]||undefined,error:failure[2]||undefined,
+    requestSize:40,responseSize:rcode?(data?72:48):0,sentBytes:rcode?(data?72:48):0,answerCount:data?1:0,authorityCount:outcome==='nxdomain'?1:0,additionalCount:0,answerSummary:fake?'198.18.0.'+(12+i%200):data||undefined};
+});
+const dnsDetail=(item)=>({...item,
+  answer:item.answerSummary?[{name:item.domain,type:item.queryType==='HTTPS'?'HTTPS':item.queryType,class:'IN',ttl:item.fakeip.returned?40:300,data:item.answerSummary}]:[],
+  authority:item.outcome==='nxdomain'?[{name:'example.invalid',type:'SOA',class:'IN',ttl:900,data:'a.iana-servers.net. noc.dns.icann.org. 2026112101 7200 3600 1209600 3600'}]:[],
+  flags:{aa:false,tc:false,rd:true,ra:true,ad:false,cd:false,serverTruncated:false},
+  details:{admission:item.cacheStatus==='hit'?'cache_hit':item.outcome==='dropped'?'queue_full':'queued',queueWaitNs:item.cacheStatus==='hit'?0:120_000,selectionReason:'route_rule',serverTransport:item.serverType,requestRd:true,requestCd:false,requestAd:false,requestDo:false,requestUdpSize:1232,
+    attempts:item.resolutionSource==='upstream'||item.resolutionSource==='fakeip'||item.outcome==='timeout'?[
+      ...(item.outcome==='timeout'||item.id%6===0?[{resolver:'Cloudflare',server:'1.1.1.1:53',transport:'udp',offsetNs:30_000,durationNs:item.outcome==='timeout'?9_900_000_000:3_000_000_000,result:'timeout',error:'read udp 1.1.1.1:53: i/o timeout'}]:[]),
+      ...(item.outcome==='timeout'?[]:[{resolver:'Cloudflare',server:'1.1.1.1:53',transport:'udp',offsetNs:item.id%6===0?3_000_100_000:30_000,durationNs:item.durationNs-60_000,result:'success',rcode:item.rcode}])]:[]}});
 const activeIds = new Set(nodes.slice(0, 3).map(node => node.id));
 const subscriptions = scenario === 'empty' ? [] : [
   { name: 'Work network', type: 'reserve', url: 'https://work.example.invalid/subscription?token=synthetic-token' },
@@ -80,6 +135,30 @@ const shareFeeds=scenario==='empty'?[]:[{id:'feed-work',name:'Work devices',enab
 function shareFeedPreview(entries){const out={nodes:[],skipped:[],missing:[]};const seen=new Map();const add=(node,from)=>{if(seen.has(node.id)){if(seen.get(node.id))out.skipped.push({id:node.id,name:node.name,reason:'duplicate'});return;}const reason=node.enabled?'':'disabled';seen.set(node.id,!reason);if(reason){out.skipped.push({id:node.id,name:node.name,reason});return;}out.nodes.push({id:node.id,name:node.name,group:node.group||'manual',from});};for(const entry of entries||[]){if(entry.kind==='node'){const node=nodes.find(n=>n.id===entry.value);if(!node)out.missing.push(entry);else add(node,'node');}else{const group=nodes.filter(n=>(n.group||'manual')===entry.value).sort((a,b)=>a.name.localeCompare(b.name));if(!group.length)out.missing.push(entry);for(const node of group)add(node,'group:'+entry.value);}}return out;}
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 
+const gatewayAction=(type,extra={})=>({type,status:type==='block'?204:200,outbound:{type:'inherit_route'},preserveHost:false,rewrite:{},...extra});
+const gatewayWorkspace={version:1,revision:1,gateways:[{id:'gw-ads',name:'spotify-adblock',enabled:true,debug:false,revision:1,maxBodyBytes:0,
+  policies:[
+    {id:'ads-path',name:'Ad audio paths',revision:1,enabled:true,priority:10,match:{field:'path',operator:'prefix',values:['/ads/']},action:gatewayAction('block')},
+    {id:'sponsor',name:'Sponsorship JSON',revision:1,enabled:true,priority:20,match:{field:'path',operator:'prefix',values:['/sponsoredplaylist']},action:gatewayAction('respond',{body:'{"sponsorships":[]}'})},
+    {id:'tracking',name:'Telemetry hosts',revision:1,enabled:true,priority:30,match:{field:'host',operator:'domain',values:['log.spotify.example']},action:gatewayAction('block')},
+  ],backendPools:[],filters:[{id:'easylist',name:'EasyList (domains)',revision:1,enabled:true,text:''}],fallback:gatewayAction('forward')}]};
+// Deterministic synthetic hour: a busy evening ramp with periodic ad bursts.
+function gatewayStatisticsFixture(){
+  const n=360, interval=10000, end=Math.ceil(Date.now()/interval)*interval;
+  const col=f=>Array.from({length:n},(_,i)=>Math.max(0,Math.round(f(i))));
+  const base=i=>40+30*Math.sin(i/40)+((i*37)%11);
+  const blocked=col(i=>base(i)*0.66+(i%30<3?60:0)), forwarded=col(i=>base(i)*0.32), errors=col(i=>(i%45===0?12:(i*7)%5===0?1:0));
+  const requests=blocked.map((b,i)=>b+forwarded[i]+errors[i]);
+  return {id:'gw-ads',sinceUnixMs:end-n*interval*3,activeRequests:14,bytesIn:18_400_000,bytesOut:2_870_000_000,
+    statusClasses:[210,180,151230,960,2900,1150],
+    latency:[[10,62000],[50,41000],[100,18000],[250,9200],[500,4100],[1000,2300],[2500,1300],[5000,700],[10000,410],[30000,620],[60000,280],[0,190]].map(([leMs,count])=>({leMs,count})),
+    rules:[{id:'ads-path',hits:98200},{id:'sponsor',hits:12400},{id:'tracking',hits:51800}],filterHits:24150,defaultHits:53080,
+    topHosts:[['spclient.wg.spotify.example',61200,4100],['audio-ak.spotify.example',38800,0],['ads.spotify.example',31500,31500],['log.spotify.example',22900,22900],['i.scdn.example',14100,0],['pubads.g.doubleclick.example',9800,9800],['api-partner.spotify.example',6200,2100]].map(([host,requests,blocked])=>({host,requests,blocked})),
+    hostCountError:0,
+    history:{intervalMs:interval,endUnixMs:end,requests,blocked,forwarded,errors,
+      durationNs:requests.map((r,i)=>r*(120+90*Math.sin(i/25)+(i%45===0?2500:0))*1e6),
+      bytesIn:requests.map(r=>r*900),bytesOut:forwarded.map((f,i)=>f*(60000+20000*Math.sin(i/30)))}};
+}
 const sysnetCaps=scenario==='android'?{platform:'android',routeManagement:true,multipleTargets:false,externalInterfaces:false,gateways:false,policyRouting:false,ipv4Forwarding:false,ipv6Forwarding:false,nat:false,tproxy:false,forwardSourceFilter:false,routeTargets:['tun_inbound'],forwardTargets:[]}
   :{platform:scenario==='utun'?'darwin':'linux',routeManagement:true,multipleTargets:true,externalInterfaces:true,gateways:true,policyRouting:scenario!=='utun',ipv4Forwarding:true,ipv6Forwarding:true,nat:true,tproxy:scenario!=='utun',forwardSourceFilter:true,routeTargets:['tun_inbound','interface'],forwardTargets:scenario==='utun'?['tun_inbound','interface','routes']:['tun_inbound','interface','routes','tproxy']};
 let systemNetwork={routes:[
@@ -248,6 +327,10 @@ const worker=setupWorker(
       if(!p.confirm)return errorResponse('Discard confirmation required',400);
       recoveryImports=recoveryImports.filter(item=>item.id!==p.id);
     }
+    else if(op==='gateway.workspace.get') result=gatewayWorkspace;
+    else if(op==='gateway.status') result={revision:1,gateways:[{id:'gw-ads',enabled:true,requests:270405,blocked:186550,forwarded:83855,errors:4204,tlsFailures:32,protocolFailures:0,durationNs:270405*9023e6,lastOutbound:'Hysteria 2',filterReports:[{id:'easylist',accepted:41250,rejected:318,errors:[]}],upstreams:[]}]};
+    else if(op==='gateway.statistics') result={gateways:[gatewayStatisticsFixture()]};
+    else if(op==='gateway.statistics.reset') result={};
     else if(op==='nodes.groups') {
       const byGroup=new Map();
       for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}
@@ -281,6 +364,23 @@ const worker=setupWorker(
     else if(op==='nodes.post'){ if(p.name==='fail'&&!failedImports.has(p.id)){failedImports.add(p.id);return HttpResponse.json({error:{message:'Synthetic create failure'}},{status:500});} result=upsert(nodes,p); }
     else if(op==='connections') result={connections};
     else if(op==='connections.history') result={items:history};
+    else if(op==='dns.history.list'){
+      let items=dnsHistory.filter(item=>(!p.query||item.domain.includes(p.query)||(item.processName||'').toLowerCase().includes(p.query))&&(!p.domain||item.domain===p.domain||item.domain.endsWith('.'+p.domain))&&(!p.outcome||p.outcome.split(',').includes(item.outcome))&&(!p.queryType||item.queryType===p.queryType)&&(!p.sourceType||item.sourceType===p.sourceType)&&(!p.fakeipOnly||item.fakeip.returned)&&(!p.from||Date.parse(item.createdAt)>=p.from));
+      const sortValue={domain:item=>item.domain,type:item=>item.queryType,result:item=>item.outcome,latency:item=>item.durationNs}[p.sortBy];
+      if(sortValue) items=[...items].sort((a,b)=>{const x=sortValue(a),y=sortValue(b);return (x<y?-1:x>y?1:0)*(p.sortOrder==='asc'?1:-1)||b.id-a.id;});
+      else if(p.sortOrder==='asc') items=[...items].reverse();
+      const start=p.cursor?items.findIndex(item=>String(item.id)===p.cursor)+1:(Math.max(1,p.page||1)-1)*(p.limit||50); const page=items.slice(start,start+(p.limit||50));
+      result={items:page,total:items.length,limit:p.limit||50,page:Math.max(1,p.page||1),nextCursor:start+page.length<items.length?String(page[page.length-1].id):undefined};
+    }
+    else if(op==='dns.history.get') result=dnsDetail(dnsHistory.find(item=>item.id===p.id)||dnsHistory[0]);
+    else if(op==='dns.history.stats'){
+      const items=dnsHistory.filter(item=>Date.parse(item.createdAt)>=(p.from||0)); const count=f=>items.filter(f).length;
+      result={from:p.from,to:Date.now(),total:items.length,success:count(item=>['success','nxdomain','nodata'].includes(item.outcome)),failed:count(item=>!['success','nxdomain','nodata'].includes(item.outcome)),dropped:count(item=>item.outcome==='dropped'),timeout:count(item=>item.outcome==='timeout'),writeErrors:0,fakeip:count(item=>item.fakeip.returned),cacheHits:count(item=>item.cacheStatus==='hit'),cacheMisses:count(item=>item.cacheStatus==='miss'),avgLatencyNs:items.reduce((sum,item)=>sum+item.durationNs,0)/Math.max(1,items.length),
+        recorder:{enabled:dnsHistorySettings.enabled,queueLength:0,queueCapacity:4096,persisted:items.length,recordsDropped:scenario==='dns-pressure'?1843:0,persistenceErrors:0,startedAt:new Date(Date.now()-86400000).toISOString()}};
+    }
+    else if(op==='dns.history.settings.get') result=dnsHistorySettings;
+    else if(op==='dns.history.settings.put') result=dnsHistorySettings=structuredClone(p);
+    else if(op==='dns.history.clear') { result={deleted:dnsHistory.length}; dnsHistory.length=0; }
     else if(op==='connections.failed_history') result={items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',error:'Synthetic timeout',process:'audit',time:x.time,failedCount:String(i+1)}))};
     else if(op==='connections.total'){total+=1024;result={download:String(total),upload:String(total/2),counters:Object.fromEntries(connections.map((c,i)=>[c.id,{download:String(scenario.startsWith('connections')?(i+1)*1234567890123+total:total),upload:String(scenario.startsWith('connections')?(connections.length-i)*987654321123+total:total/2)}]))};}
     else if(op==='connections.telemetry') result={groups:[{dimension:'protocol',items:[{value:'tcp',download:'2048',upload:'1024',failures:'0'}]}]};
@@ -360,6 +460,9 @@ const worker=setupWorker(
     else if(op==='systemNetwork.interfaces')result=systemNetworkInterfaces;
     else if(op==='systemNetwork.routes')result=systemNetworkRoutes;
     else if(op==='systemNetwork.outbound')result=systemNetworkOutbound;
+    else if(op==='systemNetwork.protection.get')result=protection;
+    else if(op==='systemNetwork.protection.rules')result=protectionRules;
+    else if(op==='systemNetwork.protection.put'){protection={...protection,desired:p,state:p.enabled?'protected':'disabled',effective:p.enabled};result=protection;}
     else if(op==='systemNetwork.preview')result={routes:systemNetworkPreview(p).reduce((n,r)=>n+r.ipv4Routes+r.ipv6Routes,0),rules:systemNetworkPreview(p)};
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;
