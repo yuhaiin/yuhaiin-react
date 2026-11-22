@@ -12,7 +12,7 @@ export interface LayoutOptions {
     headerHeight: number;
 }
 
-export const desktopLayout: LayoutOptions = { orientation: "horizontal", nodeWidth: 224, nodeHeight: 66, columnGap: 68, rowGap: 12, perRow: 1, headerHeight: 40 };
+export const desktopLayout: LayoutOptions = { orientation: "horizontal", nodeWidth: 224, nodeHeight: 66, columnGap: 116, rowGap: 12, perRow: 1, headerHeight: 40 };
 export const mobileLayout: LayoutOptions = { orientation: "vertical", nodeWidth: 160, nodeHeight: 50, columnGap: 52, rowGap: 10, perRow: 2, headerHeight: 30 };
 
 export interface PlacedNode {
@@ -179,17 +179,17 @@ function finish(options: LayoutOptions, nodes: PlacedNode[], columns: ColumnFram
 
 export interface Point { x: number; y: number }
 
-/** Cubic Bézier control points of an edge between two placed nodes, in world coordinates. */
-export function edgeCurve(layout: Layout, from: PlacedNode, to: PlacedNode, offset = 0): [Point, Point, Point, Point] {
+/** Cubic Bézier control points of an edge between two placed nodes, with port offsets along the card edges. */
+export function edgeCurve(layout: Layout, from: PlacedNode, to: PlacedNode, offset = 0, endOffset = offset): [Point, Point, Point, Point] {
     const { nodeWidth: w, nodeHeight: h, orientation } = layout.options;
     if (orientation === "horizontal") {
         const start = { x: from.x + w, y: from.y + h / 2 + offset };
-        const end = { x: to.x, y: to.y + h / 2 + offset };
+        const end = { x: to.x, y: to.y + h / 2 + endOffset };
         const bend = Math.max(24, (end.x - start.x) * 0.5);
         return [start, { x: start.x + bend, y: start.y }, { x: end.x - bend, y: end.y }, end];
     }
     const start = { x: from.x + w / 2 + offset, y: from.y + h };
-    const end = { x: to.x + w / 2 + offset, y: to.y };
+    const end = { x: to.x + w / 2 + endOffset, y: to.y };
     const bend = Math.max(18, (end.y - start.y) * 0.5);
     return [start, { x: start.x, y: start.y + bend }, { x: end.x, y: end.y - bend }, end];
 }

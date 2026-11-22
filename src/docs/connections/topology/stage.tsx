@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { FlowRenderer, type Palette, type View } from "./flow-renderer";
 import type { Layout, PlacedNode } from "./layout";
 import type { Column } from "./model";
-import type { FlowMapping } from "./particles";
+import type { FlowMapping } from "./ribbons";
 import type { Emphasis, SceneEdge } from "./scene";
 import { NodeCard } from "./node-card";
 import styles from "./topology.module.css";
@@ -48,12 +48,16 @@ function readPalette(): Palette {
     const style = getComputedStyle(document.documentElement);
     const read = (token: string) => style.getPropertyValue(token).trim() || "gray";
     return {
-        up: read("--chart-upload"),
-        down: read("--chart-download"),
-        idle: read("--border"),
-        edge: read("--border-strong"),
-        highlight: read("--accent"),
-        auxiliary: read("--text-tertiary"),
+        up: read("--topology-upload"),
+        upAlt: read("--topology-upload-alt"),
+        down: read("--topology-download"),
+        downAlt: read("--topology-download-alt"),
+        flow: read("--topology-flow"),
+        idle: read("--topology-edge-idle"),
+        edge: read("--topology-edge-active"),
+        highlight: read("--topology-edge-selected"),
+        auxiliary: read("--topology-auxiliary"),
+        dark: document.documentElement.dataset.bsTheme === "dark",
     };
 }
 
@@ -260,6 +264,11 @@ export const TopologyStage = memo(forwardRef<StageHandle, StageProps>(function T
         fitted.current = true;
         fit();
     }, [layout, fit]);
+
+    // Until the user moves the view, keep the whole graph framed as it grows or shrinks.
+    useEffect(() => {
+        if (fitted.current && !moved.current) fit();
+    }, [worldWidth, worldHeight, fit]);
 
     // Wheel zoom needs a non-passive listener to keep the page from scrolling.
     useEffect(() => {

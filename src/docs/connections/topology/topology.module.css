@@ -1,7 +1,7 @@
 /* Network topology. Colors come only from the design tokens in global.css. */
 
 .stage {
-    background-color: var(--canvas);
+    background-color: var(--topology-canvas);
     /* A quiet dot grid; size and position follow the view (set from script). */
     background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--border) 85%, transparent) 1px, transparent 1.2px);
     background-size: 24px 24px;
@@ -118,8 +118,9 @@
     padding: 6px 7px 6px 6px;
 }
 
+/* Neutral emphasis: the card never competes with the mint/lavender flow colours. */
 .cardActive {
-    border-color: color-mix(in srgb, var(--color-success) 38%, var(--border));
+    border-color: color-mix(in srgb, var(--border-strong) 45%, var(--border));
 }
 
 .cardSelected {
@@ -198,8 +199,8 @@
     gap: 5px;
 }
 
-.up { color: var(--chart-upload); }
-.down { color: var(--chart-download); }
+.up { color: var(--topology-upload-text); }
+.down { color: var(--topology-download-text); }
 
 .dot {
     width: 7px;
@@ -279,18 +280,30 @@
 }
 
 .swatch {
-    width: 8px;
-    height: 8px;
+    width: 18px;
+    height: 3px;
     border-radius: var(--radius-full);
 }
 
-.swatchUp { background: var(--chart-upload); box-shadow: 0 0 6px var(--chart-upload); }
-.swatchDown { background: var(--chart-download); box-shadow: 0 0 6px var(--chart-download); }
+/* Each legend line brightens towards the end where its strands arrive, with the arrival dot. */
+.swatchUp { background: linear-gradient(90deg, var(--topology-flow), var(--topology-upload)); }
+.swatchDown { background: linear-gradient(270deg, var(--topology-flow), var(--topology-download)); }
+.swatchUp::after,
+.swatchDown::after {
+    content: "";
+    display: block;
+    width: 5px;
+    height: 5px;
+    margin-top: -1px;
+    border-radius: var(--radius-full);
+}
+.swatchUp::after { margin-left: 15px; background: var(--topology-upload); }
+.swatchDown::after { margin-left: -2px; background: var(--topology-download); }
 
 .lineTcp,
 .lineUdp {
     width: 18px;
-    border-top: 2px solid var(--border-strong);
+    border-top: 2px solid var(--topology-edge-active);
 }
 
 .lineUdp {

@@ -53,6 +53,20 @@
     --color-info: #276680;
     --chart-download: #1F7FB8;
     --chart-upload: #B5762A;
+    /* Network topology only ("Flowing ribbons"): teal/cyan upload, violet/indigo
+       download, blue between them. Chart colors above stay as they are for every other graph. */
+    --topology-canvas: var(--canvas);
+    --topology-upload: #138B82;
+    --topology-upload-alt: #1F86B5;
+    --topology-download: #7A52D1;
+    --topology-download-alt: #4F55C9;
+    --topology-flow: #3D6FD1;
+    --topology-upload-text: #12786F;
+    --topology-download-text: #6A47C2;
+    --topology-edge-idle: #C9CFD3;
+    --topology-edge-active: #8E98A3;
+    --topology-edge-selected: #2D3640;
+    --topology-auxiliary: #A3ABB2;
     --color-violet: #79546D;
     --elevation-0: none;
     --elevation-1: 0 1px 2px rgb(28 32 24 / 7%);
@@ -140,6 +154,18 @@ html[data-bs-theme="dark"] {
     --color-info: #9BC9D7;
     --chart-download: #3E9BD1;
     --chart-upload: #C4863A;
+    --topology-canvas: #090B0D;
+    --topology-upload: #2CC9B9;
+    --topology-upload-alt: #3FB8E8;
+    --topology-download: #A779F2;
+    --topology-download-alt: #6E6CF0;
+    --topology-flow: #3E6FE6;
+    --topology-upload-text: #4FD6C7;
+    --topology-download-text: #B595F5;
+    --topology-edge-idle: #2C3238;
+    --topology-edge-active: #4E5862;
+    --topology-edge-selected: #E6EBF0;
+    --topology-auxiliary: #4A535C;
     --color-violet: #D5AAC7;
     --elevation-2: 0 16px 40px -12px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 20%);
     --elevation-1: 0 1px 2px rgb(0 0 0 / 12%);

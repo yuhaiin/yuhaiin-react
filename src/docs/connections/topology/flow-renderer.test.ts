@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FlowRenderer, type RenderEdge } from "./flow-renderer";
-import { compactMapping, defaultMapping } from "./particles";
+import { FlowRenderer, type Palette, type RenderEdge } from "./flow-renderer";
+import { compactMapping, defaultMapping } from "./ribbons";
 
 /** A frame queue driven by the test instead of the browser. */
 class Frames {
@@ -27,19 +27,20 @@ class Frames {
 function context() {
     const gradient = { addColorStop: vi.fn() };
     return {
-        setTransform: vi.fn(), clearRect: vi.fn(), stroke: vi.fn(), setLineDash: vi.fn(), drawImage: vi.fn(),
-        beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(), fill: vi.fn(), fillRect: vi.fn(),
-        createRadialGradient: vi.fn(() => gradient),
-        globalAlpha: 1, globalCompositeOperation: "source-over", lineWidth: 1, lineCap: "butt", strokeStyle: "", fillStyle: "",
+        setTransform: vi.fn(), clearRect: vi.fn(), stroke: vi.fn(), setLineDash: vi.fn(), fill: vi.fn(),
+        beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), arc: vi.fn(),
+        createLinearGradient: vi.fn(() => gradient),
+        globalAlpha: 1, lineWidth: 1, lineCap: "butt", lineJoin: "miter", strokeStyle: "", fillStyle: "",
     };
 }
 
 function edge(id: string, up: number, down: number, length = 300): RenderEdge {
-    return {
-        id, d: `M0,0 L${length},0`, dashed: false, up, down, alpha: 1, highlighted: false,
-        path: { points: new Float32Array([0, 0, length, 0]), lengths: new Float32Array([0, length]), length },
-    };
+    const points = new Float32Array(42), lengths = new Float32Array(21);
+    for (let index = 0; index <= 20; index++) { points[index * 2] = (length * index) / 20; lengths[index] = (length * index) / 20; }
+    return { id, d: `M0,0 L${length},0`, dashed: false, up, down, alpha: 1, highlighted: false, spread: 20, path: { points, lengths, length } };
 }
+
+const palette: Palette = { up: "teal", upAlt: "cyan", down: "violet", downAlt: "indigo", flow: "blue", idle: "gray", edge: "gray", highlight: "white", auxiliary: "gray", dark: true };
 
 let ctx: ReturnType<typeof context>;
 beforeEach(() => {
@@ -52,57 +53,77 @@ function setup(mapping = defaultMapping) {
     const frames = new Frames();
     const canvas = document.createElement("canvas");
     const renderer = new FlowRenderer(canvas, { mapping, fps: 30, maxPixelRatio: 2, requestFrame: frames.request, cancelFrame: frames.cancel, now: () => frames.now });
-    renderer.setPalette({ up: "orange", down: "blue", idle: "gray", edge: "gray", highlight: "green", auxiliary: "gray" });
+    renderer.setPalette(palette);
     return { frames, canvas, renderer };
 }
 
 describe("FlowRenderer", () => {
-    it("draws idle scenes once and does not keep a loop running", () => {
+    it("draws idle edges as a static line once, without a loop or strands", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 0, 0)]);
         expect(frames.pending.size).toBe(1);
         frames.advance(16);
         expect(frames.pending.size).toBe(0);
         expect(ctx.stroke).toHaveBeenCalled();
-        expect(renderer.getStats().running).toBe(false);
+        expect(renderer.getStats()).toMatchObject({ strands: 0, running: false });
+        expect(ctx.lineTo).not.toHaveBeenCalled();
     });
 
-    it("animates while there is traffic and keeps a single pending frame", () => {
+    it("animates strands while there is traffic and keeps a single pending frame", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 20, 1 << 20)]);
-        renderer.setView({ x: 0, y: 0, k: 1 });
-        renderer.setPaused(false);
-        expect(frames.pending.size).toBe(1);
         frames.advance(34, 30);
         expect(frames.pending.size).toBe(1);
-        expect(renderer.getStats().particles).toBeGreaterThan(0);
-        expect(ctx.drawImage).toHaveBeenCalled();
+        const strands = renderer.getStats().strands;
+        expect(strands).toBeGreaterThan(1);
+        expect(ctx.lineTo).toHaveBeenCalled();
+        // Gradients are made with the scene and the palette, never per frame.
+        expect(ctx.createLinearGradient.mock.calls.length).toBeLessThanOrEqual(strands * 2);
+    });
+
+    it("never draws particles or dots: only continuous strands", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([edge("a", 1 << 24, 1 << 24)]);
+        frames.advance(34, 20);
+        expect(ctx.arc).not.toHaveBeenCalled();
+        expect(ctx.fill).not.toHaveBeenCalled();
+        // Every strand stroke has a constant width within a frame (no swelling heads).
+        const widths = new Set<number>();
+        const original = ctx.stroke;
+        ctx.stroke = vi.fn(() => { widths.add(ctx.lineWidth); });
+        frames.advance(34);
+        ctx.stroke = original;
+        expect(widths.size).toBeLessThanOrEqual(3);
     });
 
     it("limits drawing to the configured frame rate", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 20, 0)]);
-        // 60 browser frames in one second at 16.7 ms: about 30 draws at 30 fps.
         frames.advance(1000 / 60, 60);
         const drawn = renderer.getStats().frames;
         expect(drawn).toBeGreaterThanOrEqual(28);
         expect(drawn).toBeLessThanOrEqual(32);
     });
 
-    it("stops the loop while paused and resumes without a time jump", () => {
+    it("freezes while paused and resumes without a time jump", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 20, 0)]);
         frames.advance(34, 10);
         renderer.setPaused(true);
         frames.advance(34, 2);
         expect(frames.pending.size).toBe(0);
-        const frozen = renderer.getStats().particles;
+        ctx.lineTo.mockClear();
+        renderer.setView({ x: 0, y: 0, k: 1 });
+        frames.advance(34);
+        const paused = ctx.lineTo.mock.calls.map(call => call.join());
         frames.advance(10_000);
         renderer.setPaused(false);
+        ctx.lineTo.mockClear();
         frames.advance(34);
+        // The first resumed frame steps by 0: strands are where they were paused (the sheen comes back on top).
+        const resumed = ctx.lineTo.mock.calls.map(call => call.join());
+        expect(paused.every(point => resumed.includes(point))).toBe(true);
         expect(frames.pending.size).toBe(1);
-        // The first resumed frame steps by 0, not by the ten paused seconds.
-        expect(renderer.getStats().particles).toBe(frozen);
     });
 
     it("stops while the page is hidden", () => {
@@ -117,15 +138,15 @@ describe("FlowRenderer", () => {
         expect(frames.pending.size).toBe(1);
     });
 
-    it("shows static direction marks instead of particles with reduced motion", () => {
+    it("draws still ribbons with reduced motion", () => {
         const { frames, renderer } = setup();
         renderer.setReducedMotion(true);
         renderer.setScene([edge("a", 1 << 20, 1 << 10)]);
         frames.advance(34, 5);
-        expect(renderer.getStats().particles).toBe(0);
         expect(frames.pending.size).toBe(0);
-        expect(ctx.fill).toHaveBeenCalled();
-        expect(ctx.drawImage).not.toHaveBeenCalled();
+        expect(renderer.getStats().running).toBe(false);
+        // Strands are drawn, just not moving.
+        expect(ctx.lineTo).toHaveBeenCalled();
     });
 
     it("caps the backing store pixel ratio on resize", () => {
@@ -148,19 +169,18 @@ describe("FlowRenderer", () => {
         expect(frames.pending.size).toBe(0);
     });
 
-    it("stays bounded with a large scene", () => {
+    it("stays within the strand budget with a large scene", () => {
         const { frames, renderer } = setup(compactMapping);
         renderer.setScene(Array.from({ length: 500 }, (_, index) => edge(`e${index}`, 1 << 30, 1 << 30, 1500)));
-        frames.advance(34, 300);
-        expect(renderer.getStats().particles).toBeLessThanOrEqual(compactMapping.capacity);
-        expect(renderer.getStats().lanes).toBe(1000);
+        frames.advance(34, 30);
+        expect(renderer.getStats().strands).toBe(compactMapping.budget);
     });
 
     it("never animates auxiliary DNS edges", () => {
         const { frames, renderer } = setup();
-        renderer.setScene([{ ...edge("dns", 0, 0), auxiliary: { weight: 1 } }]);
+        renderer.setScene([{ ...edge("dns", 1 << 20, 0), auxiliary: { weight: 1 } }]);
         frames.advance(34, 3);
-        expect(renderer.getStats().lanes).toBe(0);
+        expect(renderer.getStats().strands).toBe(0);
         expect(frames.pending.size).toBe(0);
     });
 });

@@ -18,7 +18,7 @@ import { TopologyDetails } from "./details";
 import { buildDnsTopology } from "./dns";
 import { desktopLayout, edgeCurve, LayoutMemory, mobileLayout, samplePath, svgPath } from "./layout";
 import { buildTopology, COLUMNS, desktopLimits, emptyFilter, filterOptions, highlightPaths, mobileLimits, searchConnections, type Column, type TopologyFilter, type TopologyNode } from "./model";
-import { compactMapping, defaultMapping } from "./particles";
+import { compactMapping, defaultMapping } from "./ribbons";
 import { RateSampler, type Rate } from "./rates";
 import { buildScene, type Emphasis, type SceneEdge } from "./scene";
 import { TopologyStage, type Selection, type StageHandle } from "./stage";
@@ -254,7 +254,7 @@ export default function NetworkTopologyPage() {
                     onSelect={onSelect}
                 >
                     {model.total === 0 && (
-                        <div className="pointer-events-none absolute inset-x-0 top-1/3 flex justify-center px-6">
+                        <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center px-6">
                             <p className="rounded-ui-md border border-ui-border bg-ui-surface px-4 py-2 text-sm text-ui-muted shadow-ui-card">{t("empty")}</p>
                         </div>
                     )}
@@ -337,7 +337,7 @@ function fakeIpLinks(layout: ReturnType<LayoutMemory["layout"]>, dnsLayout: Retu
             edge: { id, from: fakeNode.node.id, to: target.id, network: "udp" as const, connections: target.connections, up: 0, down: 0, connectionIds: target.connectionIds },
             d,
             interactive: false,
-            render: { id, path: samplePath(curve), d, dashed: true, up: 0, down: 0, alpha: 1, highlighted: true, auxiliary: { weight: 1 } },
+            render: { id, path: samplePath(curve), d, dashed: true, up: 0, down: 0, alpha: 1, highlighted: true, spread: 0, auxiliary: { weight: 1 } },
         }];
     });
 }

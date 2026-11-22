@@ -1,28 +1,36 @@
-import { intensityFor, ParticleSystem, pointOnLane, type FlowMapping, type LaneInput, type ParticlePath } from "./particles";
+import { buildStrands, intensityFor, normalsOf, strandPoint, type FlowMapping, type FlowPath, type Strand } from "./ribbons";
 
 export interface RenderEdge {
     id: string;
-    path: ParticlePath;
+    path: FlowPath;
     /** Path2D source, rebuilt only when the geometry changes. */
     d: string;
     dashed: boolean;
     /** Measured bytes per second towards the destination and back. */
     up: number;
     down: number;
-    /** 0.15 dimmed by search, 1 normal. */
+    /** 0.14 dimmed by search or selection, 1 normal. */
     alpha: number;
     highlighted: boolean;
+    /** How far strands may fan out along the card edges at both ends (world units). */
+    spread: number;
     /** Auxiliary DNS edges carry history counts, not live rates: never animated. */
     auxiliary?: { weight: number };
 }
 
 export interface Palette {
+    /** Upload: arriving-end colours (two hues) and download: arriving-end colours. */
     up: string;
+    upAlt: string;
     down: string;
+    downAlt: string;
+    /** The colour strands start from (blue between the two families). */
+    flow: string;
     idle: string;
     edge: string;
     highlight: string;
     auxiliary: string;
+    dark: boolean;
 }
 
 export interface View { x: number; y: number; k: number }
@@ -37,57 +45,62 @@ export interface RendererOptions {
 }
 
 export interface RendererStats {
-    particles: number;
-    lanes: number;
+    strands: number;
     running: boolean;
     frames: number;
     lastDrawMs: number;
     maxDrawMs: number;
 }
 
-/** Distance between the upload and download lanes of one edge. */
-const LANE_OFFSET = 2.2;
-const SPRITE = 24;
+/** Edges get a soft halo only above this intensity (about 1 MB/s); slow paths never do. */
+const GLOW_FROM = 0.68;
+/** Sheen pass: half-width (fraction of the strand) and opacity. */
+const SHEEN: readonly (readonly [number, number])[] = [[0.14, 0.26]];
+/** Samples per strand; edge paths are sampled with the same count. */
+const MAX_SAMPLES = 64;
+
+interface EdgeGeometry { d: string; path: Path2D; normals: Float32Array }
 
 /**
- * Draws edges and particles on one canvas, independently of React.
+ * Draws edges as flowing ribbons on one canvas, independently of React.
  *
  * React hands over a new scene when the model changes (a few times a second
- * at most) and the view on pan/zoom. Everything per-frame happens here: one
- * requestAnimationFrame loop at most, limited to `fps`, timed from the
- * frame timestamps rather than a fixed step. The loop runs only while
- * particles exist or a lane has traffic; otherwise the canvas is redrawn
- * once per change and then sits idle. Hidden pages, pause and reduced motion
- * stop it, and `destroy` releases it.
+ * at most) and the view on pan/zoom. Strands, their gradients and the edge
+ * normals are built then; per frame only strand points are computed, into
+ * one reused buffer. One requestAnimationFrame loop at most, limited to
+ * `fps` and timed from frame timestamps. It runs only while some edge has
+ * traffic; hidden pages, pause and reduced motion stop it (the ribbons are
+ * then drawn still), and `destroy` releases it.
  */
 export class FlowRenderer {
     private readonly ctx: CanvasRenderingContext2D | null;
-    readonly system: ParticleSystem;
     private readonly options: RendererOptions;
     private edges: RenderEdge[] = [];
-    private paths = new Map<string, { d: string; path: Path2D }>();
-    private laneTone: Uint8Array = new Uint8Array(0);
-    private laneAlpha: Float32Array = new Float32Array(0);
+    private geometry = new Map<string, EdgeGeometry>();
+    private edgeGeometry: (EdgeGeometry | undefined)[] = [];
+    private strands: Strand[] = [];
+    private gradients: (CanvasGradient | string)[] = [];
     private view: View = { x: 0, y: 0, k: 1 };
-    private palette: Palette = { up: "gray", down: "gray", idle: "gray", edge: "gray", highlight: "gray", auxiliary: "gray" };
-    private sprites: [HTMLCanvasElement | null, HTMLCanvasElement | null] = [null, null];
+    private palette: Palette = { up: "gray", upAlt: "gray", down: "gray", downAlt: "gray", flow: "gray", idle: "gray", edge: "gray", highlight: "gray", auxiliary: "gray", dark: false };
     private width = 0;
     private height = 0;
     private ratio = 1;
     private handle = 0;
     private lastFrame = 0;
     private lastStep = 0;
+    /** Animation clock in seconds; advances only while animating. */
+    private clock = 0;
     private paused = false;
     private visible = true;
     private reducedMotion = false;
     private destroyed = false;
-    private point = new Float32Array(2);
-    private stats: RendererStats = { particles: 0, lanes: 0, running: false, frames: 0, lastDrawMs: 0, maxDrawMs: 0 };
+    private readonly scratch = new Float32Array(MAX_SAMPLES * 2);
+    private readonly point = new Float32Array(2);
+    private stats: RendererStats = { strands: 0, running: false, frames: 0, lastDrawMs: 0, maxDrawMs: 0 };
 
     constructor(private readonly canvas: HTMLCanvasElement, options: RendererOptions) {
         this.options = options;
         this.ctx = canvas.getContext("2d", { alpha: true });
-        this.system = new ParticleSystem(options.mapping);
     }
 
     private get requestFrame() { return this.options.requestFrame ?? window.requestAnimationFrame.bind(window); }
@@ -95,22 +108,23 @@ export class FlowRenderer {
 
     setScene(edges: RenderEdge[]) {
         this.edges = edges;
-        const paths = new Map<string, { d: string; path: Path2D }>();
+        const geometry = new Map<string, EdgeGeometry>();
         for (const edge of edges) {
-            const cached = this.paths.get(edge.id);
-            paths.set(edge.id, cached && cached.d === edge.d ? cached : { d: edge.d, path: typeof Path2D === "undefined" ? (undefined as never) : new Path2D(edge.d) });
+            const cached = this.geometry.get(edge.id);
+            geometry.set(edge.id, cached && cached.d === edge.d ? cached : {
+                d: edge.d,
+                path: typeof Path2D === "undefined" ? (undefined as never) : new Path2D(edge.d),
+                normals: normalsOf(edge.path.points),
+            });
         }
-        this.paths = paths;
-        const lanes: LaneInput[] = [];
-        for (const edge of edges) {
-            if (edge.auxiliary) continue;
-            lanes.push({ key: `${edge.id}:u`, path: edge.path, direction: 1, offset: -LANE_OFFSET, rate: edge.up, tone: 0, alpha: edge.alpha });
-            lanes.push({ key: `${edge.id}:d`, path: edge.path, direction: -1, offset: LANE_OFFSET, rate: edge.down, tone: 1, alpha: edge.alpha });
-        }
-        this.system.setLanes(lanes);
-        this.laneTone = Uint8Array.from(lanes, lane => lane.tone);
-        this.laneAlpha = Float32Array.from(lanes, lane => lane.alpha);
-        this.stats.lanes = lanes.length;
+        this.geometry = geometry;
+        this.edgeGeometry = edges.map(edge => geometry.get(edge.id));
+        const animated = edges.map(edge => !edge.auxiliary);
+        this.strands = buildStrands(edges.map(edge => edge.id), edges.map((edge, index) => ({
+            up: edge.up, down: edge.down, spread: edge.spread, length: edge.path.length, animated: animated[index],
+        })), this.options.mapping);
+        this.stats.strands = this.strands.length;
+        this.buildGradients();
         this.schedule();
     }
 
@@ -121,7 +135,7 @@ export class FlowRenderer {
 
     setPalette(palette: Palette) {
         this.palette = palette;
-        this.sprites = [this.sprite(palette.up), this.sprite(palette.down)];
+        this.buildGradients();
         this.schedule();
     }
 
@@ -140,7 +154,6 @@ export class FlowRenderer {
 
     setReducedMotion(reduced: boolean) {
         this.reducedMotion = reduced;
-        if (reduced) this.system.clear();
         this.lastStep = 0;
         this.schedule();
     }
@@ -156,19 +169,46 @@ export class FlowRenderer {
     }
 
     getStats(): RendererStats {
-        return { ...this.stats, particles: this.system.count, running: this.handle !== 0 && this.animating() };
+        return { ...this.stats, running: this.handle !== 0 && this.animating() };
     }
 
     destroy() {
         this.destroyed = true;
         this.stop();
-        this.system.clear();
         this.edges = [];
-        this.paths.clear();
+        this.strands = [];
+        this.gradients = [];
+        this.geometry.clear();
+    }
+
+    /**
+     * One gradient per strand, in world coordinates along its edge: it stays
+     * valid through pan and zoom and is rebuilt only with the scene or theme.
+     * Upload strands brighten towards the destination (blue -> teal/cyan),
+     * download strands towards the source (violet/indigo), so an edge with
+     * both reads violet on the source side and cyan on the destination side.
+     */
+    private buildGradients() {
+        const ctx = this.ctx;
+        const { flow, up, upAlt, down, downAlt } = this.palette;
+        this.gradients = this.strands.map(strand => {
+            const end = strand.tone === 0 ? (strand.hue ? upAlt : up) : (strand.hue ? downAlt : down);
+            const points = this.edges[strand.edge].path.points;
+            if (!ctx || points.length < 4) return end;
+            const gradient = ctx.createLinearGradient(points[0], points[1], points[points.length - 2], points[points.length - 1]);
+            if (strand.tone === 0) {
+                gradient.addColorStop(0, flow);
+                gradient.addColorStop(1, end);
+            } else {
+                gradient.addColorStop(0, end);
+                gradient.addColorStop(1, flow);
+            }
+            return gradient;
+        });
     }
 
     private animating() {
-        return !this.paused && this.visible && !this.reducedMotion && this.system.active();
+        return !this.paused && this.visible && !this.reducedMotion && this.strands.length > 0;
     }
 
     private stop() {
@@ -198,85 +238,100 @@ export class FlowRenderer {
         const dt = this.lastStep ? Math.min(0.1, Math.max(0, (now - this.lastStep) / 1000)) : 0;
         this.lastStep = now;
         this.lastFrame = now;
-        this.system.step(dt);
+        this.clock += dt;
         this.draw();
-        if (this.animating()) this.handle = this.requestFrame(this.tick);
-        else {
-            this.lastStep = 0;
-            // One more frame clears the last faded particles.
-            this.handle = this.requestFrame(this.tick);
-        }
+        this.handle = this.requestFrame(this.tick);
     };
-
-    private sprite(color: string): HTMLCanvasElement | null {
-        if (typeof document === "undefined") return null;
-        const canvas = document.createElement("canvas");
-        canvas.width = SPRITE;
-        canvas.height = SPRITE;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return null;
-        // Solid color masked by a radial falloff: a bright core and a soft halo.
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, SPRITE, SPRITE);
-        const mask = ctx.createRadialGradient(SPRITE / 2, SPRITE / 2, 0, SPRITE / 2, SPRITE / 2, SPRITE / 2);
-        mask.addColorStop(0, "black");
-        mask.addColorStop(0.26, "black");
-        mask.addColorStop(1, "transparent");
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.fillStyle = mask;
-        ctx.fillRect(0, 0, SPRITE, SPRITE);
-        return canvas;
-    }
 
     private draw() {
         const ctx = this.ctx;
         if (!ctx) return;
         const started = this.options.now?.() ?? performance.now();
         const { x, y, k } = this.view;
+        const { palette } = this;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.setTransform(this.ratio * k, 0, 0, this.ratio * k, this.ratio * x, this.ratio * y);
         ctx.lineCap = "round";
-        const still = this.reducedMotion || this.paused;
+        // Bevel joins: indistinguishable on thin strokes and cheaper to rasterize than round ones.
+        ctx.lineJoin = "bevel";
+        // Keep strands about a device pixel wide when zoomed out.
+        const hair = 1 / Math.max(0.5, Math.min(1, k));
 
-        for (const edge of this.edges) {
-            const cached = this.paths.get(edge.id);
-            if (!cached) continue;
+        // Spines: idle edges are a quiet static line; busy ones get a faint halo.
+        for (let index = 0; index < this.edges.length; index++) {
+            const edge = this.edges[index];
+            const geometry = this.edgeGeometry[index];
+            if (!geometry) continue;
             if (edge.auxiliary) {
                 ctx.globalAlpha = edge.alpha * (0.35 + 0.5 * edge.auxiliary.weight);
-                ctx.strokeStyle = this.palette.auxiliary;
-                ctx.lineWidth = 1 + 2 * edge.auxiliary.weight;
+                ctx.strokeStyle = palette.auxiliary;
+                ctx.lineWidth = (1 + 1.5 * edge.auxiliary.weight) * hair;
                 ctx.setLineDash([2, 4]);
-                ctx.stroke(cached.path);
+                ctx.stroke(geometry.path);
                 continue;
             }
-            const intensity = intensityFor(edge.up + edge.down, this.system.mapping);
+            const intensity = intensityFor(edge.up + edge.down, this.options.mapping);
             ctx.setLineDash(edge.dashed ? [5, 5] : []);
-            if (intensity > 0) {
-                // A wide, faint stroke in the dominant direction's tone under the line.
-                ctx.globalAlpha = edge.alpha * (0.06 + 0.16 * intensity);
-                ctx.strokeStyle = edge.up >= edge.down ? this.palette.up : this.palette.down;
-                ctx.lineWidth = 6 + 8 * intensity;
-                ctx.stroke(cached.path);
+            if (edge.highlighted) {
+                ctx.globalAlpha = edge.alpha * 0.14;
+                ctx.strokeStyle = palette.highlight;
+                ctx.lineWidth = 14 + edge.spread * 0.3;
+                ctx.stroke(geometry.path);
+            } else if (intensity > GLOW_FROM) {
+                ctx.globalAlpha = edge.alpha * (intensity - GLOW_FROM) * (palette.dark ? 0.32 : 0.2);
+                ctx.strokeStyle = palette.flow;
+                ctx.lineWidth = 10 + 10 * intensity;
+                ctx.stroke(geometry.path);
             }
-            ctx.globalAlpha = edge.alpha * (intensity > 0 ? 0.45 + 0.45 * intensity : 0.55);
-            ctx.strokeStyle = edge.highlighted ? this.palette.highlight : intensity > 0 ? this.palette.edge : this.palette.idle;
-            ctx.lineWidth = edge.highlighted ? 2.4 : intensity > 0 ? 1.2 + 1.8 * intensity : 1;
-            ctx.stroke(cached.path);
-            if (still) this.drawChevrons(ctx, edge);
+            ctx.globalAlpha = edge.alpha * (intensity > 0 ? 0.28 : 0.9);
+            ctx.strokeStyle = intensity > 0 ? palette.edge : palette.idle;
+            ctx.lineWidth = hair;
+            ctx.stroke(geometry.path);
         }
         ctx.setLineDash([]);
 
-        const system = this.system;
-        const size = 7 + 3 / Math.max(0.6, k);
-        for (let index = 0; index < system.count; index++) {
-            const laneIndex = system.lane[index];
-            const lane = system.lanes[laneIndex];
-            const sprite = this.sprites[this.laneTone[laneIndex]];
-            if (!sprite) continue;
-            pointOnLane(lane, system.distance[index], this.point);
-            ctx.globalAlpha = Math.max(0, system.alpha[index]) * this.laneAlpha[laneIndex];
-            ctx.drawImage(sprite, this.point[0] - size / 2, this.point[1] - size / 2, size, size);
+        const still = this.reducedMotion || this.paused;
+        const time = this.clock;
+        const points = this.scratch;
+        for (let index = 0; index < this.strands.length; index++) {
+            const strand = this.strands[index];
+            const edge = this.edges[strand.edge];
+            const geometry = this.edgeGeometry[strand.edge];
+            if (!geometry) continue;
+            const count = Math.min(MAX_SAMPLES, edge.path.points.length / 2);
+            for (let sample = 0; sample < count; sample++) {
+                strandPoint(strand, edge.path, geometry.normals, sample, time, this.point);
+                points[sample * 2] = this.point[0];
+                points[sample * 2 + 1] = this.point[1];
+            }
+            const emphasis = edge.highlighted ? 1.3 : 1;
+            // Thin, uniform strokes; the bundle, not the width, gives the flow its weight.
+            const width = hair * (palette.dark ? 1.15 : 1.3) * emphasis;
+            ctx.globalAlpha = edge.alpha * Math.min(1, (palette.dark ? 0.5 : 0.6) + 0.4 * strand.intensity) * (edge.highlighted ? 1.2 : 1);
+            ctx.strokeStyle = this.gradients[index];
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(points[0], points[1]);
+            for (let sample = 1; sample < count; sample++) ctx.lineTo(points[sample * 2], points[sample * 2 + 1]);
+            ctx.stroke();
+            // No sheen when far out: it would be sub-pixel, and it is the costliest part.
+            if (still || k < 0.45) continue;
+
+            // Sheen: a long, soft brightening of the same strand that drifts in the direction
+            // of flow. One low-alpha pass at the same width: no head, no dot, no change of width.
+            const travel = (time * strand.sheen + strand.sheenPhase) % 1;
+            const centre = (strand.tone === 0 ? travel : 1 - travel) * (count - 1);
+            ctx.strokeStyle = strand.tone === 0 ? (strand.hue ? palette.upAlt : palette.up) : (strand.hue ? palette.downAlt : palette.down);
+            for (const [reach, alpha] of SHEEN) {
+                const from = Math.max(0, Math.round(centre - reach * count)), to = Math.min(count - 1, Math.round(centre + reach * count));
+                if (to - from < 1) continue;
+                ctx.globalAlpha = edge.alpha * alpha * (0.5 + 0.5 * strand.intensity);
+                ctx.beginPath();
+                ctx.moveTo(points[from * 2], points[from * 2 + 1]);
+                for (let sample = from + 1; sample <= to; sample++) ctx.lineTo(points[sample * 2], points[sample * 2 + 1]);
+                ctx.stroke();
+            }
         }
         ctx.globalAlpha = 1;
 
@@ -284,30 +339,5 @@ export class FlowRenderer {
         this.stats.frames++;
         this.stats.lastDrawMs = elapsed;
         this.stats.maxDrawMs = Math.max(this.stats.maxDrawMs, elapsed);
-    }
-
-    /** Static direction marks for reduced motion and pause: no movement, same information. */
-    private drawChevrons(ctx: CanvasRenderingContext2D, edge: RenderEdge) {
-        for (const [rate, direction, color, offset] of [[edge.up, 1, this.palette.up, -LANE_OFFSET * 2], [edge.down, -1, this.palette.down, LANE_OFFSET * 2]] as const) {
-            if (!(rate > 0)) continue;
-            const intensity = intensityFor(rate, this.system.mapping);
-            ctx.globalAlpha = edge.alpha * (0.5 + 0.5 * intensity);
-            ctx.fillStyle = color;
-            const lane = { path: edge.path, direction: direction as 1 | -1, offset };
-            for (const fraction of [0.3, 0.55, 0.8]) {
-                const distance = edge.path.length * fraction;
-                pointOnLane(lane, distance, this.point);
-                const ax = this.point[0], ay = this.point[1];
-                pointOnLane(lane, Math.min(edge.path.length, distance + 1), this.point);
-                const angle = Math.atan2(this.point[1] - ay, this.point[0] - ax);
-                const s = 3 + 2 * intensity;
-                ctx.beginPath();
-                ctx.moveTo(ax + Math.cos(angle) * s, ay + Math.sin(angle) * s);
-                ctx.lineTo(ax + Math.cos(angle + 2.5) * s, ay + Math.sin(angle + 2.5) * s);
-                ctx.lineTo(ax + Math.cos(angle - 2.5) * s, ay + Math.sin(angle - 2.5) * s);
-                ctx.closePath();
-                ctx.fill();
-            }
-        }
     }
 }

@@ -559,9 +559,28 @@ func traffic(ctx context.Context, args []string) error {
 	dnsAddr := fs.String("dns", "", "DNS server host:port")
 	once := fs.Bool("once", false, "run the cycle once instead of looping")
 	count := fs.Int("count", 100, "load profile: concurrent connections")
+	direction := fs.String("direction", "down", "flow profile: down, up or both")
+	rate := fs.Int64("rate", 4<<20, "flow profile: bytes per second in each direction")
+	target := fs.String("target", "cdn.demo.internal:80", "flow profile: destination")
 	_ = fs.Parse(args)
-	if *profile == "load" {
+	switch *profile {
+	case "load":
 		return load(ctx, socks5{*socksAddr}, httpProxy{*httpAddr}, *count)
+	case "flow":
+		// One steady flow until stopped: a fixed scene for screenshots.
+		log.Printf("[flow] %s %d B/s to %s", *direction, *rate, *target)
+		s := socks5{*socksAddr}
+		for ctx.Err() == nil {
+			switch *direction {
+			case "up":
+				upload(ctx, s, *target, *rate, 600)
+			case "both":
+				parallel(func() { download(ctx, s, *target, *rate, 600) }, func() { upload(ctx, s, *target, *rate, 600) })
+			default:
+				download(ctx, s, *target, *rate, 600)
+			}
+		}
+		return ctx.Err()
 	}
 
 	s := socks5{*socksAddr}

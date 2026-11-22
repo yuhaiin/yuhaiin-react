@@ -4,6 +4,7 @@
 #   scripts/topology-demo/run.sh up        build, start and configure everything
 #   scripts/topology-demo/run.sh traffic   start the traffic generators
 #   scripts/topology-demo/run.sh load N    add N long-lived connections (0 stops them)
+#   scripts/topology-demo/run.sh flow down|up|both RATE   one steady flow (no argument stops it)
 #   scripts/topology-demo/run.sh down      remove all demo containers and the network
 #
 # Everything runs in rootless Podman on a private network (10.89.77.0/24,
@@ -34,7 +35,7 @@ P=topo
 log() { printf '\033[1m==> %s\033[0m\n' "$*"; }
 
 down() {
-	podman rm -f -t 2 $P-core $P-upstream $P-web-a $P-web-b $P-web-c $P-laptop $P-phone $P-load >/dev/null 2>&1 || true
+	podman rm -f -t 2 $P-core $P-upstream $P-web-a $P-web-b $P-web-c $P-laptop $P-phone $P-load $P-flow >/dev/null 2>&1 || true
 	podman network rm -f $NET >/dev/null 2>&1 || true
 }
 
@@ -131,10 +132,20 @@ load() {
 	log "load: $1 connections from 10.89.77.60"
 }
 
+# flow down|up|both RATE: one steady flow from 10.89.77.70 to cdn (direct), for fixed scenes.
+flow() {
+	podman rm -f $P-flow >/dev/null 2>&1 || true
+	[ -n "${1:-}" ] || return 0
+	podman run -d --network $NET --name $P-flow --ip 10.89.77.70 -v "$WORK/bin:/demo:ro,z" $IMAGE \
+		/demo/topology-demo traffic -profile flow -direction "$1" -rate "${2:-4194304}" -socks 10.89.77.10:1080 >/dev/null
+	log "flow: $1 ${2:-4194304} B/s from 10.89.77.70"
+}
+
 case "${1:-up}" in
 	up) up ;;
 	traffic) traffic ;;
 	load) load "${2:-0}" ;;
+	flow) flow "${2:-}" "${3:-}" ;;
 	down) down ;;
-	*) echo "usage: $0 up|traffic|load N|down" >&2; exit 2 ;;
+	*) echo "usage: $0 up|traffic|load N|flow DIR RATE|down" >&2; exit 2 ;;
 esac
