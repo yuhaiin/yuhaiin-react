@@ -1481,5 +1481,6 @@
   "tunSystemNetworkHint": "この TUN をどの宛先に使うかは、他のインターフェースへのルートと合わせてシステムネットワークで設定します。",
   "tunSystemNetworkLink": "システムネットワークを開く",
   "httpGatewayHandoff": "この通信は HTTP Gateway「{{gateway}}」に渡されます。HTTP ルールの判定は HTTP ルールテストで確認できます。",
-  "openHttpRuleTester": "HTTP ルールテストで確認"
+  "openHttpRuleTester": "HTTP ルールテストで確認",
+  "secretReferenceRefreshed": "フォームの内容が古くなっていました。開いた後に Yuhaiin が再起動されたか Inbound が変更されたため、非表示の秘密値を照合できませんでした。非表示の秘密値を読み込み直し、ほかの変更はそのまま残しています。設定を確認してもう一度保存してください。"
 }

@@ -1481,5 +1481,6 @@
   "tunSystemNetworkHint": "Which destinations use this TUN is set in System Network, together with routes to other interfaces.",
   "tunSystemNetworkLink": "Open System Network",
   "httpGatewayHandoff": "This traffic is handed to HTTP Gateway \"{{gateway}}\". Check its HTTP rules in the HTTP rule tester.",
-  "openHttpRuleTester": "Check in HTTP rule tester"
+  "openHttpRuleTester": "Check in HTTP rule tester",
+  "secretReferenceRefreshed": "This form was out of date: Yuhaiin restarted or the inbound changed after it was opened, so its hidden secrets could no longer be matched. The hidden secrets were reloaded and your other changes were kept. Review the settings and save again."
 }
