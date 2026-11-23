@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { closeConnections, getConnections } from "@/api/connections";
-import { AuthenticatedEventSource } from "@/auth/event-stream";
+import { closeConnections } from "@/api/connections";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
@@ -9,13 +8,11 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ConnectionRow, ConnectionTableHeader, MobileConnectionSort, connectionRowHeight, sortConnections, type SortBy, type SortOrder } from "./connection-table";
-import type { Connection, Connections, Counter } from "@/contract/connection";
-import { applyConnectionEvents, type ConnectionEvent } from "./connection-events";
-import { usePageVisible } from "@/common/hooks";
+import type { Connection, Counter } from "@/contract/connection";
+import { useConnectionStream } from "./use-connection-stream";
 import { Power, RefreshCw } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import useSWR from "swr";
 import { VList } from "virtua";
 import { NodeModal } from "../../node/modal";
 import { ConnectionInfo, FlowContainer } from "../components";
@@ -27,20 +24,15 @@ const VIRTUALIZE_THRESHOLD = 40;
 function Connections() {
     const { t: uiT } = useTranslation('ui');
 
-    const visible = usePageVisible();
     const ctx = useContext(GlobalToastContext);
-    const [connections, setConnections] = useState<Record<string, Connection>>({});
+    const { connections, hydrated, initial, error, isLoading, mutate, streamError, reconnect, removeLocally } = useConnectionStream();
     const [selected, setSelected] = useState<Connection | undefined>();
     const [nodeModal, setNodeModal] = useState<{ show: boolean; id?: string }>({ show: false });
     const [sortBy, setSortBy] = useState<SortBy>("id");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
     const [closing, setClosing] = useState(false);
     const [counters, setCounters] = useState<Record<string, Counter>>({});
-    const [streamError, setStreamError] = useState("");
-    const [streamNonce, setStreamNonce] = useState(0);
-    const hasStreamSnapshot = useRef(false);
     const listWrapperRef = useRef<HTMLDivElement>(null);
-    const [hydrated, setHydrated] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const rowHeight = isMobile ? connectionRowHeight.mobile : connectionRowHeight.desktop;
 
@@ -51,79 +43,6 @@ function Connections() {
         media.addEventListener("change", update);
         return () => media.removeEventListener("change", update);
     }, []);
-
-    const { data: initial, error, isLoading, mutate } = useSWR("/api/v2/connections", getConnections, {
-        revalidateOnFocus: false,
-    });
-
-    useEffect(() => {
-        // The HTTP response is only a fallback. Once the event stream has
-        // delivered its initial snapshot, a late/revalidated HTTP response
-        // may be stale and must not replace the live connection state.
-        if (!initial || hasStreamSnapshot.current) return;
-        setConnections(Object.fromEntries(initial.connections.map(conn => [conn.id, conn])));
-        setHydrated(true);
-    }, [initial]);
-
-    useEffect(() => {
-        if (!visible) return;
-        hasStreamSnapshot.current = false;
-        let stopped = false;
-        let reconnectTimer: number | undefined;
-        let flushTimer: number | undefined;
-        let pending: ConnectionEvent[] = [];
-        const flush = () => {
-            if (flushTimer !== undefined) window.clearTimeout(flushTimer);
-            flushTimer = undefined;
-            if (stopped || !pending.length) return;
-            const events = pending;
-            pending = [];
-            setConnections(previous => applyConnectionEvents(previous, events));
-            setHydrated(true);
-        };
-        const queue = (event: ConnectionEvent) => {
-            pending.push(event);
-            if (pending.length >= 1000) flush();
-            else if (flushTimer === undefined) flushTimer = window.setTimeout(flush, 100);
-        };
-        const source = new AuthenticatedEventSource("/api/v2/connections/events");
-        source.onopen = () => { if (!stopped) setStreamError(""); };
-        const onAdded = (event: MessageEvent<string>) => {
-            if (stopped) return;
-            try {
-                const payload = JSON.parse(event.data) as Connections;
-                if (!Array.isArray(payload.connections)) throw new Error("Invalid connection event");
-                const snapshot = !hasStreamSnapshot.current;
-                hasStreamSnapshot.current = true;
-                queue({ type: snapshot ? 'snapshot' : 'added', connections: payload.connections });
-            } catch { setStreamError("Invalid connection event. Refresh to reconnect."); }
-        };
-        const onRemoved = (event: MessageEvent<string>) => {
-            if (stopped) return;
-            try {
-                const payload = JSON.parse(event.data) as { ids?: string[] };
-                if (!Array.isArray(payload.ids)) throw new Error("Invalid removal event");
-                queue({ type: 'removed', ids: payload.ids });
-            } catch { setStreamError("Invalid connection event. Refresh to reconnect."); }
-        };
-        source.addEventListener("connections_added", onAdded);
-        source.addEventListener("connections_removed", onRemoved);
-        source.onerror = () => {
-            if (stopped) return;
-            setStreamError("Connection event stream disconnected. Reconnecting...");
-            source.close();
-            reconnectTimer = window.setTimeout(() => {
-                if (stopped) return;
-                setStreamNonce((value) => value + 1);
-            }, 2000);
-        };
-        return () => {
-            stopped = true;
-            source.close();
-            if (flushTimer !== undefined) window.clearTimeout(flushTimer);
-            if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
-        };
-    }, [streamNonce, visible]);
 
     const sortCounters = sortBy === "upload" || sortBy === "download" ? counters : undefined;
     const sorted = useMemo(() => sortConnections(Object.values(connections), sortBy, sortOrder, sortCounters), [connections, sortCounters, sortBy, sortOrder]);
@@ -137,15 +56,11 @@ function Connections() {
         closeConnections([id])
             .then(() => {
                 setSelected(undefined);
-                setConnections(prev => {
-                    const next = { ...prev };
-                    delete next[id];
-                    return next;
-                });
+                removeLocally([id]);
             })
             .catch((err) => ctx.Error(`disconnect failed: ${err.msg ?? err}`))
             .finally(() => setClosing(false));
-    }, [ctx]);
+    }, [ctx, removeLocally]);
 
     // Keeps the sheet's height while it slides away after `selected` clears.
     const [detail, setDetail] = useState(selected);
@@ -167,7 +82,7 @@ function Connections() {
                 <h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only lg:mr-auto">{uiT("activeConnections")}</h1>
                 <span className="flex shrink-0 items-baseline gap-1 text-xs text-ui-muted md:ml-auto"><span className="font-mono text-sm font-medium tabular-nums text-ui-heading">{sorted.length}</span>{uiT("active")}</span>
                 <MobileConnectionSort sortBy={sortBy} sortOrder={sortOrder} onFieldChange={setSortBy} onOrderChange={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')} />
-                <Button onClick={() => { setStreamError(""); setStreamNonce(value => value + 1); }} size="sm" className="shrink-0 max-md:min-h-11 max-md:min-w-11" variant="outline-secondary" aria-label={uiT("refreshConnections")}>
+                <Button onClick={reconnect} size="sm" className="shrink-0 max-md:min-h-11 max-md:min-w-11" variant="outline-secondary" aria-label={uiT("refreshConnections")}>
                     <RefreshCw size={14} /><span className="hidden md:inline">{uiT("refresh")}</span>
                 </Button>
             </div>

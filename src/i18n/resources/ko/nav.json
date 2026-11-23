@@ -38,5 +38,6 @@
   "sections": "이 섹션의 페이지",
   "systemNetwork": "시스템 네트워크",
   "gatewayStatistics": "Gateway 통계",
-  "dnsHistory": "DNS 기록"
+  "dnsHistory": "DNS 기록",
+  "networkTopology": "네트워크 토폴로지"
 }

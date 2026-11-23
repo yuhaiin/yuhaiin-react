@@ -31,7 +31,8 @@ const routes = [
   ['overview', '/', 'section[aria-label="Active Nodes"] li'], ['nodes', '/docs/group', 'section[aria-label="Connection settings"] input'],
   ['selectors', '/docs/group/selectors', 'section[aria-label="Shared destination settings"] input'],
   ['routing', '/docs/bypass', 'section[aria-label="Rule editor"]'], ['dns', '/docs/bypass/resolver', 'section[aria-label="Resolvers"]'],
-  ['connections', '/docs/connections/v2', '[aria-label="Refresh connections"]'], ['subscriptions', '/docs/group/subscribe', 'section[aria-label="Subscriptions"]'],
+  ['connections', '/docs/connections/v2', '[aria-label="Refresh connections"]'], ['topology', '/docs/connections/topology', '[data-topology-ready] [data-node-id]'],
+  ['subscriptions', '/docs/group/subscribe', 'section[aria-label="Subscriptions"]'],
   ['inbounds', '/docs/inbound', 'section[aria-label="Entry Points"]'], ['publish', '/docs/group/publish', 'section[aria-label="Publish Config"]'], ['settings', '/docs/webui', '[role="radiogroup"]'],
 ];
 // Resolve CSS colors through the browser, including color-mix and semantic aliases.
@@ -183,14 +184,40 @@ try {
       await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=${theme}-${accent}-${name}-${width}#${route}` });
       let loaded = false;
       for (let i = 0; i < 100; i++) {
-        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
+        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width < 700 && !['overview', 'connections', 'topology', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
         await sleep(100);
       }
       if (!loaded) throw new Error('Page did not render: ' + name + ' ' + width);
-      await waitForPreview(send, width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready);
+      await waitForPreview(send, width < 700 && !['overview', 'connections', 'topology', 'settings'].includes(name) ? 'aside' : ready);
       const evaluation = await send('Runtime.evaluate', { expression: `({theme: document.documentElement.dataset.bsTheme, accent: document.documentElement.dataset.accent, width: innerWidth, overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth + 1, clipped: [...document.querySelectorAll('main input,main textarea,main button[role=combobox]')].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.left < -1 || r.right > innerWidth + 1); }).map(el => el.getAttribute('aria-label') || el.tagName), contrast: (${measureContrast.toString()})()})`, returnByValue: true });
       const state = evaluation.result?.value;
       if (!state || state.theme !== theme || state.accent !== accent || state.overflow || state.clipped.length) throw new Error('Invalid theme/layout: ' + JSON.stringify(state));
+      if (name === 'topology') {
+        // Toolbar: title on one line, count/rates neither wrapped, clipped nor covered, search usable, buttons on screen.
+        const toolbar = await evaluate(send, `(() => {
+          const bar = document.querySelector('[data-topology-toolbar]');
+          const box = el => el.getBoundingClientRect();
+          const title = bar.querySelector('h1');
+          const titleShown = title && getComputedStyle(title).position !== 'absolute';
+          const lines = el => Math.round(box(el).height / (parseFloat(getComputedStyle(el).lineHeight) || 20));
+          const parts = ['count', 'rates'].map(part => bar.querySelector('[data-part=' + part + ']'));
+          const inside = el => box(el).width > 0 && box(el).right <= box(bar).right + 0.5 && box(el).left >= box(bar).left - 0.5;
+          return {
+            title: titleShown ? lines(title) : 1,
+            wrapped: parts.filter(el => box(el).height > 24).map(el => el.dataset.part),
+            clipped: parts.filter(el => !inside(el)).map(el => el.dataset.part),
+            search: Math.round(box(bar.querySelector('[data-part=search]')).width),
+            offscreen: [...bar.querySelectorAll('[data-part=actions] button')].filter(el => box(el).right > innerWidth + 0.5).length,
+            // The search and buttons must stay inside the actions group and never cover the overview.
+            covered: [...bar.querySelector('[data-part=actions]').children].filter(el => {
+              const a = box(el), group = box(bar.querySelector('[data-part=actions]'));
+              const overlaps = b => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
+              return a.width > 0 && (a.left < group.left - 0.5 || a.right > group.right + 0.5 || parts.some(part => overlaps(box(part))));
+            }).length,
+          };
+        })()`);
+        if (toolbar.title > 1 || toolbar.wrapped.length || toolbar.clipped.length || toolbar.search < 140 || toolbar.offscreen || toolbar.covered) throw new Error('Topology toolbar layout: ' + JSON.stringify(toolbar));
+      }
       const failures = state.contrast.filter(check => check.ratio < check.minimum);
       if (failures.length) throw new Error(`${theme}/${accent} contrast: ${JSON.stringify(failures)}`);
       results.push({ theme, accent, name, width, minimumTextContrast: Math.min(...state.contrast.filter(check => check.minimum === 4.5).map(check => check.ratio)) });
