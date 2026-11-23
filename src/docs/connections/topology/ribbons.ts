@@ -55,9 +55,10 @@ function directionSpeed(rate: number, mapping: FlowMapping) {
     return intensity === 0 ? 0 : 72 + 228 * intensity;
 }
 
+/** Strong enough to read at everyday rates (a few KB/s sit near intensity 0.1-0.4). */
 function directionGlow(rate: number, mapping: FlowMapping) {
     const intensity = intensityFor(rate, mapping);
-    return intensity === 0 ? 0 : 0.26 + 0.32 * intensity;
+    return intensity === 0 ? 0 : 0.55 + 0.4 * intensity;
 }
 
 export function ribbonStyle(up: number, down: number, mapping: FlowMapping = defaultMapping): RibbonStyle {
