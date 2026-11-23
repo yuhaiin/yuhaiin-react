@@ -883,6 +883,12 @@ export namespace Go {
     export interface Capabilities {
       platform: string;
       protocols: string[];
+      ssh?: SSHCapabilities;
+    }
+    export interface SSHCapabilities {
+      serviceUID: number;
+      serviceGID: number;
+      root: boolean;
     }
     export type Network =
       | { type: "empty"; empty: EmptyNetwork }
@@ -1007,6 +1013,7 @@ export namespace Go {
       maxSessions?: number;
     }
     export interface SSHProtocol {
+      namespaceMode?: string;
       cgroupRoot?: string;
       hostKey: string;
       username: string;

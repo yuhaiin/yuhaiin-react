@@ -7,7 +7,12 @@ import korean from '@/i18n/resources/ko/ui.json';
 import { InboundEditor } from './editor';
 import { createDefaultInbound, normalizeInbound, selectInboundProtocol } from '@/contract/inbound';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, values?: Record<string, unknown>) => values ? `${key}:${JSON.stringify(values)}` : key }) }));
+const capabilities = vi.hoisted(() => ({ value: { platform: 'linux', protocols: ['ssh'], ssh: { serviceUID: 1000, serviceGID: 1001, root: false } } }));
+vi.mock('@/api/inbounds', async (importOriginal) => ({
+    ...await importOriginal<typeof import('@/api/inbounds')>(),
+    getInboundCapabilities: () => Promise.resolve(capabilities.value),
+}));
 
 it('configures SSH as TCP-only with no extra transports and an automatic host key', () => {
     const ssh = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh');
@@ -17,7 +22,7 @@ it('configures SSH as TCP-only with no extra transports and an automatic host ke
     if (ssh.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
     expect(ssh.protocol.ssh).toMatchObject({
         hostKey: '', mtu: 1500, ipv6: true, maxSessions: 8,
-        uid: 65534, gid: 65534, allowUnsafeShell: false,
+        namespaceMode: 'rootless', uid: 0, gid: 0, allowUnsafeShell: false,
         shell: '', timezone: '', sftpReadOnlyPaths: [],
     });
     ssh.protocol.ssh.timezone = "Asia/Tokyo";
@@ -125,4 +130,67 @@ it('preserves the optional delegated cgroup root in SSH inbound configuration', 
     const normalized = normalizeInbound(JSON.parse(JSON.stringify(inbound)));
     if (normalized.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
     expect(normalized.protocol.ssh.cgroupRoot).toBe('/sys/fs/cgroup/delegated/ssh-session');
+});
+
+async function renderSSH(initial = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh')) {
+    let inbound = initial;
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = () => root.render(<InboundEditor inbound={inbound} onChange={next => { inbound = next; render(); }} protocols={['ssh']} />);
+    await act(async () => { render(); await Promise.resolve(); await Promise.resolve(); });
+    return { host, get inbound() { return inbound; }, cleanup: () => { act(() => root.unmount()); host.remove(); } };
+}
+
+it('defaults to rootless, explains it and shows the IDs this server can use', async () => {
+    const view = await renderSSH();
+    try {
+        const text = view.host.textContent ?? '';
+        for (const key of ['sshNamespaceMode', 'sshModeRootless', 'sshModeRootful', 'sshRootlessNormalUser', 'sshRootlessHostNetwork',
+            'sshRootlessUserNamespace', 'sshRootlessTun', 'sshRootlessKernel', 'sshRootlessSupervisor', 'sshUnsafeShellWarningRootless']) {
+            expect(text).toContain(key);
+        }
+        expect(text).toContain('sshRootlessIDs:{"uid":1000,"gid":1001}');
+        const selected = view.host.querySelector('[role="radio"][aria-checked="true"], [data-state="on"]');
+        expect(selected?.textContent).toBe('sshModeRootless');
+        // UID/GID 0 means the Yuhaiin user and is shown as a placeholder.
+        const uid = view.host.querySelector<HTMLInputElement>('input[placeholder^="sshServiceAccountID"]');
+        expect(uid?.value).toBe('');
+    } finally {
+        view.cleanup();
+    }
+});
+
+it('switches to rootful with explicit non-root IDs and warns when Yuhaiin is not root', async () => {
+    const view = await renderSSH();
+    try {
+        const rootful = [...view.host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'sshModeRootful');
+        expect(rootful).toBeDefined();
+        act(() => rootful!.click());
+        if (view.inbound.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+        expect(view.inbound.protocol.ssh).toMatchObject({ namespaceMode: 'rootful', uid: 65534, gid: 65534 });
+        const text = view.host.textContent ?? '';
+        expect(text).toContain('sshRootfulHelp');
+        expect(text).toContain('sshRootfulNotRoot:{"uid":1000}');
+        expect(text).toContain('sshUnsafeShellWarning');
+        const restored = normalizeInbound(JSON.parse(JSON.stringify(view.inbound)));
+        expect(restored.protocol).toEqual(view.inbound.protocol);
+    } finally {
+        view.cleanup();
+    }
+});
+
+it('treats a saved SSH inbound without a mode as rootless, like the server', async () => {
+    const saved = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh');
+    if (saved.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+    const { namespaceMode: _, ...legacy } = saved.protocol.ssh;
+    saved.protocol.ssh = { ...legacy, uid: 65534, gid: 65534 };
+    const view = await renderSSH(saved);
+    try {
+        expect(view.host.textContent).toContain('sshRootlessNormalUser');
+        if (view.inbound.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+        expect(view.inbound.protocol.ssh.namespaceMode).toBeUndefined();
+    } finally {
+        view.cleanup();
+    }
 });

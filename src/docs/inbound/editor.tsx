@@ -37,7 +37,8 @@ function numberValue(value: string): number {
 
 
 import { SecretValues } from "@/component/secret-values";
-import { getInboundSecrets } from "@/api/inbounds";
+import { getInboundCapabilities, getInboundSecrets } from "@/api/inbounds";
+import useSWR from "swr";
 
 const InboundEditor: FC<{
     inbound: Inbound;
@@ -354,18 +355,46 @@ const SSHServerEditor: FC<{
     const { t: uiT } = useTranslation("ui");
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
     const timezoneChoices = useMemo(() => timezoneOptions(), []);
+    // Shared with the inbound modal through the SWR cache.
+    const { data: capabilities } = useSWR('/api/v2/inbounds/capabilities', getInboundCapabilities);
+    const service = capabilities?.ssh;
+    // Saved inbounds without a mode are rootless, as on the server.
+    const rootless = (value.namespaceMode || "rootless") === "rootless";
+    const setMode = (mode: string) => patch(mode === "rootful" && (!value.uid || !value.gid)
+        ? { namespaceMode: mode, uid: value.uid || 65534, gid: value.gid || 65534 }
+        : { namespaceMode: mode });
+    const idRange = !service ? "" : rootless
+        ? (service.root ? uiT("sshRootlessIDsAsRoot") : uiT("sshRootlessIDs", { uid: service.serviceUID, gid: service.serviceGID }))
+        : (service.root ? uiT("sshRootfulIDs") : uiT("sshRootfulNotRoot", { uid: service.serviceUID }));
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
+            <FormSection title={uiT("sshNamespaceMode")}>
+                <Segmented label={uiT("sshNamespaceMode")} value={rootless ? "rootless" : "rootful"} onChange={setMode}
+                    items={[{ value: "rootless", label: uiT("sshModeRootless") }, { value: "rootful", label: uiT("sshModeRootful") }]} />
+                {rootless ? <ul className="grid list-disc gap-1 pl-5 text-xs text-ui-muted" aria-label={uiT("sshModeRootless")}>
+                    <li>{uiT("sshRootlessNormalUser")}</li>
+                    <li>{uiT("sshRootlessHostNetwork")}</li>
+                    <li>{uiT("sshRootlessUserNamespace")}</li>
+                    <li>{uiT("sshRootlessTun")}</li>
+                    <li>{uiT("sshRootlessKernel")}</li>
+                    <li>{uiT("sshRootlessSupervisor")}</li>
+                </ul> : <p className="text-xs text-ui-muted">{uiT("sshRootfulHelp")}</p>}
+                {idRange && <p role="note" className={`text-xs ${!rootless && service && !service.root ? "text-ui-danger" : "text-ui-muted"}`}>{idRange}</p>}
+            </FormSection>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("sshLoginUsername")} value={value.username}
                     onChange={(username) => patch({ username })} placeholder="alice" />
                 <SettingInputVertical label={uiT("sshShell")} value={value.shell ?? ""}
                     onChange={(shell) => patch({ shell })} placeholder={uiT("sshShellAuto")} />
-                <SettingInputVertical label={uiT("sshUID")} type="number" min={1} step={1}
-                    value={String(value.uid)} onChange={(uid) => patch({ uid: numberValue(uid) })} />
-                <SettingInputVertical label={uiT("sshGID")} type="number" min={1} step={1}
-                    value={String(value.gid)} onChange={(gid) => patch({ gid: numberValue(gid) })} />
+                <SettingInputVertical label={uiT("sshUID")} type="number" min={rootless ? 0 : 1} step={1}
+                    value={rootless && !value.uid ? "" : String(value.uid)}
+                    placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceUID ?? "" }) : undefined}
+                    onChange={(uid) => patch({ uid: numberValue(uid) })} />
+                <SettingInputVertical label={uiT("sshGID")} type="number" min={rootless ? 0 : 1} step={1}
+                    value={rootless && !value.gid ? "" : String(value.gid)}
+                    placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceGID ?? "" }) : undefined}
+                    onChange={(gid) => patch({ gid: numberValue(gid) })} />
                 <SettingInputVertical label="MTU" type="number" min={1280} max={9000} step={1}
                     value={String(value.mtu ?? 1500)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
                 <SettingInputVertical label={uiT("sshMaxSessions")} type="number" min={1} max={128} step={1}
@@ -400,8 +429,8 @@ const SSHServerEditor: FC<{
                             placeholder="-----BEGIN PRIVATE KEY-----" />
                     </div>
                     <SettingInputVertical label={uiT("sshCgroupRoot")} value={value.cgroupRoot ?? ""}
-                        onChange={(cgroupRoot) => patch({ cgroupRoot })} placeholder="/sys/fs/cgroup/yuhaiin/ssh/..." />
-                    <p className="text-xs text-ui-muted">{uiT("sshCgroupRootHelp")}</p>
+                        onChange={(cgroupRoot) => patch({ cgroupRoot })} placeholder={rootless ? uiT("sshCgroupRootAuto") : "/sys/fs/cgroup/yuhaiin/ssh/..."} />
+                    <p className="text-xs text-ui-muted">{uiT(rootless ? "sshCgroupRootRootlessHelp" : "sshCgroupRootHelp")}</p>
                     <SwitchCard label={uiT("sshEnableIPv6")} checked={value.ipv6}
                         onCheckedChange={(ipv6) => patch({ ipv6 })} />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -418,7 +447,7 @@ const SSHServerEditor: FC<{
                     </div>
                 </div>
             </details>
-            <SwitchCard label={uiT("sshUnsafeShellAcknowledgement")} description={uiT("sshUnsafeShellWarning")}
+            <SwitchCard label={uiT("sshUnsafeShellAcknowledgement")} description={uiT(rootless ? "sshUnsafeShellWarningRootless" : "sshUnsafeShellWarning")}
                 checked={value.allowUnsafeShell}
                 onCheckedChange={(allowUnsafeShell) => patch({ allowUnsafeShell })} />
         </div>
