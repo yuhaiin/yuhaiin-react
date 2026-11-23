@@ -15,7 +15,8 @@ import { FormSection } from "@/component/v2/form-section";
 
 
 
-import { normalizeInbound } from "@/contract/inbound";
+import { Inbound, normalizeInbound } from "@/contract/inbound";
+import { isSecretReferenceConflict, refreshSecretReferences } from "@/auth/secret-fields";
 import { Check } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import useSWR from "swr";
@@ -90,7 +91,19 @@ const InboundModal: FC<{
         setSaveError('');
         const next = normalizeInbound({ ...inbound, id, name: inbound.name || t(preset === "tun" ? "presetTun" : preset === "lan" ? "presetLAN" : "presetLocal") });
         void run(async () => {
-            const saved = isNew ? await createInbound(next) : await saveInbound(next);
+            let saved: Inbound;
+            try {
+                saved = isNew ? await createInbound(next) : await saveInbound(next);
+            } catch (failure) {
+                if (isNew || !isSecretReferenceConflict(failure)) throw failure;
+                // The masked secrets were issued by an earlier Yuhaiin process
+                // or for an older version of this inbound. Reload them, keep
+                // the other edits, and let the user review and save again:
+                // saving automatically could overwrite a concurrent change.
+                const latest = await getInbound(id);
+                setDraft(refreshSecretReferences(inbound, latest));
+                throw { code: 409, msg: uiT("secretReferenceRefreshed") } satisfies APIError;
+            }
             ctx.Info("Save successful");
             await mutate(saved, { revalidate: false });
             commit(saved);
