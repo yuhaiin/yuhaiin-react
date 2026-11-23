@@ -446,7 +446,7 @@ const worker=setupWorker(
     else if(op==='resolver.server.put')result=resolverServer=p;
     else if(op==='resolver.cache.get')result={items:[]};
     else if(op==='resolver.cache.delete')result={removed:0};
-    else if(op==='inbound.capabilities')result={platform:scenario==='utun'?'darwin':'linux',protocols:['mixed','http','socks5','socks4a','redir','tproxy','tun','yuubinsya','hysteria2']};
+    else if(op==='inbound.capabilities')result={platform:scenario==='utun'?'darwin':'linux',protocols:['mixed','http','socks5','socks4a','redir','tproxy','tun','yuubinsya','hysteria2','ssh'],ssh:{serviceUID:1000,serviceGID:1000,root:false}};
     else if(op==='inbounds.get')result=page(inbounds,p);
     else if(op==='inbound.get'){result=inbounds.find(item=>item.id===p.id);if(!result)return errorResponse('Inbound no longer exists',404);}
     else if(op==='inbounds.post'||op==='inbound.put')result=upsert(inbounds,p);

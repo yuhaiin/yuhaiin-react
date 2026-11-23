@@ -85,7 +85,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
             };
         case "ssh":
             return { type, ssh: {
-                hostKey: "", username: "", authorizedKey: "", uid: 65534, gid: 65534,
+                // Rootless is the default; UID/GID 0 selects Yuhaiin's own account.
+                namespaceMode: "rootless", hostKey: "", username: "", authorizedKey: "", uid: 0, gid: 0,
                 shell: "", timezone: "", sftpReadOnlyPaths: [], mtu: 1500, ipv6: true, maxSessions: 8,
                 allowUnsafeShell: false,
             } };
