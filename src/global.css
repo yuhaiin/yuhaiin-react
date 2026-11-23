@@ -63,9 +63,10 @@
     --topology-download: color-mix(in oklab, var(--color-success) 60%, #7FA88A);
     --topology-download-alt: color-mix(in oklab, var(--topology-download) 70%, var(--topology-canvas));
     --topology-flow: color-mix(in oklab, var(--topology-upload), var(--topology-download));
-    /* The travelling highlight: a little brighter than its ribbon. */
-    --topology-upload-highlight: color-mix(in oklab, var(--topology-upload) 72%, #FFF);
-    --topology-download-highlight: color-mix(in oklab, var(--topology-download) 72%, #FFF);
+    /* The travelling highlight. On the light canvas a lighter shade would fade the ribbon
+       into the background, so it is a deeper shade of the same family instead. */
+    --topology-upload-highlight: color-mix(in oklab, var(--topology-upload) 62%, #000);
+    --topology-download-highlight: color-mix(in oklab, var(--topology-download) 55%, #000);
     --topology-upload-text: color-mix(in oklab, var(--topology-upload) 85%, #000);
     --topology-download-text: var(--color-success);
     --topology-edge-idle: color-mix(in oklab, var(--border) 80%, var(--topology-canvas));

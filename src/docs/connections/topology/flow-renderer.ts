@@ -59,14 +59,19 @@ export interface RendererStats {
     maxDrawMs: number;
 }
 
-/** Share of a highlight period the soft band occupies. */
+/** Share of a highlight period the band occupies, and of the band its brighter core. */
 const BAND_WIDTH = 0.34;
+const CORE_WIDTH = 0.45;
+/** Opacity of the band's outer part relative to its core: two steps read as a soft band. */
+const BAND_EDGE_ALPHA = 0.5;
 
 interface Ribbon {
     path: Path2D;
     style: RibbonStyle;
     phase: number;
     animated: boolean;
+    /** 1 when the path is drawn in the direction of flow, -1 when against it (inbound trunks). */
+    forward: 1 | -1;
     gradient: CanvasGradient | string;
 }
 
@@ -76,8 +81,9 @@ interface Ribbon {
  * React hands over a new scene when the model changes (a few times a second
  * at most) and the view on pan/zoom. Ribbon paths, styles and colour
  * gradients are built then; the shape never changes between scenes. Per
- * frame, only the transform of two pre-rendered highlight patterns moves, so
- * a soft band of light travels along each ribbon in the direction of flow.
+ * frame, only the dash offset of the highlight moves, so a soft band of light
+ * travels along each ribbon's own length in the direction of flow, whatever
+ * way the curve turns.
  * One requestAnimationFrame loop at most, limited to `fps`, timed from frame
  * timestamps; it runs only while some ribbon carries traffic. Hidden pages,
  * pause and reduced motion stop it (ribbons are then drawn still), and
@@ -89,9 +95,6 @@ export class FlowRenderer {
     private edges: RenderEdge[] = [];
     private ribbons: Ribbon[] = [];
     private cache = new Map<string, { d: string; path: Path2D }>();
-    private patterns: [CanvasPattern | null, CanvasPattern | null] = [null, null];
-    /** Reused for every pattern transform. */
-    private readonly matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
     private view: View = { x: 0, y: 0, k: 1 };
     private palette: Palette = { up: "gray", upAlt: "gray", upHighlight: "gray", down: "gray", downAlt: "gray", downHighlight: "gray", flow: "gray", idle: "gray", edge: "gray", highlight: "gray", auxiliary: "gray", dark: false };
     private width = 0;
@@ -127,7 +130,7 @@ export class FlowRenderer {
         const styles = edges.map(edge => edge.auxiliary ? ribbonStyle(0, 0, this.options.mapping) : ribbonStyle(edge.up, edge.down, this.options.mapping));
         const animated = animatedWithinBudget(styles, this.options.mapping);
         this.ribbons = edges.map((edge, index) => ({
-            path: cache.get(edge.id)!.path, style: styles[index], phase: phaseOf(edge.id), animated: animated.has(index), gradient: "gray",
+            path: cache.get(edge.id)!.path, style: styles[index], phase: phaseOf(edge.id), animated: animated.has(index), forward: forwardOf(edge), gradient: "gray",
         }));
         this.stats.ribbons = styles.filter(style => style.intensity > 0).length;
         this.stats.animated = animated.size;
@@ -142,7 +145,6 @@ export class FlowRenderer {
 
     setPalette(palette: Palette) {
         this.palette = palette;
-        this.patterns = [this.pattern(palette.upHighlight), this.pattern(palette.downHighlight)];
         this.buildGradients();
         this.schedule();
     }
@@ -218,33 +220,6 @@ export class FlowRenderer {
         });
     }
 
-    /**
-     * One period of the travelling highlight: a soft band of the tone that
-     * fades in and out, transparent elsewhere. It is stroked over the ribbon
-     * at the ribbon's own width, so it reads as the ribbon brightening, never
-     * as a dot or a head.
-     */
-    private pattern(color: string): CanvasPattern | null {
-        if (typeof document === "undefined" || !this.ctx) return null;
-        const canvas = document.createElement("canvas");
-        canvas.width = HIGHLIGHT_PERIOD_PX;
-        canvas.height = 2;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return null;
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const fade = ctx.createLinearGradient(0, 0, canvas.width, 0);
-        fade.addColorStop(0, "transparent");
-        fade.addColorStop(0.5 - BAND_WIDTH / 2, "transparent");
-        fade.addColorStop(0.5, "black");
-        fade.addColorStop(0.5 + BAND_WIDTH / 2, "transparent");
-        fade.addColorStop(1, "transparent");
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.fillStyle = fade;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        return this.ctx.createPattern(canvas, "repeat");
-    }
-
     private animating() {
         return !this.paused && this.visible && !this.reducedMotion && this.stats.animated > 0;
     }
@@ -280,18 +255,6 @@ export class FlowRenderer {
         this.draw();
         this.handle = this.requestFrame(this.tick);
     };
-
-    /** Moves a highlight pattern along the flow: bands sized in CSS px, `distance` CSS px travelled. */
-    private placePattern(pattern: CanvasPattern, vertical: boolean, distance: number, k: number) {
-        const scale = 1 / Math.max(0.05, k);
-        const matrix = this.matrix;
-        if (vertical) {
-            matrix.a = 0; matrix.b = scale; matrix.c = 1; matrix.d = 0; matrix.e = 0; matrix.f = distance * scale;
-        } else {
-            matrix.a = scale; matrix.b = 0; matrix.c = 0; matrix.d = 1; matrix.e = distance * scale; matrix.f = 0;
-        }
-        pattern.setTransform?.(matrix);
-    }
 
     private draw() {
         const ctx = this.ctx;
@@ -340,17 +303,30 @@ export class FlowRenderer {
             ctx.lineWidth = width;
             ctx.stroke(ribbon.path);
             if (!moving || !ribbon.animated) continue;
-            // The flow: a long, soft band of brightness travelling in each active direction.
+            // The flow: a band of brightness travelling along the ribbon's own length in each
+            // active direction, as a dash whose offset moves. A wide faint dash with a brighter
+            // core inside it reads as a soft band, never as a dot or a head. On a dashed (UDP)
+            // ribbon it lights only what is drawn, so the dashes keep their gaps.
+            if (edge.dashed) ctx.globalCompositeOperation = "source-atop";
             for (let tone = 0; tone < 2; tone++) {
-                const pattern = this.patterns[tone];
                 const speed = tone === 0 ? style.upSpeed : style.downSpeed;
-                if (!pattern || speed === 0) continue;
-                const direction = tone === 0 ? 1 : -1;
-                this.placePattern(pattern, edge.vertical, direction * (speed * time + ribbon.phase * HIGHLIGHT_PERIOD_PX), k);
-                ctx.globalAlpha = edge.alpha * (tone === 0 ? style.upGlow : style.downGlow) * (palette.dark ? 1 : 0.85);
-                ctx.strokeStyle = pattern;
-                ctx.stroke(ribbon.path);
+                if (speed === 0) continue;
+                const direction = (tone === 0 ? 1 : -1) * ribbon.forward;
+                // Travelled CSS px along the path; a larger dash offset moves dashes towards the path's start.
+                const travelled = direction * (speed * time + ribbon.phase * HIGHLIGHT_PERIOD_PX);
+                const glow = edge.alpha * (tone === 0 ? style.upGlow : style.downGlow);
+                ctx.strokeStyle = tone === 0 ? palette.upHighlight : palette.downHighlight;
+                for (const [share, alpha] of [[BAND_WIDTH, glow * BAND_EDGE_ALPHA], [BAND_WIDTH * CORE_WIDTH, glow]] as const) {
+                    const band = HIGHLIGHT_PERIOD_PX * share;
+                    ctx.setLineDash([band * px, (HIGHLIGHT_PERIOD_PX - band) * px]);
+                    // Centre the core inside the outer band.
+                    ctx.lineDashOffset = (-travelled - (HIGHLIGHT_PERIOD_PX * BAND_WIDTH - band) / 2) * px;
+                    ctx.globalAlpha = alpha;
+                    ctx.stroke(ribbon.path);
+                }
             }
+            ctx.lineDashOffset = 0;
+            ctx.globalCompositeOperation = "source-over";
         }
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
@@ -360,4 +336,10 @@ export class FlowRenderer {
         this.stats.lastDrawMs = elapsed;
         this.stats.maxDrawMs = Math.max(this.stats.maxDrawMs, elapsed);
     }
+}
+
+/** Whether a ribbon's path runs with the flow (left to right, or top to bottom on phones). */
+function forwardOf(edge: RenderEdge): 1 | -1 {
+    const [x0, y0, x1, y1] = edge.ends;
+    return (edge.vertical ? y1 - y0 : x1 - x0) < 0 ? -1 : 1;
 }

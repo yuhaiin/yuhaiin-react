@@ -29,14 +29,9 @@ function context() {
     return {
         setTransform: vi.fn(), clearRect: vi.fn(), stroke: vi.fn(), setLineDash: vi.fn(), fill: vi.fn(),
         beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), arc: vi.fn(),
-        createLinearGradient: vi.fn(() => gradient), fillRect: vi.fn(),
-        // Patterns record a copy of every transform: the renderer reuses one matrix object.
-        createPattern: vi.fn(() => {
-            const placed: { e: number; f: number }[] = [];
-            const pattern = { placed, setTransform: vi.fn((matrix: { e: number; f: number }) => { placed.push({ e: matrix.e, f: matrix.f }); }) };
-            return pattern;
-        }),
+        createLinearGradient: vi.fn(() => gradient), fillRect: vi.fn(), createPattern: vi.fn(),
         globalAlpha: 1, lineWidth: 1, lineCap: "butt", lineJoin: "miter", strokeStyle: "", fillStyle: "",
+        lineDashOffset: 0, globalCompositeOperation: "source-over",
     };
 }
 
@@ -74,6 +69,17 @@ function strokes(run: () => void) {
     return drawn;
 }
 
+/** From now on, the dash offset and compositing of every stroke, by stroke style. */
+function highlights() {
+    const drawn = new Map<unknown, { offset: number; composite: string }[]>();
+    ctx.stroke = vi.fn(() => {
+        const list = drawn.get(ctx.strokeStyle) ?? [];
+        list.push({ offset: ctx.lineDashOffset, composite: ctx.globalCompositeOperation });
+        drawn.set(ctx.strokeStyle, list);
+    });
+    return (style: string) => drawn.get(style) ?? [];
+}
+
 describe("FlowRenderer", () => {
     it("draws idle edges as a quiet static line once, without a loop", () => {
         const { frames, renderer } = setup();
@@ -90,31 +96,31 @@ describe("FlowRenderer", () => {
         renderer.setScene([edge("up", 1 << 20, 0), edge("both", 1 << 20, 1 << 20)]);
         const drawn = strokes(() => frames.advance(34));
         // up: ribbon + upload highlight; both: ribbon + upload + download highlight.
-        expect(drawn).toHaveLength(5);
+        // Each highlight is a soft band: a faint outer dash and its brighter core.
+        expect(drawn).toHaveLength(8);
         // A single width per ribbon: the highlight never swells or thins it.
-        expect(new Set(drawn.slice(0, 2).map(item => item.width)).size).toBe(1);
-        expect(new Set(drawn.slice(2).map(item => item.width)).size).toBe(1);
+        expect(new Set(drawn.slice(0, 3).map(item => item.width)).size).toBe(1);
+        expect(new Set(drawn.slice(3).map(item => item.width)).size).toBe(1);
         expect(renderer.getStats()).toMatchObject({ ribbons: 2, animated: 2 });
         expect(frames.pending.size).toBe(1);
     });
 
-    it("keeps each ribbon in one colour family and lights it with a brighter shade of it", () => {
+    it("keeps each ribbon in one colour family and lights it with a shade of it", () => {
         const stops: string[][] = [];
         ctx.createLinearGradient = vi.fn(() => {
             const list: string[] = [];
             stops.push(list);
             return { addColorStop: vi.fn((_: number, color: string) => { list.push(color); }) };
         });
-        const fills: unknown[] = [];
-        ctx.fillRect = vi.fn(() => { fills.push(ctx.fillStyle); });
         const { frames, renderer } = setup();
         renderer.setScene([edge("up", 1 << 20, 0), edge("down", 0, 1 << 20), edge("both", 1 << 20, 1 << 20)]);
-        frames.advance(34);
+        const drawn = strokes(() => frames.advance(34));
         // Upload only: dim mint to mint; download only: sage to dim sage; both: sage to mint through their blend.
         expect(stops.slice(-3)).toEqual([["mint-dim", "mint-dim", "mint"], ["sage", "sage-dim", "sage-dim"], ["sage", "mint-sage", "mint"]]);
-        // The travelling highlights are the lighter shades, never another hue.
-        expect(fills).toContain("mint-light");
-        expect(fills).toContain("sage-light");
+        // The travelling highlights are the highlight shades of each family, never another hue.
+        const styles = new Set(drawn.map(item => item.style));
+        expect(styles).toContain("mint-light");
+        expect(styles).toContain("sage-light");
     });
 
     it("keeps a ribbon 2.4-4 CSS px wide on screen at any zoom", () => {
@@ -128,22 +134,43 @@ describe("FlowRenderer", () => {
         }
     });
 
-    it("moves only the highlight, in the direction of flow, never the shape", () => {
+    it("moves only the highlight along the path, in the direction of flow, never the shape", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("up", 1 << 20, 0), edge("down", 0, 1 << 20)]);
-        const [up, down] = ctx.createPattern.mock.results.map(result => result.value as { placed: { e: number }[]; setTransform: ReturnType<typeof vi.fn> });
+        const drawn = highlights();
         frames.advance(34);
         frames.advance(34, 15);
-        const shift = (pattern: { placed: { e: number }[] }) => pattern.placed[pattern.placed.length - 1].e - pattern.placed[0].e;
-        expect(shift(up)).toBeGreaterThan(0);
-        expect(shift(down)).toBeLessThan(0);
-        // Every pattern placement reuses one matrix object: no allocation per frame.
-        expect(new Set(up.setTransform.mock.calls.map(call => call[0])).size).toBe(1);
+        // A smaller dash offset moves the band towards the path's end, where upload arrives.
+        // Compare the same dash (the core, drawn second) on the first and last frame.
+        const shift = (list: { offset: number }[]) => list[list.length - 1].offset - list[1].offset;
+        expect(shift(drawn("mint-light"))).toBeLessThan(0);
+        expect(shift(drawn("sage-light"))).toBeGreaterThan(0);
         // The ribbon geometry is built once: no new paths, gradients or patterns while animating.
         const gradients = ctx.createLinearGradient.mock.calls.length;
         frames.advance(34, 10);
         expect(ctx.createLinearGradient.mock.calls.length).toBe(gradients);
         expect(ctx.moveTo).not.toHaveBeenCalled();
+    });
+
+    it("follows the flow on a path drawn against it, such as an inbound trunk", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([{ ...edge("trunk", 1 << 20, 0), d: "M300,0 L0,0", ends: [300, 0, 0, 0] }]);
+        const drawn = highlights();
+        frames.advance(34, 16);
+        const up = drawn("mint-light");
+        expect(up[up.length - 1].offset - up[1].offset).toBeGreaterThan(0);
+    });
+
+    it("lights only the drawn dashes of a UDP ribbon, then restores plain drawing", () => {
+        const { frames, renderer } = setup();
+        renderer.setScene([{ ...edge("udp", 1 << 20, 0), dashed: true }, edge("tcp", 0, 0)]);
+        const drawn = highlights();
+        frames.advance(34);
+        const up = drawn("mint-light");
+        expect(up.length).toBeGreaterThan(0);
+        expect(up.every(item => item.composite === "source-atop")).toBe(true);
+        expect(ctx.globalCompositeOperation).toBe("source-over");
+        expect(ctx.lineDashOffset).toBe(0);
     });
 
     it("never draws particles or dots", () => {
@@ -165,20 +192,23 @@ describe("FlowRenderer", () => {
     it("draws still ribbons while paused and resumes without a time jump", () => {
         const { frames, renderer } = setup();
         renderer.setScene([edge("a", 1 << 20, 0)]);
-        const [pattern] = ctx.createPattern.mock.results.map(result => result.value as { placed: { e: number }[] });
+        const stroke = ctx.stroke;
+        const placed = highlights();
         frames.advance(34, 10);
+        ctx.stroke = stroke;
         renderer.setPaused(true);
         frames.advance(34, 2);
         expect(frames.pending.size).toBe(0);
         const paused = strokes(() => { renderer.setView({ x: 0, y: 0, k: 1 }); frames.advance(34); });
         // Paused: the ribbon only, no highlight.
         expect(paused).toHaveLength(1);
-        const before = pattern.placed[pattern.placed.length - 1].e;
+        const before = placed("mint-light").slice(-1)[0].offset;
         frames.advance(10_000);
         renderer.setPaused(false);
+        const resumed = highlights();
         frames.advance(34);
         // The first resumed frame steps by 0: the highlight is where it was.
-        expect(pattern.placed[pattern.placed.length - 1].e).toBeCloseTo(before, 6);
+        expect(resumed("mint-light").slice(-1)[0].offset).toBeCloseTo(before, 6);
         expect(frames.pending.size).toBe(1);
     });
 
@@ -229,7 +259,7 @@ describe("FlowRenderer", () => {
         renderer.setScene(Array.from({ length: 500 }, (_, index) => edge(`e${index}`, 1 << 30, 1 << 30, 1500)));
         const drawn = strokes(() => frames.advance(34));
         expect(renderer.getStats()).toMatchObject({ ribbons: 500, animated: compactMapping.budget });
-        expect(drawn).toHaveLength(500 + compactMapping.budget * 2);
+        expect(drawn).toHaveLength(500 + compactMapping.budget * 4);
     });
 
     it("never animates auxiliary DNS edges", () => {
