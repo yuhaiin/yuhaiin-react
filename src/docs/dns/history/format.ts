@@ -52,12 +52,8 @@ export function clientAddress(record: Pick<DNSHistoryRecord, "clientIp" | "clien
     return record.clientIp.includes(":") ? `[${record.clientIp}]:${record.clientPort}` : `${record.clientIp}:${record.clientPort}`;
 }
 
-/** Process paths are long; the list shows the executable name. */
-export function processName(path?: string): string {
-    if (!path) return "";
-    const parts = path.split(/[\\/]/);
-    return parts[parts.length - 1] || path;
-}
+/** Process paths are long; the list shows the app or executable name. */
+export { processName } from "@/common/process";
 
 export type FilterState = Required<Pick<DNSHistoryFilter, "queryType" | "transport" | "sourceType" | "inboundId" | "process" | "resolver" | "server" | "outcome" | "domain">> & {
     fakeipOnly: boolean;

@@ -1,8 +1,10 @@
+import { getAndroidApps } from "@/api/android";
 import { listInbounds, listInboundStatuses } from "@/api/inbounds";
 import { activeNodes, getNode } from "@/api/nodes";
 import { getNodeStatuses } from "@/api/node-observability";
 import { usePermission } from "@/auth/context";
 import type { Node } from "@/contract/node";
+import { useAndroidPlatform } from "@/hooks/use-android-platform";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import type { InboundInfo, OutboundInfo, TopologyCatalog } from "./model";
@@ -22,6 +24,11 @@ function outboundInfo(node: Node): OutboundInfo {
  *
  * Nodes referenced by connections but not instantiated are fetched once
  * each, by id, and cached for the page's lifetime.
+ *
+ * Inside the Android app's WebView, app labels come from the installed-app
+ * list of the platform API, so a package name shows as its app name. The list
+ * needs the app-list consent; without it the request fails and the topology
+ * shows package names. The page never asks for the consent itself.
  */
 export function useTopologyCatalog(connectionNodeIds: string[], live: boolean): TopologyCatalog {
     const canInbounds = usePermission("inbounds:read");
@@ -31,6 +38,10 @@ export function useTopologyCatalog(connectionNodeIds: string[], live: boolean): 
     const { data: inbounds } = useSWR(canInbounds ? "topology:inbounds" : null, () => listInbounds({ page: 1, pageSize: 200 }), { ...options, refreshInterval: interval * 2 });
     const { data: inboundStatuses } = useSWR(canInbounds ? "topology:inbound-status" : null, listInboundStatuses, { ...options, refreshInterval: interval });
     const { data: active } = useSWR(canNodes ? "topology:active-nodes" : null, activeNodes, { ...options, refreshInterval: interval });
+    const android = useAndroidPlatform();
+    // Installs during a visit are rare: refresh on the slow interval only.
+    const { data: androidApps } = useSWR(android ? "topology:android-apps" : null, getAndroidApps, { ...options, refreshInterval: live ? 300_000 : 0 });
+    const apps = useMemo(() => new Map(androidApps?.map(app => [app.packageName, app.name])), [androidApps]);
 
     const [fetched, setFetched] = useState<Map<string, OutboundInfo>>(() => new Map());
     const requested = useRef(new Set<string>());
@@ -82,6 +93,7 @@ export function useTopologyCatalog(connectionNodeIds: string[], live: boolean): 
             nodes,
             nodeStatus: new Map(Object.entries(nodeStatus ?? {}).map(([id, status]) => [id, status.state])),
             activeNodes: active?.items.map(node => node.id) ?? [],
+            apps,
         };
-    }, [inbounds, inboundStatuses, active, fetched, nodeStatus]);
+    }, [inbounds, inboundStatuses, active, fetched, nodeStatus, apps]);
 }

@@ -1,3 +1,5 @@
+import { androidAppIconURL } from "@/api/android";
+import { processName } from "@/common/process";
 import type { Connection } from "@/contract/connection";
 import type { Rate } from "./rates";
 
@@ -45,6 +47,10 @@ export interface TopologyNode {
     kind: NodeKind;
     /** Display name from the backend; empty for nodes the UI names itself. */
     name: string;
+    /** Full process path behind an app node; `name` is only its readable name. */
+    path?: string;
+    /** App icon, for Android packages the platform API lists. */
+    iconUrl?: string;
     /** Protocol or category, e.g. "socks5", "wireguard", "domain". */
     type: string;
     /** Configuration id behind the node (inbound, node, rule) when known. */
@@ -113,6 +119,8 @@ export interface TopologyCatalog {
     nodeStatus: Map<string, string>;
     /** Outbound nodes the runtime has instantiated, used or not. */
     activeNodes: string[];
+    /** Android app labels by package name, from the in-app WebView's platform API. */
+    apps?: Map<string, string>;
 }
 
 export const emptyCatalog = (): TopologyCatalog => ({ inbounds: new Map(), nodes: new Map(), nodeStatus: new Map(), activeNodes: [] });
@@ -231,8 +239,24 @@ export function outboundClass(connection: Connection, catalog?: TopologyCatalog)
     return node && node.protocols.some(protocol => VPN_PROTOCOLS.has(protocol)) ? "vpn" : "proxy";
 }
 
-function sourceKey(connection: Connection): { key: string; kind: NodeKind; name: string } {
-    if (connection.process) return { key: `app:${connection.process}`, kind: "app", name: connection.process };
+/**
+ * Readable name of a process: the Android app label when the platform API knows the
+ * package, otherwise the app or executable name from the path.
+ */
+export function appName(process: string, catalog?: TopologyCatalog): string {
+    return catalog?.apps?.get(process) || processName(process);
+}
+
+/** Icon of an Android app; only packages the platform API listed have one. */
+export function appIconUrl(process: string, apps?: Map<string, string>): string | undefined {
+    return apps?.has(process) ? androidAppIconURL(process) : undefined;
+}
+
+function sourceKey(connection: Connection, catalog?: TopologyCatalog): { key: string; kind: NodeKind; name: string; path?: string; iconUrl?: string } {
+    if (connection.process) {
+        const process = connection.process;
+        return { key: `app:${process}`, kind: "app", name: appName(process, catalog), path: process, iconUrl: appIconUrl(process, catalog?.apps) };
+    }
     const host = hostOf(connection.source);
     // Opened by the core itself (DNS bootstrap, probes...): the backend records the component.
     if (!host && !connection.inboundId && !connection.inboundName && connection.component) {
@@ -369,7 +393,7 @@ export function buildTopology(input: BuildInput): TopologyModel {
     const destinationBuckets = new Map<string, Bucket>();
     for (const connection of connections) {
         const rate = rates.get(connection.id);
-        for (const [buckets, key] of [[sourceBuckets, sourceKey(connection).key], [destinationBuckets, destinationHost(connection) || "unknown"]] as const) {
+        for (const [buckets, key] of [[sourceBuckets, sourceKey(connection, catalog).key], [destinationBuckets, destinationHost(connection) || "unknown"]] as const) {
             const bucket = buckets.get(key) ?? { key, up: 0, down: 0, count: 0 };
             bucket.up += rate?.up ?? 0;
             bucket.down += rate?.down ?? 0;
@@ -402,9 +426,9 @@ export function buildTopology(input: BuildInput): TopologyModel {
         up += rate?.up ?? 0;
         down += rate?.down ?? 0;
 
-        const source = sourceKey(connection);
+        const source = sourceKey(connection, catalog);
         const sourceNode = keptSources.has(source.key)
-            ? node(`source:${source.key}`, { column: "source", kind: source.kind, name: source.name, type: source.kind })
+            ? node(`source:${source.key}`, { column: "source", kind: source.kind, name: source.name, path: source.path, iconUrl: source.iconUrl, type: source.kind })
             : node("source:others", { column: "source", kind: "others", name: "", type: "others", members: otherSources });
 
         const inbound = inboundKey(connection, catalog);
@@ -521,7 +545,7 @@ export function highlightPaths(model: TopologyModel, connectionIds: Iterable<str
 export interface FilterOptions {
     inbounds: { id: string; label: string }[];
     outbounds: { id: string; label: string }[];
-    processes: string[];
+    processes: { id: string; label: string }[];
     geo: string[];
 }
 
@@ -529,19 +553,19 @@ export interface FilterOptions {
 export function filterOptions(connections: Iterable<Connection>, catalog?: TopologyCatalog): FilterOptions {
     const inbounds = new Map<string, string>();
     const outbounds = new Map<string, string>();
-    const processes = new Set<string>();
+    const processes = new Map<string, string>();
     const geo = new Set<string>();
     for (const connection of connections) {
         const inbound = inboundKey(connection, catalog);
         inbounds.set(inbound.id, inbound.name);
         const outbound = outboundKey(connection, catalog);
         outbounds.set(outbound.id, outbound.name);
-        if (connection.process) processes.add(connection.process);
+        if (connection.process) processes.set(connection.process, appName(connection.process, catalog));
         const country = connection.geo || connection.outboundGeo;
         if (country) geo.add(country);
     }
     const sorted = (values: Map<string, string>) => [...values].map(([id, label]) => ({ id, label })).sort((a, b) => (a.label || a.id).localeCompare(b.label || b.id));
-    return { inbounds: sorted(inbounds), outbounds: sorted(outbounds), processes: [...processes].sort(), geo: [...geo].sort() };
+    return { inbounds: sorted(inbounds), outbounds: sorted(outbounds), processes: sorted(processes), geo: [...geo].sort() };
 }
 
 function lastOf(values: string[] | undefined) {
