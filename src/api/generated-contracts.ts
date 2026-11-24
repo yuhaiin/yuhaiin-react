@@ -889,6 +889,82 @@ export namespace Go {
       serviceUID: number;
       serviceGID: number;
       root: boolean;
+      environment?: SSHEnvironment;
+    }
+    export interface SSHEnvironment {
+      userNamespace: SSHUserNamespace;
+      identity: SSHIdentity;
+      session?: SSHSessionIdentity;
+      features: SSHFeatures;
+      error?: string;
+      errorStage?: string;
+      checkedAt: string;
+    }
+    export interface SSHUserNamespace {
+      origin: string;
+      depth: number;
+      depthError?: string;
+      hostIDsResolved: boolean;
+      uidMap: SSHIDMapping[];
+      gidMap: SSHIDMapping[];
+      setgroupsAllowed: boolean;
+      nestedUserNamespaceSupported: boolean;
+    }
+    export interface SSHIDMapping {
+      namespaceID: number;
+      parentID: number;
+      count: number;
+    }
+    export interface SSHIDRange {
+      start: number;
+      count: number;
+    }
+    export interface SSHIdentity {
+      hostUID?: number;
+      hostGID?: number;
+      namespaceUID: number;
+      namespaceGID: number;
+      groups: SSHGroup[];
+      uidRanges: SSHIDRange[];
+      gidRanges: SSHIDRange[];
+      parentUIDRanges: SSHIDRange[];
+      parentGIDRanges: SSHIDRange[];
+      capSetUID: boolean;
+      capSetGID: boolean;
+      capSetFCAP: boolean;
+      capSysAdmin: boolean;
+      capNetAdmin: boolean;
+    }
+    export interface SSHGroup {
+      namespaceGID: number;
+      hostGID?: number;
+    }
+    export interface SSHSessionIdentity {
+      uid: number;
+      gid: number;
+      namespaceUID: number;
+      namespaceGID: number;
+      uidMap: SSHIDMapping[];
+      gidMap: SSHIDMapping[];
+      supplementaryGroupsInherited: boolean;
+      supplementaryGroupsSettable: boolean;
+      filesystemIdentityPreserved: boolean;
+      username?: string;
+      home?: string;
+      shell?: string;
+    }
+    export interface SSHFeatures {
+      userNamespace: string;
+      networkNamespace: string;
+      mountNamespace: string;
+      pidNamespace: string;
+      idMapping: string;
+      tun: string;
+      ipv4: string;
+      ipv6: string;
+      supervisor: string;
+      cgroupV2: string;
+      rootful: string;
     }
     export type Network =
       | { type: "empty"; empty: EmptyNetwork }
@@ -1020,6 +1096,8 @@ export namespace Go {
       authorizedKey: string;
       uid: number;
       gid: number;
+      parentNamespaceUID?: number;
+      parentNamespaceGID?: number;
       shell?: string;
       timezone?: string;
       sftpReadOnlyPaths?: string[];
