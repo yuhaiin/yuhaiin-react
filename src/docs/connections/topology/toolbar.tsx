@@ -122,7 +122,7 @@ export function TopologyToolbar(props: ToolbarProps) {
                             onToggle={id => props.onFilterChange({ ...filter, inbounds: toggle(filter.inbounds, id) })} keepOpen={keepOpen} />
                         <FilterGroup label={t("filter.outbound")} values={options.outbounds.map(item => ({ id: item.id, label: item.label || t(`filter.outboundName.${item.id.replace("outbound:", "")}`, { defaultValue: item.id }) }))} selected={filter.outbounds}
                             onToggle={id => props.onFilterChange({ ...filter, outbounds: toggle(filter.outbounds, id) })} keepOpen={keepOpen} />
-                        <FilterGroup label={t("filter.process")} values={options.processes.map(value => ({ id: value, label: value }))} selected={filter.processes}
+                        <FilterGroup label={t("filter.process")} values={options.processes.map(item => ({ id: item.id, label: item.label, title: item.id }))} selected={filter.processes}
                             onToggle={id => props.onFilterChange({ ...filter, processes: toggle(filter.processes, id) })} keepOpen={keepOpen} />
                         <FilterGroup label={t("filter.geo")} values={options.geo.map(value => ({ id: value, label: value.toUpperCase() }))} selected={filter.geo}
                             onToggle={id => props.onFilterChange({ ...filter, geo: toggle(filter.geo, id) })} keepOpen={keepOpen} />
@@ -148,14 +148,14 @@ export function TopologyToolbar(props: ToolbarProps) {
     );
 }
 
-function FilterGroup({ label, values, selected, onToggle, keepOpen }: { label: string; values: { id: string; label: string }[]; selected: string[]; onToggle: (id: string) => void; keepOpen: (event: Event) => void }) {
+function FilterGroup({ label, values, selected, onToggle, keepOpen }: { label: string; values: { id: string; label: string; title?: string }[]; selected: string[]; onToggle: (id: string) => void; keepOpen: (event: Event) => void }) {
     if (!values.length) return null;
     return (
         <>
             <DropdownLabel>{label}</DropdownLabel>
             {values.map(value => (
                 <DropdownCheckboxItem key={value.id} checked={selected.includes(value.id)} onSelect={keepOpen} onCheckedChange={() => onToggle(value.id)}>
-                    <span className="notranslate">{value.label}</span>
+                    <span className="notranslate" title={value.title}>{value.label}</span>
                 </DropdownCheckboxItem>
             ))}
         </>

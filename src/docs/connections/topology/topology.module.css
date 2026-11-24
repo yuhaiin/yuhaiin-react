@@ -318,3 +318,10 @@
         transition: none;
     }
 }
+
+.appIcon {
+    display: block;
+    border-radius: 22%;
+    object-fit: contain;
+    pointer-events: none;
+}

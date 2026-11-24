@@ -1,5 +1,6 @@
 import type { DNSHistoryRecord } from "@/api/dns-history";
-import type { Column, NodeKind, TopologyEdge, TopologyNode } from "./model";
+import { processName } from "@/common/process";
+import { appIconUrl, type Column, type NodeKind, type TopologyEdge, type TopologyNode } from "./model";
 
 /**
  * The DNS path, built from DNS history records only:
@@ -38,7 +39,7 @@ function answerSource(record: DNSHistoryRecord): { key: string; name: string; ty
     }
 }
 
-export function buildDnsTopology(records: DNSHistoryRecord[], limit = 6): DnsTopology {
+export function buildDnsTopology(records: DNSHistoryRecord[], limit = 6, apps?: Map<string, string>): DnsTopology {
     const nodes = new Map<string, TopologyNode>();
     const edges = new Map<string, TopologyEdge>();
     const fakeIps = new Map<string, { domain: string; recordId: number; at: string }>();
@@ -50,11 +51,11 @@ export function buildDnsTopology(records: DNSHistoryRecord[], limit = 6): DnsTop
     for (const record of records) clientCounts.set(clientOf(record), (clientCounts.get(clientOf(record)) ?? 0) + 1);
     const keptClients = new Set([...clientCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([key]) => key));
 
-    const node = (id: string, column: Column, kind: NodeKind, name: string, type: string, refId?: string) => {
+    const node = (id: string, column: Column, kind: NodeKind, name: string, type: string, refId?: string, path?: string, iconUrl?: string) => {
         let value = nodes.get(id);
         if (!value) {
             value = {
-                id, column, kind, name, type, refId, status: "open", connections: 0, tcp: 0, udp: 0, up: 0, down: 0, connectionIds: [],
+                id, column, kind, name, path, iconUrl, type, refId, status: "open", connections: 0, tcp: 0, udp: 0, up: 0, down: 0, connectionIds: [],
                 dns: { queries: 0, failures: 0, fakeip: 0, cacheHits: 0, averageMs: 0, recordIds: [] },
             };
             nodes.set(id, value);
@@ -66,7 +67,9 @@ export function buildDnsTopology(records: DNSHistoryRecord[], limit = 6): DnsTop
         const failed = isFailure(record.outcome);
         const client = clientOf(record);
         const clientNode = keptClients.has(client)
-            ? node(`dns:client:${client || "unknown"}`, COLUMN.client, client ? "dns-client" : "unknown", client, record.processName ? "app" : record.clientIp ? "device" : "")
+            ? node(`dns:client:${client || "unknown"}`, COLUMN.client, client ? "dns-client" : "unknown", record.processName ? apps?.get(record.processName) || processName(record.processName) : client,
+                record.processName ? "app" : record.clientIp ? "device" : "", undefined, record.processName || undefined,
+                record.processName ? appIconUrl(record.processName, apps) : undefined)
             : node("dns:client:others", COLUMN.client, "others", "", "others");
         const entryKey = record.sourceType === "dns_hijack" ? `hijack:${record.inboundId || record.inboundName || "unknown"}` : `${record.sourceType || "unknown"}:${record.transport}`;
         const entryNode = node(`dns:entry:${entryKey}`, COLUMN.entry, "dns-entry", record.sourceType === "dns_hijack" ? record.inboundName || "" : "", record.sourceType || "unknown", record.inboundId);

@@ -28,6 +28,19 @@ function connection(id: string, value: Partial<Connection> = {}): Connection {
 const rates = (entries: Record<string, Rate>) => new Map(Object.entries(entries));
 
 describe("buildTopology", () => {
+    it("names app sources by app and keeps their full path", () => {
+        const lark = "/Applications/Lark.app/Contents/MacOS/Lark";
+        const model = buildTopology({ connections: [connection("1", { process: lark })], rates: rates({}) });
+        const source = model.nodes.find(node => node.id === `source:app:${lark}`);
+        expect(source).toMatchObject({ kind: "app", name: "Lark", path: lark });
+    });
+    it("names Android packages by their app label when the platform API knows them", () => {
+        const catalog = { ...emptyCatalog(), apps: new Map([["com.android.chrome", "Chrome"]]) };
+        const model = buildTopology({ connections: [connection("1", { process: "com.android.chrome" }), connection("2", { process: "com.example.unknown" })], rates: rates({}), catalog });
+        expect(model.nodes.find(node => node.id === "source:app:com.android.chrome")).toMatchObject({ name: "Chrome", path: "com.android.chrome", iconUrl: "/android/v1/apps/icon?package=com.android.chrome" });
+        expect(model.nodes.find(node => node.id === "source:app:com.example.unknown")).toMatchObject({ name: "com.example.unknown", iconUrl: undefined });
+        expect(filterOptions([connection("1", { process: "com.android.chrome" })], catalog).processes).toEqual([{ id: "com.android.chrome", label: "Chrome" }]);
+    });
     it("maps one connection onto a five-column path", () => {
         const model = buildTopology({ connections: [connection("1", { process: "curl" })], rates: rates({ "1": { up: 100, down: 900 } }) });
         expect(model.paths.get("1")).toEqual([
@@ -241,7 +254,7 @@ describe("helpers", () => {
 
     it("lists filter options from all connections", () => {
         const options = filterOptions([connection("1", { process: "curl", geo: "us" }), connection("2", { mode: "direct", nodeId: "" })]);
-        expect(options.processes).toEqual(["curl"]);
+        expect(options.processes).toEqual([{ id: "curl", label: "curl" }]);
         expect(options.geo).toEqual(["us"]);
         expect(options.outbounds.map(item => item.id).sort()).toEqual(["outbound:direct", "outbound:node-a"]);
     });

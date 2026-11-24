@@ -182,6 +182,7 @@
     "gone": "No longer active",
     "goneHint": "This node or path has no connections any more.",
     "nodeId": "Node ID",
+    "path": "Path",
     "type": "Type",
     "selector": "Selector",
     "mode": "Route mode",

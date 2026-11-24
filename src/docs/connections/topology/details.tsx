@@ -3,12 +3,13 @@ import type { Connection } from "@/contract/connection";
 import { Badge } from "@/component/v2/badge";
 import { cn } from "@/component/v2/styles";
 import { ArrowDown, ArrowRight, ArrowUp, ExternalLink, X } from "lucide-react";
-import { createElement, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { connectionHost } from "../actions";
 import type { DnsTopology } from "./dns";
 import { destinationHost, networkOf, type TopologyEdge, type TopologyModel, type TopologyNode } from "./model";
-import { configLink, formatRate, nodeIcon, nodeName, nodeType, selectorLink, statusTone } from "./presentation";
+import { configLink, formatRate, nodeName, nodeType, selectorLink, statusTone } from "./presentation";
+import { NodeIcon } from "./node-icon";
 import type { Rate } from "./rates";
 import type { SceneBundle } from "./scene";
 import type { Selection } from "./stage";
@@ -23,6 +24,8 @@ interface DetailsProps {
     ghost?: TopologyNode;
     connections: Record<string, Connection>;
     rates: Map<string, Rate>;
+    /** Readable name of a connection's process. */
+    appName: (process: string) => string;
     /** Shared trunks currently drawn. */
     bundles?: SceneBundle[];
     onSelect: (selection: Selection) => void;
@@ -113,9 +116,9 @@ function Section({ title, children, count }: { title: string; children: ReactNod
     );
 }
 
-function NodeDetails({ node, model, dns, dnsRecords, connections, rates, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { node: TopologyNode }) {
+function NodeDetails({ node, model, dns, dnsRecords, connections, rates, appName, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { node: TopologyNode }) {
     const { t } = useTranslation("topology");
-    const icon = createElement(nodeIcon(node), { size: 16, strokeWidth: 1.75 });
+    const icon = <NodeIcon node={node} size={16} imageSize={24} />;
     const tone = statusTone(node.status);
     const link = configLink(node);
     const selector = selectorLink(node);
@@ -164,6 +167,10 @@ function NodeDetails({ node, model, dns, dnsRecords, connections, rates, onSelec
             </>}
         >
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                {node.path && <>
+                    <dt className="text-ui-muted">{t("details.path")}</dt>
+                    <dd className="notranslate min-w-0 break-all font-mono text-xs leading-5 text-ui-fg">{node.path}</dd>
+                </>}
                 <dt className="text-ui-muted">{t("details.nodeId")}</dt>
                 <dd className="notranslate min-w-0 break-all font-mono text-xs leading-5 text-ui-fg">{node.refId || node.id}</dd>
                 <dt className="text-ui-muted">{t("details.type")}</dt>
@@ -244,7 +251,7 @@ function NodeDetails({ node, model, dns, dnsRecords, connections, rates, onSelec
 
             {node.dns
                 ? <DnsRecordList ids={node.dns.recordIds} records={dnsRecords} />
-                : <ConnectionList ids={node.connectionIds} connections={connections} rates={rates} onOpen={onOpenConnection} />}
+                : <ConnectionList ids={node.connectionIds} connections={connections} rates={rates} appName={appName} onOpen={onOpenConnection} />}
         </Panel>
     );
 }
@@ -261,7 +268,7 @@ function EdgeRates({ edge, auxiliary }: { edge: TopologyEdge; auxiliary?: boolea
     );
 }
 
-function EdgeDetails({ edge, model, dns, dnsRecords, connections, rates, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { edge: TopologyEdge }) {
+function EdgeDetails({ edge, model, dns, dnsRecords, connections, rates, appName, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { edge: TopologyEdge }) {
     const { t } = useTranslation("topology");
     const auxiliary = edge.id.endsWith("#dns");
     const graph = auxiliary ? dns : model;
@@ -297,7 +304,7 @@ function EdgeDetails({ edge, model, dns, dnsRecords, connections, rates, onSelec
             </div>
             {auxiliary
                 ? <DnsRecordList ids={recordIds} records={dnsRecords} />
-                : <ConnectionList ids={edge.connectionIds} connections={connections} rates={rates} onOpen={onOpenConnection} />}
+                : <ConnectionList ids={edge.connectionIds} connections={connections} rates={rates} appName={appName} onOpen={onOpenConnection} />}
         </Panel>
     );
 }
@@ -307,7 +314,7 @@ function EdgeDetails({ edge, model, dns, dnsRecords, connections, rates, onSelec
  * their combined counts. Each member opens its own edge details; the trunk
  * itself is only a drawing of that group, never a connection of its own.
  */
-function BundleDetails({ bundle, model, connections, rates, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { bundle: SceneBundle }) {
+function BundleDetails({ bundle, model, connections, rates, appName, onSelect, onOpenConnection, onClose, sheet }: DetailsProps & { bundle: SceneBundle }) {
     const { t } = useTranslation("topology");
     const anchor = model.nodes.find(node => node.id === bundle.node);
     const anchorName = anchor ? nodeName(anchor, t) : bundle.node;
@@ -347,12 +354,12 @@ function BundleDetails({ bundle, model, connections, rates, onSelect, onOpenConn
                     ))}
                 </ul>
             </Section>
-            <ConnectionList ids={bundle.connectionIds} connections={connections} rates={rates} onOpen={onOpenConnection} />
+            <ConnectionList ids={bundle.connectionIds} connections={connections} rates={rates} appName={appName} onOpen={onOpenConnection} />
         </Panel>
     );
 }
 
-function ConnectionList({ ids, connections, rates, onOpen }: { ids: string[]; connections: Record<string, Connection>; rates: Map<string, Rate>; onOpen: (connection: Connection) => void }) {
+function ConnectionList({ ids, connections, rates, appName, onOpen }: { ids: string[]; connections: Record<string, Connection>; rates: Map<string, Rate>; appName: (process: string) => string; onOpen: (connection: Connection) => void }) {
     const { t } = useTranslation("topology");
     const items = useMemo(() => ids
         .map(id => connections[id])
@@ -375,7 +382,7 @@ function ConnectionList({ ids, connections, rates, onOpen }: { ids: string[]; co
                                     <span className="notranslate min-w-0 flex-1 truncate text-sm text-ui-heading">{connectionHost(connection) || connection.addr}</span>
                                 </span>
                                 <span className="flex min-w-0 items-center gap-2 font-mono text-xs tabular-nums text-ui-muted">
-                                    <span className="min-w-0 flex-1 truncate">{connection.process || connection.source}</span>
+                                    <span className="min-w-0 flex-1 truncate">{(connection.process && appName(connection.process)) || connection.source}</span>
                                     <span className={cn("inline-flex items-center", rate?.up ? styles.up : "")}><ArrowUp size={11} />{formatRate(rate?.up ?? 0)}</span>
                                     <span className={cn("inline-flex items-center", rate?.down ? styles.down : "")}><ArrowDown size={11} />{formatRate(rate?.down ?? 0)}</span>
                                 </span>

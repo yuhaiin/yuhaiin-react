@@ -20,7 +20,7 @@ describe('DNS history formatting', () => {
     it('formats clients and processes', () => {
         expect(clientAddress({ clientIp: '2001:db8::1', clientPort: 53 })).toBe('[2001:db8::1]:53');
         expect(clientAddress({ clientIp: '10.0.0.2', clientPort: 0 })).toBe('10.0.0.2');
-        expect(processName('C:\\Program Files\\App\\app.exe')).toBe('app.exe');
+        expect(processName('C:\\Program Files\\App\\app.exe')).toBe('app');
         expect(processName('/usr/bin/curl')).toBe('curl');
     });
     it('turns the filter state into a request with a fixed time window', () => {

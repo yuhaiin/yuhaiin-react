@@ -15,6 +15,14 @@ function record(value: Partial<DNSHistoryRecord>): DNSHistoryRecord {
 }
 
 describe("buildDnsTopology", () => {
+    it("names app clients by app label or app name and keeps the full path", () => {
+        const dns = buildDnsTopology([
+            record({ processName: "com.android.chrome" }),
+            record({ processName: "/Applications/Lark.app/Contents/MacOS/Lark" }),
+        ], 6, new Map([["com.android.chrome", "Chrome"]]));
+        expect(dns.nodes.find(node => node.id === "dns:client:com.android.chrome")).toMatchObject({ name: "Chrome", path: "com.android.chrome", iconUrl: "/android/v1/apps/icon?package=com.android.chrome" });
+        expect(dns.nodes.find(node => node.id === "dns:client:/Applications/Lark.app/Contents/MacOS/Lark")).toMatchObject({ name: "Lark" });
+    });
     it("builds client → entry → route → resolver → answer source from history only", () => {
         const dns = buildDnsTopology([
             record({ processName: "curl", routeMode: "proxy" }),

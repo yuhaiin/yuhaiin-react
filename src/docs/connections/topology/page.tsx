@@ -17,7 +17,7 @@ import { useConnectionStream } from "../v2/use-connection-stream";
 import { TopologyDetails } from "./details";
 import { buildDnsTopology } from "./dns";
 import { desktopLayout, edgeCurve, LayoutMemory, mobileLayout, samplePath, svgPath } from "./layout";
-import { buildTopology, COLUMNS, desktopLimits, emptyFilter, filterOptions, highlightPaths, mobileLimits, searchConnections, type Column, type TopologyFilter, type TopologyNode } from "./model";
+import { appName, buildTopology, COLUMNS, desktopLimits, emptyFilter, filterOptions, highlightPaths, mobileLimits, searchConnections, type Column, type TopologyFilter, type TopologyNode } from "./model";
 import { compactMapping, defaultMapping } from "./ribbons";
 import { RateSampler, type Rate } from "./rates";
 import { buildScene, type Detail, type Emphasis, type SceneBundle, type SceneEdge } from "./scene";
@@ -119,7 +119,7 @@ export default function NetworkTopologyPage() {
         () => listDNSHistory({ from: Date.now() - DNS_WINDOW }, 1, DNS_LIMIT),
         { refreshInterval: 5000, revalidateOnFocus: false, keepPreviousData: true, shouldRetryOnError: false });
     const dnsRecords = useMemo(() => dnsData?.items ?? [], [dnsData]);
-    const dns = useMemo(() => canDns && dnsLayer && dnsRecords.length ? buildDnsTopology(dnsRecords, compact ? 3 : 6) : undefined, [canDns, dnsLayer, dnsRecords, compact]);
+    const dns = useMemo(() => canDns && dnsLayer && dnsRecords.length ? buildDnsTopology(dnsRecords, compact ? 3 : 6, catalog.apps) : undefined, [canDns, dnsLayer, dnsRecords, compact, catalog.apps]);
 
     // Layout memory keeps positions across updates; ghosts need a re-layout once they expire.
     const mainMemory = useRef(new LayoutMemory());
@@ -237,7 +237,7 @@ export default function NetworkTopologyPage() {
 
     const details = (
         <TopologyDetails selection={selection} model={model} dns={dns} dnsRecords={dnsRecords} ghost={ghost} bundles={bundles}
-            connections={connections} rates={shownRates} onSelect={onSelect} onOpenConnection={setOpened}
+            connections={connections} rates={shownRates} appName={process => appName(process, catalog)} onSelect={onSelect} onOpenConnection={setOpened}
             onClose={() => setSelection(null)} sheet={compact} />
     );
 

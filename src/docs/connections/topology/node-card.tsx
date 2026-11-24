@@ -3,7 +3,8 @@ import { ArrowDown, ArrowLeftRight, ArrowUp } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import type { PlacedNode } from "./layout";
-import { formatRate, nodeIcon, nodeName, nodeType, statusTone } from "./presentation";
+import { NodeIcon } from "./node-icon";
+import { formatRate, nodeName, nodeType, statusTone } from "./presentation";
 import type { Selection } from "./stage";
 import styles from "./topology.module.css";
 
@@ -26,7 +27,6 @@ interface NodeCardProps {
 export const NodeCard = memo(function NodeCard({ placed, width, height, offsetY = 0, compact, selected, dimmed, onSelect }: NodeCardProps) {
     const { t } = useTranslation(["topology"]);
     const { node, ghost } = placed;
-    const Icon = nodeIcon(node);
     const name = nodeName(node, t);
     const type = nodeType(node, t);
     const tone = statusTone(ghost ? "closed" : node.status);
@@ -46,10 +46,10 @@ export const NodeCard = memo(function NodeCard({ placed, width, height, offsetY 
             data-status={ghost ? "closed" : node.status}
             aria-pressed={selected}
             aria-label={label}
-            title={`${name}\n${type}\nID: ${node.refId || node.id}`}
+            title={[name, node.path, type, `ID: ${node.refId || node.id}`].filter(Boolean).join("\n")}
             onClick={event => { event.stopPropagation(); onSelect({ type: "node", id: node.id }); }}
         >
-            <span className={cn(styles.icon, styles[`tone-${tone}`])} aria-hidden="true"><Icon size={compact ? 14 : 16} strokeWidth={1.75} /></span>
+            <span className={cn(styles.icon, styles[`tone-${tone}`])} aria-hidden="true"><NodeIcon node={node} size={compact ? 14 : 16} imageSize={compact ? 20 : 24} /></span>
             <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 text-left">
                 <span className="flex min-w-0 items-center gap-1.5">
                     <span className={cn(styles.name, "notranslate min-w-0 truncate")}>{name}</span>
