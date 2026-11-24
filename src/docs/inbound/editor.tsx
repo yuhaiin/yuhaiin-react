@@ -24,6 +24,7 @@ import { FC, useId, useMemo } from "react";
 
 import { UserAuthentication } from "./authentication";
 import { formatSSHIDRanges, SSHEnvironmentPanel, sshIDProblemKey, sshIDProblems } from "./ssh-environment";
+import { SSHHostLoopbackEditor } from "./ssh-host-loopback";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -440,6 +441,10 @@ const SSHServerEditor: FC<{
                 <InputList title={uiT("sshSFTPReadOnlyPaths")} data={value.sftpReadOnlyPaths}
                     onChange={(sftpReadOnlyPaths) => patch({ sftpReadOnlyPaths })} placeholder="/srv/archive" />
                 <p className="text-xs text-ui-muted">{uiT("sshSFTPReadOnlyHelp")}</p>
+            </FormSection>
+            <FormSection title={uiT("sshHostLoopbackTitle")}>
+                <SSHHostLoopbackEditor value={value.hostLoopback} onChange={(hostLoopback) => patch({ hostLoopback })} ssh={service}
+                    supported={!capabilities || (capabilities.platform === "linux" && capabilities.protocols.includes("ssh"))} />
             </FormSection>
             <div>
                 <p className="mb-2 text-sm font-medium text-ui-heading">{uiT("sshAuthorizedPublicKey")}</p>
