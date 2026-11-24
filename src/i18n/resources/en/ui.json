@@ -1041,7 +1041,7 @@
   "sshRootlessSupervisor": "Without a delegated cgroup v2, a per-session process supervisor still ends every session process on disconnect.",
   "sshRootfulHelp": "For administrators who run Yuhaiin as root and need the shell to use any non-root account without a user namespace. Requires root privileges and cgroup v2.",
   "sshRootlessIDs": "On this server rootless shells run as the Yuhaiin user: UID {{uid}}, GID {{gid}}. Other IDs need /etc/subuid and /etc/subgid with newuidmap/newgidmap. The session keeps the Yuhaiin user's supplementary groups.",
-  "sshRootlessIDsAsRoot": "Yuhaiin runs as root on this server, so rootless shells can use any non-root UID and GID. Enter them explicitly.",
+  "sshRootlessIDsAsRoot": "Yuhaiin runs as root on this server, so rootless shells can use any UID and GID. Leave them empty to run as root (0).",
   "sshRootfulIDs": "Any non-root UID and GID can be used.",
   "sshRootfulNotRoot": "Yuhaiin is not running as root on this server (UID {{uid}}), so a rootful inbound will not start. Use rootless mode.",
   "sshServiceAccountID": "Yuhaiin user ({{id}})",

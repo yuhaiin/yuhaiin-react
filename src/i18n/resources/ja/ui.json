@@ -1041,7 +1041,7 @@
   "sshRootlessSupervisor": "cgroup v2 の委譲がない場合でも、セッションごとのプロセス監視機構が切断時にすべてのプロセスを終了します。",
   "sshRootfulHelp": "Yuhaiin を root で実行し、User Namespace を使わずに任意の非 root アカウントでシェルを実行したい管理者向けのオプションです。root 権限と cgroup v2 が必要です。",
   "sshRootlessIDs": "このサーバーの Rootless シェルは Yuhaiin ユーザー（UID {{uid}}、GID {{gid}}）として実行されます。他の ID を使うには /etc/subuid・/etc/subgid と newuidmap/newgidmap が必要です。補助グループは Yuhaiin ユーザーのものを引き継ぎます。",
-  "sshRootlessIDsAsRoot": "このサーバーでは Yuhaiin が root で動作しているため、Rootless でも任意の非 root UID/GID を使えます。明示的に入力してください。",
+  "sshRootlessIDsAsRoot": "このサーバーでは Yuhaiin が root で動作しているため、Rootless でも任意の UID/GID を使えます。空欄の場合は root (0) で動作します。",
   "sshRootfulIDs": "任意の非 root UID/GID を使用できます。",
   "sshRootfulNotRoot": "このサーバーの Yuhaiin は root で動作していない（UID {{uid}}）ため、Rootful の Inbound は起動しません。Rootless を使用してください。",
   "sshServiceAccountID": "Yuhaiin ユーザー（{{id}}）",

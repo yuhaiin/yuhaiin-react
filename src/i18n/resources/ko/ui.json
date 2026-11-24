@@ -1041,7 +1041,7 @@
   "sshRootlessSupervisor": "cgroup v2 위임이 없어도 세션별 프로세스 감시자가 연결 종료 시 모든 프로세스를 종료합니다.",
   "sshRootfulHelp": "Yuhaiin을 root로 실행하고 User Namespace 없이 임의의 비 root 계정으로 셸을 실행해야 하는 관리자용 옵션입니다. root 권한과 cgroup v2가 필요합니다.",
   "sshRootlessIDs": "이 서버의 Rootless 셸은 Yuhaiin 사용자(UID {{uid}}, GID {{gid}})로 실행됩니다. 다른 ID를 쓰려면 /etc/subuid, /etc/subgid와 newuidmap/newgidmap이 필요합니다. 보조 그룹은 Yuhaiin 사용자의 것을 이어받습니다.",
-  "sshRootlessIDsAsRoot": "이 서버에서는 Yuhaiin이 root로 실행되므로 Rootless에서도 임의의 비 root UID/GID를 사용할 수 있습니다. 직접 입력하세요.",
+  "sshRootlessIDsAsRoot": "이 서버에서는 Yuhaiin이 root로 실행되므로 Rootless에서도 임의의 UID/GID를 사용할 수 있습니다. 비워 두면 root(0)로 실행됩니다.",
   "sshRootfulIDs": "임의의 비 root UID/GID를 사용할 수 있습니다.",
   "sshRootfulNotRoot": "이 서버의 Yuhaiin은 root로 실행되고 있지 않으므로(UID {{uid}}) Rootful 인바운드는 시작되지 않습니다. Rootless를 사용하세요.",
   "sshServiceAccountID": "Yuhaiin 사용자 ({{id}})",
