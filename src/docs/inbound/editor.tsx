@@ -23,6 +23,7 @@ import { ArrowDown, ArrowUp, ChevronRight, Info, Plus, Trash } from "lucide-reac
 import { FC, useId, useMemo } from "react";
 
 import { UserAuthentication } from "./authentication";
+import { formatSSHIDRanges, SSHEnvironmentPanel, sshIDProblemKey, sshIDProblems } from "./ssh-environment";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -356,16 +357,35 @@ const SSHServerEditor: FC<{
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
     const timezoneChoices = useMemo(() => timezoneOptions(), []);
     // Shared with the inbound modal through the SWR cache.
-    const { data: capabilities } = useSWR('/api/v2/inbounds/capabilities', getInboundCapabilities);
+    const { data: capabilities, isValidating, mutate: recheck } = useSWR('/api/v2/inbounds/capabilities', getInboundCapabilities);
     const service = capabilities?.ssh;
+    const environment = service?.environment;
     // Saved inbounds without a mode are rootless, as on the server.
     const rootless = (value.namespaceMode || "rootless") === "rootless";
     const setMode = (mode: string) => patch(mode === "rootful" && (!value.uid || !value.gid)
         ? { namespaceMode: mode, uid: value.uid || 65534, gid: value.gid || 65534 }
         : { namespaceMode: mode });
+    // IDs are host IDs. With a detection result, name exactly the IDs this
+    // server can map instead of describing the general rules.
+    const usable = environment && environment.identity.uidRanges.length > 0 && !service?.root ? {
+        uid: service!.serviceUID, gid: service!.serviceGID,
+        uids: formatSSHIDRanges(environment.identity.uidRanges), gids: formatSSHIDRanges(environment.identity.gidRanges),
+    } : undefined;
+    const onlyOwn = usable && usable.uids === String(usable.uid) && usable.gids === String(usable.gid);
     const idRange = !service ? "" : rootless
-        ? (service.root ? uiT("sshRootlessIDsAsRoot") : uiT("sshRootlessIDs", { uid: service.serviceUID, gid: service.serviceGID }))
+        ? (service.root ? uiT("sshRootlessIDsAsRoot") : onlyOwn ? uiT("sshRootlessIDs", { uid: service.serviceUID, gid: service.serviceGID })
+            : usable ? uiT("sshRootlessIDsDetected", usable) : uiT("sshRootlessIDs", { uid: service.serviceUID, gid: service.serviceGID }))
         : (service.root ? uiT("sshRootfulIDs") : uiT("sshRootfulNotRoot", { uid: service.serviceUID }));
+    const problems = sshIDProblems(value, service);
+    const problemFor = (field: string) => problems.find(p => p.field === field);
+    const uidProblem = problemFor("uid");
+    const gidProblem = problemFor("gid");
+    const parentUIDProblem = problemFor("parentUID");
+    const parentGIDProblem = problemFor("parentGID");
+    // Empty means automatic; any number, including 0, is a manual override.
+    const parentValue = (id?: number) => id === undefined ? "" : String(id);
+    const parentPatch = (text: string) => text.trim() === "" ? undefined : numberValue(text);
+    const showParent = rootless || value.parentNamespaceUID !== undefined || value.parentNamespaceGID !== undefined;
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
@@ -381,20 +401,27 @@ const SSHServerEditor: FC<{
                     <li>{uiT("sshRootlessSupervisor")}</li>
                 </ul> : <p className="text-xs text-ui-muted">{uiT("sshRootfulHelp")}</p>}
                 {idRange && <p role="note" className={`text-xs ${!rootless && service && !service.root ? "text-ui-danger" : "text-ui-muted"}`}>{idRange}</p>}
+                {rootless && <SSHEnvironmentPanel ssh={service} config={value} loading={isValidating} onRecheck={() => void recheck()} />}
             </FormSection>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("sshLoginUsername")} value={value.username}
                     onChange={(username) => patch({ username })} placeholder="alice" />
                 <SettingInputVertical label={uiT("sshShell")} value={value.shell ?? ""}
                     onChange={(shell) => patch({ shell })} placeholder={uiT("sshShellAuto")} />
-                <SettingInputVertical label={uiT("sshUID")} type="number" min={rootless ? 0 : 1} step={1}
-                    value={rootless && !value.uid ? "" : String(value.uid)}
-                    placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceUID ?? "" }) : undefined}
-                    onChange={(uid) => patch({ uid: numberValue(uid) })} />
-                <SettingInputVertical label={uiT("sshGID")} type="number" min={rootless ? 0 : 1} step={1}
-                    value={rootless && !value.gid ? "" : String(value.gid)}
-                    placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceGID ?? "" }) : undefined}
-                    onChange={(gid) => patch({ gid: numberValue(gid) })} />
+                <div className="min-w-0">
+                    <SettingInputVertical label={uiT("sshUID")} type="number" min={rootless ? 0 : 1} step={1}
+                        value={rootless && !value.uid ? "" : String(value.uid)} aria-invalid={uidProblem ? true : undefined}
+                        placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceUID ?? "" }) : undefined}
+                        onChange={(uid) => patch({ uid: numberValue(uid) })} />
+                    {uidProblem && <p role="alert" className="text-xs text-ui-danger">{uiT(sshIDProblemKey(uidProblem), uidProblem)}</p>}
+                </div>
+                <div className="min-w-0">
+                    <SettingInputVertical label={uiT("sshGID")} type="number" min={rootless ? 0 : 1} step={1}
+                        value={rootless && !value.gid ? "" : String(value.gid)} aria-invalid={gidProblem ? true : undefined}
+                        placeholder={rootless ? uiT("sshServiceAccountID", { id: service?.serviceGID ?? "" }) : undefined}
+                        onChange={(gid) => patch({ gid: numberValue(gid) })} />
+                    {gidProblem && <p role="alert" className="text-xs text-ui-danger">{uiT(sshIDProblemKey(gidProblem), gidProblem)}</p>}
+                </div>
                 <SettingInputVertical label="MTU" type="number" min={1280} max={9000} step={1}
                     value={String(value.mtu ?? 1500)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
                 <SettingInputVertical label={uiT("sshMaxSessions")} type="number" min={1} max={128} step={1}
@@ -428,6 +455,26 @@ const SSHServerEditor: FC<{
                         <Textarea code secret rows={3} value={value.hostKey} onChange={(event) => patch({ hostKey: event.target.value })}
                             placeholder="-----BEGIN PRIVATE KEY-----" />
                     </div>
+                    {showParent && <div className="grid gap-2" aria-label={uiT("sshParentNamespaceTitle")} role="group">
+                        <p className="text-sm font-medium text-ui-heading">{uiT("sshParentNamespaceTitle")}</p>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="min-w-0">
+                                <SettingInputVertical label={uiT("sshParentUID")} type="number" min={0} step={1}
+                                    value={parentValue(value.parentNamespaceUID)} placeholder={uiT("sshParentAuto")}
+                                    aria-invalid={parentUIDProblem ? true : undefined}
+                                    onChange={(id) => patch({ parentNamespaceUID: parentPatch(id) })} />
+                                {parentUIDProblem && <p role="alert" className="text-xs text-ui-danger">{uiT(sshIDProblemKey(parentUIDProblem), parentUIDProblem)}</p>}
+                            </div>
+                            <div className="min-w-0">
+                                <SettingInputVertical label={uiT("sshParentGID")} type="number" min={0} step={1}
+                                    value={parentValue(value.parentNamespaceGID)} placeholder={uiT("sshParentAuto")}
+                                    aria-invalid={parentGIDProblem ? true : undefined}
+                                    onChange={(id) => patch({ parentNamespaceGID: parentPatch(id) })} />
+                                {parentGIDProblem && <p role="alert" className="text-xs text-ui-danger">{uiT(sshIDProblemKey(parentGIDProblem), parentGIDProblem)}</p>}
+                            </div>
+                        </div>
+                        <p className="text-xs text-ui-muted">{uiT("sshParentHelp")}</p>
+                    </div>}
                     <SettingInputVertical label={uiT("sshCgroupRoot")} value={value.cgroupRoot ?? ""}
                         onChange={(cgroupRoot) => patch({ cgroupRoot })} placeholder={rootless ? uiT("sshCgroupRootAuto") : "/sys/fs/cgroup/yuhaiin/ssh/..."} />
                     <p className="text-xs text-ui-muted">{uiT(rootless ? "sshCgroupRootRootlessHelp" : "sshCgroupRootHelp")}</p>

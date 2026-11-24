@@ -22,6 +22,7 @@ import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
+import { inboundSSHIDProblems } from "./ssh-environment";
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -86,8 +87,11 @@ const InboundModal: FC<{
     const inbound = isNew ? draft : data ? draft : undefined;
     const title = isNew ? "New Inbound" : inbound?.name || id || "Inbound";
 
+    // Rootless SSH IDs the server cannot map are refused before saving; the
+    // editor names the usable ones next to the fields.
+    const sshBlocked = inbound ? inboundSSHIDProblems(inbound, capabilities?.ssh).length > 0 : false;
     const handleSave = () => {
-        if (!inbound || saving || error || isLoading || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)) return;
+        if (!inbound || saving || error || isLoading || sshBlocked || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)) return;
         setSaveError('');
         const next = normalizeInbound({ ...inbound, id, name: inbound.name || t(preset === "tun" ? "presetTun" : preset === "lan" ? "presetLAN" : "presetLocal") });
         void run(async () => {
@@ -121,7 +125,7 @@ const InboundModal: FC<{
                     </div>
                     <div className={editorActionsClass}>
                         <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
+                        <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || sshBlocked || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
                             <Check size={16} />{uiT("save")}
                         </Button>
                     </div>
