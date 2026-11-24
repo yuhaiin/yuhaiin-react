@@ -280,7 +280,7 @@ function podmanEnvironment(): Go.inbound.SSHEnvironment {
             username: 'example-user', home: '/home/example-user', shell: '/bin/bash',
         },
         features: { userNamespace: available, networkNamespace: available, mountNamespace: available, pidNamespace: available, idMapping: available,
-            tun: available, ipv4: available, ipv6: available, supervisor: available, cgroupV2: 'unavailable', rootful: 'unavailable' },
+            tun: available, ipv4: available, ipv6: available, supervisor: available, cgroupV2: 'unavailable', rootful: 'unavailable', hostLoopbackIPv4: available, hostLoopbackIPv6: available },
         checkedAt: '2026-11-24T06:25:13Z',
     };
 }

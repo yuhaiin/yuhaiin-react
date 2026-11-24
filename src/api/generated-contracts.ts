@@ -965,6 +965,9 @@ export namespace Go {
       supervisor: string;
       cgroupV2: string;
       rootful: string;
+      hostLoopbackIPv4: string;
+      hostLoopbackIPv6: string;
+      hostLoopbackError?: string;
     }
     export type Network =
       | { type: "empty"; empty: EmptyNetwork }
@@ -1109,6 +1112,18 @@ export namespace Go {
       ipv6: boolean;
       maxSessions?: number;
       allowUnsafeShell: boolean;
+      hostLoopback?: SSHHostLoopback;
+    }
+    export interface SSHHostLoopback {
+      enabled: boolean;
+      mappings?: SSHHostLoopbackMapping[];
+    }
+    export interface SSHHostLoopbackMapping {
+      protocol: string;
+      sessionAddress: string;
+      sessionPort: number;
+      hostAddress: string;
+      hostPort: number;
     }
     export interface KrunletProtocol {
       socket: string;

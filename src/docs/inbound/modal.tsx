@@ -23,6 +23,7 @@ import useSWR from "swr";
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
 import { inboundSSHIDProblems } from "./ssh-environment";
+import { inboundHostLoopbackProblems } from "./ssh-host-loopback";
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -89,7 +90,7 @@ const InboundModal: FC<{
 
     // Rootless SSH IDs the server cannot map are refused before saving; the
     // editor names the usable ones next to the fields.
-    const sshBlocked = inbound ? inboundSSHIDProblems(inbound, capabilities?.ssh).length > 0 : false;
+    const sshBlocked = inbound ? inboundSSHIDProblems(inbound, capabilities?.ssh).length > 0 || inboundHostLoopbackProblems(inbound).length > 0 : false;
     const handleSave = () => {
         if (!inbound || saving || error || isLoading || sshBlocked || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)) return;
         setSaveError('');
