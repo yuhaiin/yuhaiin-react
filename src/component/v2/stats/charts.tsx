@@ -8,6 +8,7 @@ import {
 import { useMemo, type ReactNode } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
+import { cn } from "../styles";
 import { bucketLabel, formatCount, formatMs, type Bucket } from "./format";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler);
@@ -206,7 +207,7 @@ export interface BarItem {
 }
 
 /** Ranked HTML bars: readable, selectable text and no canvas for short lists. */
-export function BarList({ title, items, empty, valueHeader, summary, formatValue, actions }: {
+export function BarList({ title, items, empty, valueHeader, summary, formatValue, actions, className, listClassName }: {
   title: string;
   items: BarItem[];
   empty: string;
@@ -214,6 +215,9 @@ export function BarList({ title, items, empty, valueHeader, summary, formatValue
   summary?: ReactNode;
   formatValue?: (value: number) => ReactNode;
   actions?: ReactNode;
+  className?: string;
+  /** Classes for the item list, e.g. to let it scroll inside a bounded panel. */
+  listClassName?: string;
 }) {
   const { i18n } = useTranslation();
   const max = Math.max(0, ...items.map((item) => item.value));
@@ -224,7 +228,7 @@ export function BarList({ title, items, empty, valueHeader, summary, formatValue
     neutral: "var(--border-strong)",
   };
   const format = formatValue ?? ((value: number) => formatCount(value, i18n.language));
-  return <section className="min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4">
+  return <section className={cn("min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4", className)}>
     <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
       <h3 className="text-sm font-medium text-ui-heading">{title}</h3>
       {(summary || valueHeader) && <div className="text-xs text-ui-secondary">{summary ?? valueHeader}</div>}
@@ -232,7 +236,7 @@ export function BarList({ title, items, empty, valueHeader, summary, formatValue
     {actions && <div className="mb-3">{actions}</div>}
     {items.length === 0
       ? <p className="py-6 text-center text-sm text-ui-muted">{empty}</p>
-      : <ul className="space-y-2.5">
+      : <ul className={cn("space-y-2.5", listClassName)}>
         {items.map((item) => {
           const label = <span className="min-w-0 truncate text-ui-fg" title={item.title ?? (typeof item.label === "string" ? item.label : undefined)}>{item.label}</span>;
           return <li key={item.key} className="space-y-1">

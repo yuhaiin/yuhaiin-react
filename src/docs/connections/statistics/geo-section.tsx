@@ -99,7 +99,13 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
             }} />
           <p className="mt-1 text-xs text-ui-secondary">{live ? t("geoFilterHint") : t("geoLimited")}</p>
         </div>
-        <BarList title={t("geoTopCountries")} items={items} empty={t("geoNoData")} formatValue={format} />
+        {/* On wide screens the list takes the map's height and scrolls, so a
+            long list never leaves an empty band under the map. */}
+        <div className="relative min-w-0">
+          <BarList title={t("geoTopCountries")} items={items} empty={t("geoNoData")} formatValue={format}
+            className="lg:absolute lg:inset-0 lg:flex lg:flex-col"
+            listClassName="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1" />
+        </div>
       </div>}
   </section>;
 }
