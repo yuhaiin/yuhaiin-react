@@ -115,15 +115,17 @@ function RankingSection({ telemetry, error, initial, summary }: {
   return <BarList title={t("rankingTitle", { dimension: t(`dimension.${dimension}`) })} items={items} summary={summary}
     empty={error ? t("unavailable", { error: errorText(error) }) : t("noRanking")}
     formatValue={sort === "traffic" ? bytes : undefined}
-    actions={<div className="flex items-center gap-2">
-      <div className="min-w-0 flex-1">
+    // Narrow cards wrap the sort toggle onto its own full-width row instead
+    // of squeezing the dimension select.
+    actions={<div className="flex flex-wrap items-center gap-2">
+      <div className="min-w-36 flex-[1_1_9rem]">
         <Select value={dimension} ariaLabel={t("rankingDimension")} triggerClassName="w-full"
           onValueChange={(value) => setDimension(value as RankedDimension)}
           items={rankedDimensions.map((value) => ({ value, label: t(`dimension.${value}`) }))} />
       </div>
-      <ToggleGroup type="single" value={sort} aria-label={t("sortBy")} className="shrink-0" onValueChange={(value) => value && setSort(value as TelemetrySort)}>
-        <ToggleItem value="traffic">{t("metricTraffic")}</ToggleItem>
-        <ToggleItem value="failures">{t("metricFailures")}</ToggleItem>
+      <ToggleGroup type="single" value={sort} aria-label={t("sortBy")} className="flex flex-[1_0_auto]" onValueChange={(value) => value && setSort(value as TelemetrySort)}>
+        <ToggleItem value="traffic" className="flex-1 whitespace-nowrap min-w-fit">{t("metricTraffic")}</ToggleItem>
+        <ToggleItem value="failures" className="flex-1 whitespace-nowrap min-w-fit">{t("metricFailures")}</ToggleItem>
       </ToggleGroup>
     </div>} />;
 }
@@ -208,8 +210,8 @@ export default function ConnectionStatisticsPage() {
             <h2 id="connection-range-title" className="text-base font-medium text-ui-heading">{t("rangeTitle")}</h2>
             <p className="text-sm text-ui-muted">{t("rangeHelp")}</p>
           </div>
-          <ToggleGroup type="single" value={range} aria-label={t("rangeTitle")} className="flex w-full sm:w-auto" onValueChange={(value) => value && setRange(value as RangeKey)}>
-            {ranges.map((r) => <ToggleItem key={r.key} value={r.key} className="flex-1">{t(`range.${r.key}`)}</ToggleItem>)}
+          <ToggleGroup type="single" value={range} aria-label={t("rangeTitle")} className="flex w-full sm:w-auto sm:shrink-0" onValueChange={(value) => value && setRange(value as RangeKey)}>
+            {ranges.map((r) => <ToggleItem key={r.key} value={r.key} className="flex-1 whitespace-nowrap min-w-fit">{t(`range.${r.key}`)}</ToggleItem>)}
           </ToggleGroup>
         </div>
 
