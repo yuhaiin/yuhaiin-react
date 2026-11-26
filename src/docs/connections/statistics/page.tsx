@@ -6,6 +6,7 @@ import Loading from "@/component/v2/loading";
 import { PageHeader } from "@/component/v2/page-header";
 import { BarList, BucketHistogram, LineChart, StatTile, useStatsPalette } from "@/component/v2/stats/charts";
 import { bucketPercentile, formatCount, formatDuration, formatMs, formatPercent, ratio } from "@/component/v2/stats/format";
+import { Select } from "@/component/v2/select";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { formatBytes } from "@/docs/home/format";
 import { ArrowLeftRight } from "lucide-react";
@@ -114,14 +115,13 @@ function RankingSection({ telemetry, error, initial, summary }: {
   return <BarList title={t("rankingTitle", { dimension: t(`dimension.${dimension}`) })} items={items} summary={summary}
     empty={error ? t("unavailable", { error: errorText(error) }) : t("noRanking")}
     formatValue={sort === "traffic" ? bytes : undefined}
-    actions={<div className="flex flex-wrap gap-2">
-      <label className="flex items-center gap-2 text-xs text-ui-secondary">{t("rankingDimension")}
-        <select className="rounded-ui-sm border border-ui-border bg-ui-surface px-2 py-1 text-sm text-ui-fg" value={dimension}
-          onChange={(event) => setDimension(event.target.value as RankedDimension)}>
-          {rankedDimensions.map((value) => <option key={value} value={value}>{t(`dimension.${value}`)}</option>)}
-        </select>
-      </label>
-      <ToggleGroup type="single" value={sort} aria-label={t("sortBy")} onValueChange={(value) => value && setSort(value as TelemetrySort)}>
+    actions={<div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">
+        <Select value={dimension} ariaLabel={t("rankingDimension")} triggerClassName="w-full"
+          onValueChange={(value) => setDimension(value as RankedDimension)}
+          items={rankedDimensions.map((value) => ({ value, label: t(`dimension.${value}`) }))} />
+      </div>
+      <ToggleGroup type="single" value={sort} aria-label={t("sortBy")} className="shrink-0" onValueChange={(value) => value && setSort(value as TelemetrySort)}>
         <ToggleItem value="traffic">{t("metricTraffic")}</ToggleItem>
         <ToggleItem value="failures">{t("metricFailures")}</ToggleItem>
       </ToggleGroup>
@@ -208,8 +208,8 @@ export default function ConnectionStatisticsPage() {
             <h2 id="connection-range-title" className="text-base font-medium text-ui-heading">{t("rangeTitle")}</h2>
             <p className="text-sm text-ui-muted">{t("rangeHelp")}</p>
           </div>
-          <ToggleGroup type="single" value={range} aria-label={t("rangeTitle")} onValueChange={(value) => value && setRange(value as RangeKey)}>
-            {ranges.map((r) => <ToggleItem key={r.key} value={r.key}>{t(`range.${r.key}`)}</ToggleItem>)}
+          <ToggleGroup type="single" value={range} aria-label={t("rangeTitle")} className="flex w-full sm:w-auto" onValueChange={(value) => value && setRange(value as RangeKey)}>
+            {ranges.map((r) => <ToggleItem key={r.key} value={r.key} className="flex-1">{t(`range.${r.key}`)}</ToggleItem>)}
           </ToggleGroup>
         </div>
 
