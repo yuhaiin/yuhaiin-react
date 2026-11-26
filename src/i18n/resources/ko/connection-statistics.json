@@ -101,5 +101,8 @@
   "unavailable": "사용할 수 없음: {{error}}",
   "filterGeo": "목적지 국가: {{country}}",
   "filterOutboundGeo": "출구 국가: {{country}}",
-  "clearFilter": "필터 해제"
+  "clearFilter": "필터 해제",
+  "homeGeoDescription": "목적지와 출구 국가 · {{range}}",
+  "homeGeoHint": "저장된 텔레메트리의 상위 20개 국가입니다.",
+  "openStatistics": "통계 열기"
 }

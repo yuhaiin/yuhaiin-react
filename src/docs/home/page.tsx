@@ -19,6 +19,7 @@ import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
 import { formatBytes } from "./format";
 import TelemetryOverview from "./TelemetryOverview";
+import HomeCountries from "./HomeCountries";
 import SetupCard from "./SetupCard";
 import { AndroidVpnCard } from "../android/AndroidVpnCard";
 import { useAndroidPlatform } from "@/hooks/use-android-platform";
@@ -111,7 +112,9 @@ function HomePage() {
     const telemetryRange = isLiveTraffic ? trafficRanges[1] : range;
     const { data: telemetry, error: telemetryError } = useSWR(["/api/v2/connections/telemetry", telemetryRange.key], () => {
         const to = new Date();
-        return getTelemetry(new Date(to.getTime() - telemetryRange.durationMs!), to);
+        // 20 per dimension: the breakdown shows 5 until expanded, and the
+        // country map needs more than a handful of countries.
+        return getTelemetry(new Date(to.getTime() - telemetryRange.durationMs!), to, 20);
     }, {
         refreshInterval: 30000,
         revalidateOnFocus: false,
@@ -190,6 +193,7 @@ function HomePage() {
                 </Card>
 
                 <div className="py-1"><Activates showFooter={false} /></div>
+                <HomeCountries telemetry={telemetry} range={isLiveTraffic ? "24H" : range.label} />
                 <Card density="compact">
                     <CardHeader className="px-4 py-3.5">
                         <IconBox

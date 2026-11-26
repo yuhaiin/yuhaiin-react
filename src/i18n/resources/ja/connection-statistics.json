@@ -101,5 +101,8 @@
   "unavailable": "取得できません: {{error}}",
   "filterGeo": "接続先の国: {{country}}",
   "filterOutboundGeo": "出口の国: {{country}}",
-  "clearFilter": "フィルタを解除"
+  "clearFilter": "フィルタを解除",
+  "homeGeoDescription": "接続先と出口の国 · {{range}}",
+  "homeGeoHint": "保存済みテレメトリの上位20か国です。",
+  "openStatistics": "統計を開く"
 }

@@ -1,6 +1,6 @@
 import { useCountryNames } from "@/common/country-names";
 import { CountryFlag } from "@/component/country-flag";
-import { BarList } from "@/component/v2/stats/charts";
+import { BarList } from "@/component/v2/stats/bar-list";
 import { formatCount } from "@/component/v2/stats/format";
 import { WorldMap } from "@/component/v2/stats/world-map";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
@@ -12,7 +12,7 @@ import { countryValue, type CountryMetric, type CountryRow, type GeoDimension } 
 
 const TOP = 10;
 
-export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
+export function GeoSection({ rows, live, side, onSide, geoipLoaded, bare = false, hint }: {
   rows: CountryRow[];
   /** Live rows carry connection counts and destinations; telemetry rows do not. */
   live: boolean;
@@ -20,6 +20,10 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
   onSide: (side: GeoDimension) => void;
   /** False when the GeoIP database is known to be missing. */
   geoipLoaded?: boolean;
+  /** Inside a card that already has its own title (the home page). */
+  bare?: boolean;
+  /** Replaces the note under the map. */
+  hint?: string;
 }) {
   const { t, i18n } = useTranslation("connectionStats");
   const countryName = useCountryNames();
@@ -56,9 +60,10 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
   const metricLabel = { connections: t("metricConnections"), traffic: t("metricTraffic"), failures: t("metricFailures") }[metric];
   const sideLabel = side === "geo" ? t("geoDestination") : t("geoOutbound");
 
-  return <section className="min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4" aria-labelledby="connection-geo-title">
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-      <h3 id="connection-geo-title" className="text-sm font-medium text-ui-heading">{t("geoTitle")}</h3>
+  return <section className={bare ? "min-w-0" : "min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4"}
+    aria-labelledby={bare ? undefined : "connection-geo-title"} aria-label={bare ? t("geoTitle") : undefined}>
+    <div className={`mb-3 flex flex-wrap items-center gap-3 ${bare ? "justify-end" : "justify-between"}`}>
+      {!bare && <h3 id="connection-geo-title" className="text-sm font-medium text-ui-heading">{t("geoTitle")}</h3>}
       {/* Phones: two full-width rows with equal segments; wider: inline. */}
       <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
         <ToggleGroup type="single" value={side} aria-label={t("geoTitle")} className="flex w-full sm:w-auto sm:shrink-0" onValueChange={(value) => value && onSide(value as GeoDimension)}>
@@ -102,7 +107,7 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
                 </div>}
               </div>;
             }} />
-          <p className="mt-1 text-xs text-ui-secondary">{live ? t("geoFilterHint") : t("geoLimited")}</p>
+          <p className="mt-1 text-xs text-ui-secondary">{hint ?? (live ? t("geoFilterHint") : t("geoLimited"))}</p>
         </div>
         {/* On wide screens the list takes the map's height and scrolls, so a
             long list never leaves an empty band under the map. */}
