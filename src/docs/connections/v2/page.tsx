@@ -10,7 +10,9 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ConnectionRow, ConnectionTableHeader, MobileConnectionSort, connectionRowHeight, sortConnections, type SortBy, type SortOrder } from "./connection-table";
 import type { Connection, Counter } from "@/contract/connection";
 import { useConnectionStream } from "./use-connection-stream";
-import { Power, RefreshCw } from "lucide-react";
+import { Power, RefreshCw, X } from "lucide-react";
+import { useCountryNames } from "@/common/country-names";
+import { navigation, useNavigationSnapshot } from "@/hooks/navigation";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { VList } from "virtua";
@@ -21,8 +23,22 @@ const VIRTUALIZE_THRESHOLD = 40;
 
 
 
+/** `?geo=JP` or `?outboundGeo=US`, linked from the Connections statistics map. */
+function useCountryFilter() {
+    const { location } = useNavigationSnapshot();
+    const query = new URLSearchParams(location.split('?')[1] ?? '');
+    for (const key of ['geo', 'outboundGeo'] as const) {
+        const value = query.get(key)?.trim().toUpperCase();
+        if (value) return { key, value };
+    }
+    return undefined;
+}
+
 function Connections() {
     const { t: uiT } = useTranslation('ui');
+    const { t: statsT } = useTranslation('connectionStats');
+    const countryNames = useCountryNames();
+    const countryFilter = useCountryFilter();
 
     const ctx = useContext(GlobalToastContext);
     const { connections, hydrated, initial, error, isLoading, mutate, streamError, reconnect, removeLocally } = useConnectionStream();
@@ -45,7 +61,13 @@ function Connections() {
     }, []);
 
     const sortCounters = sortBy === "upload" || sortBy === "download" ? counters : undefined;
-    const sorted = useMemo(() => sortConnections(Object.values(connections), sortBy, sortOrder, sortCounters), [connections, sortCounters, sortBy, sortOrder]);
+    const filterKey = countryFilter?.key;
+    const filterValue = countryFilter?.value;
+    const sorted = useMemo(() => {
+        const all = Object.values(connections);
+        const visible = filterKey ? all.filter(conn => (conn[filterKey] ?? '').toUpperCase() === filterValue) : all;
+        return sortConnections(visible, sortBy, sortOrder, sortCounters);
+    }, [connections, sortCounters, sortBy, sortOrder, filterKey, filterValue]);
     const changeSort = (field: SortBy) => {
         if (field === sortBy) setSortOrder(order => order === 'asc' ? 'desc' : 'asc');
         else setSortBy(field);
@@ -88,6 +110,16 @@ function Connections() {
             </div>
 
             <FlowContainer onUpdate={setCounters} variant="summary" compact />
+
+            {countryFilter && (
+                <div className="mb-3 flex shrink-0 flex-wrap items-center gap-2 text-sm">
+                    <span className="inline-flex max-w-full items-center gap-1.5 rounded-ui-md bg-ui-primary-soft px-2 py-1 text-ui-primary">
+                        <span className="min-w-0 truncate">{statsT(countryFilter.key === 'geo' ? 'filterGeo' : 'filterOutboundGeo', { country: `${countryNames(countryFilter.value)} (${countryFilter.value})` })}</span>
+                        <button type="button" aria-label={statsT('clearFilter')} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
+                            onClick={() => navigation.replace('/docs/connections/v2')}><X size={12} aria-hidden="true" /></button>
+                    </span>
+                </div>
+            )}
 
             {streamError && (
                 <div className="mb-3 rounded-ui-lg border border-ui-warning/40 bg-ui-warning/10 px-4 py-3 text-sm text-ui-warning">

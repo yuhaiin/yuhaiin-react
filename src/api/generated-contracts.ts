@@ -301,6 +301,40 @@ export namespace Go {
       opened: string;
       failed: string;
     }
+    export interface Statistics {
+      sinceUnixMs: number;
+      active: number;
+      activeTcp: number;
+      activeUdp: number;
+      opened: number;
+      failed: number;
+      closed: number;
+      download: number;
+      upload: number;
+      connectTime: StatisticsBucket[];
+      lifetime: StatisticsBucket[];
+      failures: FailureKind[];
+      history: StatisticsHistory;
+    }
+    export interface StatisticsBucket {
+      leMs: number;
+      count: number;
+    }
+    export interface FailureKind {
+      kind: string;
+      count: number;
+    }
+    export interface StatisticsHistory {
+      intervalMs: number;
+      endUnixMs: number;
+      opened: number[];
+      failed: number[];
+      closed: number[];
+      active: number[];
+      connectNs: number[];
+      download: number[];
+      upload: number[];
+    }
   }
   export namespace dnshistory {
     export interface Record {

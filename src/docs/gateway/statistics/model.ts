@@ -1,4 +1,5 @@
 import type { Go } from "@/api/generated-contracts";
+import { bucketLabel } from "@/component/v2/stats/format";
 
 export type GatewayStatistics = Go.gateway.GatewayStatistics;
 export type LatencyBucket = Go.gateway.LatencyBucket;
@@ -46,44 +47,8 @@ export function aggregateHistory(history: Go.gateway.StatisticsHistory, bucketMs
   return points.reverse();
 }
 
-/**
- * Approximates a percentile from cumulative histogram buckets. The answer is
- * the bucket's upper bound; Infinity means the open-ended last bucket.
- */
-export function latencyPercentile(buckets: LatencyBucket[], quantile: number): number | null {
-  const total = buckets.reduce((sum, b) => sum + b.count, 0);
-  if (!total) return null;
-  const target = Math.ceil(total * quantile);
-  let seen = 0;
-  for (const bucket of buckets) {
-    seen += bucket.count;
-    if (seen >= target) return bucket.leMs === 0 ? Infinity : bucket.leMs;
-  }
-  return Infinity;
-}
-
-export function ratio(part: number, total: number): number {
-  return total > 0 ? part / total : 0;
-}
-
-export function formatPercent(value: number, locale?: string): string {
-  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: value < 0.1 && value > 0 ? 2 : 1 }).format(value);
-}
-
-export function formatCount(value: number, locale?: string): string {
-  return new Intl.NumberFormat(locale).format(value);
-}
-
-export function formatMs(value: number | null): string {
-  if (value === null) return "—";
-  if (!Number.isFinite(value)) return "∞";
-  if (value === 0) return "0 ms";
-  if (value >= 10_000) return `${(value / 1000).toFixed(0)} s`;
-  if (value >= 1000) return `${(value / 1000).toFixed(1)} s`;
-  return `${value < 10 ? value.toFixed(1) : value.toFixed(0)} ms`;
-}
+export { bucketPercentile as latencyPercentile, formatCount, formatMs, formatPercent, ratio } from "@/component/v2/stats/format";
 
 export function latencyBucketLabel(bucket: LatencyBucket, previous?: LatencyBucket): string {
-  if (bucket.leMs === 0) return `> ${formatMs(previous?.leMs ?? 0)}`;
-  return `≤ ${formatMs(bucket.leMs)}`;
+  return bucketLabel(bucket, previous);
 }

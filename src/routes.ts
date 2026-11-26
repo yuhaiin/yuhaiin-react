@@ -28,6 +28,7 @@ const SelectorsPage = dynamic(() => import('@/docs/group/selectors/page'), { loa
 const BypassResolverPage = dynamic(() => import('@/docs/bypass/resolver/page'), { loading });
 const BypassTestPage = dynamic(() => import('@/docs/bypass/test/page'), { loading });
 const BypassBlockPage = dynamic(() => import('@/docs/bypass/block/page'), { loading });
+const ConnectionStatisticsPage = dynamic(() => import('@/docs/connections/statistics/page'), { loading });
 const ConnectionsV2Page = dynamic(() => import('@/docs/connections/v2/page'), { loading });
 const NetworkTopologyPage = dynamic(() => import('@/docs/connections/topology/page'), { loading });
 const ConnectionsHistoryPage = dynamic(() => import('@/docs/connections/history/page'), { loading });
@@ -72,6 +73,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/bypass/test", component: BypassTestPage },
     { path: "/docs/bypass/block", component: BypassBlockPage },
     { path: "/docs/connections/v2", component: ConnectionsV2Page },
+    { path: "/docs/connections/statistics", component: ConnectionStatisticsPage },
     { path: "/docs/connections/topology", component: NetworkTopologyPage },
     { path: "/docs/connections/history", component: ConnectionsHistoryPage },
     { path: "/docs/connections/failed", component: ConnectionsFailedPage },

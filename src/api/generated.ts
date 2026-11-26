@@ -29,6 +29,8 @@ export type RPCOperation =
   | "connections.events"
   | "connections.failed_history"
   | "connections.history"
+  | "connections.statistics"
+  | "connections.statistics.reset"
   | "connections.telemetry"
   | "connections.total"
   | "connections.trace"
@@ -256,6 +258,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/connections/total", operation: "connections.total" },
   { method: "GET", pattern: "/api/v2/connections/traffic", operation: "connections.traffic" },
   { method: "GET", pattern: "/api/v2/connections/telemetry", operation: "connections.telemetry" },
+  { method: "GET", pattern: "/api/v2/connections/statistics", operation: "connections.statistics" },
+  { method: "POST", pattern: "/api/v2/connections/statistics/reset", operation: "connections.statistics.reset" },
   { method: "GET", pattern: "/api/v2/connections/events", operation: "connections.events" },
   { method: "GET", pattern: "/api/v2/connections", operation: "connections" },
   { method: "POST", pattern: "/api/v2/connections/trace", operation: "connections.trace" },

@@ -7,7 +7,8 @@ import { formatBytes } from "./format";
 
 type TelemetryItem = TelemetryGroup["items"][number];
 
-const titleKeys: Record<TelemetryGroup["dimension"], string> = {
+// Country dimensions are drawn on the Connections statistics map instead.
+const titleKeys: Partial<Record<TelemetryGroup["dimension"], string>> = {
     protocol: "telemetryProtocol",
     inbound: "telemetryInbound",
     source: "telemetrySource",
@@ -84,7 +85,7 @@ const DimensionPanel = ({ group }: { group: TelemetryGroup }) => {
 
     return (
         <section className="mb-3 break-inside-avoid rounded-ui-lg bg-ui-surface-muted/60 pb-1.5">
-            <PanelHeader title={uiT(titleKeys[group.dimension])} items={group.items} />
+            <PanelHeader title={uiT(titleKeys[group.dimension]!)} items={group.items} />
             {group.items.length === 0 ? (
                 <div className="px-3.5 py-3 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
             ) : (
@@ -130,7 +131,7 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => {
 
     return (
         <section className="rounded-ui-lg bg-ui-surface-muted/60 pb-3">
-            <PanelHeader title={uiT(titleKeys.protocol)} items={group.items} />
+            <PanelHeader title={uiT(titleKeys.protocol!)} items={group.items} />
             {group.items.length === 0 ? (
                 <div className="px-3.5 py-1 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
             ) : (
@@ -167,7 +168,7 @@ const TelemetryOverview = ({ data, error }: { data?: TelemetrySummary; error?: s
     if (data.groups.length === 0) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">{uiT("noTrafficRecordedInThisRange")}</div>;
 
     const protocol = data.groups.find(group => group.dimension === "protocol");
-    const dimensions = data.groups.filter(group => group.dimension !== "protocol");
+    const dimensions = data.groups.filter(group => group.dimension !== "protocol" && titleKeys[group.dimension]);
 
     const copyValue = (key: string, value: string) => {
         setLastCopied(key);

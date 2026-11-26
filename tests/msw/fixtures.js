@@ -93,6 +93,10 @@ const subscriptions = scenario === 'empty' ? [] : [
   { name: 'Travel routes', type: 'reserve', url: 'yuhaiin://synthetic-long-encoded-configuration' },
 ];
 const connections = Array.from({length:size},(_,i)=>({id:String(i+1),addr:i===0?'very-long-host-name-for-mobile-layout-testing.example.invalid:443':`host-${i}.example.invalid:443`,network:{connType:i===0?'udp':'tcp',underlyingType:'tcp'},mode:'proxy',ruleId:'rule-0',ruleName:'Work traffic',selectorId:'selector-work',selectorName:'Work destination',inboundId:'inbound-local',inboundName:'Local proxy',domain:`host-${i}.example.invalid`,process:'audit-process',nodeId:'node-0',nodeName:'Mobile test node',lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},matchHistory:[{ruleId:'rule-0',ruleName:'Work traffic',history:[{kind:'list',id:'shared-websites',listName:'Work websites',matched:true}]}]}));
+// Countries for the Connections statistics map: weighted toward a few busy ones.
+const destinationCountries=['US','US','US','JP','JP','DE','SG','HK','GB','NL','FR','KR','TW','CA','AU','IN','BR','SE','','US','JP','CN'];
+const exitCountries=['JP','JP','US','SG','HK','DE',''];
+connections.forEach((connection,i)=>{connection.geo=destinationCountries[(i*7)%destinationCountries.length];connection.outboundGeo=connection.mode==='direct'?'':exitCountries[i%exitCountries.length];if(i%3===1)connection.nodeName='Tokyo exit';if(i%5===2)connection.nodeName='Singapore relay';if(i%4===3)connection.network={connType:'udp',underlyingType:'udp'};});
 // Stress the connection table without changing the other preview scenarios.
 if (scenario.startsWith('connections') && connections.length) {
   Object.assign(connections.at(-1), {id:'9999999999',addr:'very-long-destination-for-mobile-layout-testing.example.invalid:443',selectorName:'Work destination with a very long shared exit name'});
@@ -143,6 +147,38 @@ const gatewayWorkspace={version:1,revision:1,gateways:[{id:'gw-ads',name:'spotif
     {id:'tracking',name:'Telemetry hosts',revision:1,enabled:true,priority:30,match:{field:'host',operator:'domain',values:['log.spotify.example']},action:gatewayAction('block')},
   ],backendPools:[],filters:[{id:'easylist',name:'EasyList (domains)',revision:1,enabled:true,text:''}],fallback:gatewayAction('forward')}]};
 // Deterministic synthetic hour: a busy evening ramp with periodic ad bursts.
+function connectionStatisticsFixture(){
+  const n=360, interval=10000, end=Math.ceil(Date.now()/interval)*interval;
+  const col=f=>Array.from({length:n},(_,i)=>Math.max(0,Math.round(f(i))));
+  const wave=i=>18+10*Math.sin(i/35)+((i*13)%7);
+  const opened=col(i=>wave(i)+(i%60<4?25:0)), failed=col(i=>(i%50===0?9:(i*11)%9===0?1:0)), closed=col(i=>wave(i-2)+(i%60<6?18:0));
+  const active=col(i=>95+25*Math.sin(i/50)+((i*5)%9)), connectNs=opened.map((v,i)=>v*(42+18*Math.sin(i/22)+((i*3)%10))*1e6);
+  const download=col(i=>(3.2e6+2.4e6*Math.sin(i/30)+((i*17)%13)*2e5)*(i>300&&i<320?4:1)), upload=download.map((v,i)=>Math.round(v*(0.08+0.04*Math.sin(i/18))));
+  const sum=a=>a.reduce((x,y)=>x+y,0);
+  return {sinceUnixMs:end-n*interval*5,active:connections.length,activeTcp:connections.filter(c=>c.network.connType!=='udp').length,activeUdp:connections.filter(c=>c.network.connType==='udp').length,
+    opened:sum(opened)*5,failed:sum(failed)*5,closed:sum(closed)*5-connections.length,download:sum(download)*5,upload:sum(upload)*5,
+    connectTime:[[10,8100],[25,14200],[50,19800],[100,16400],[250,7200],[500,2100],[1000,880],[2500,310],[5000,90],[10000,24],[0,11]].map(([leMs,count])=>({leMs,count})),
+    lifetime:[[1000,12100],[5000,18300],[10000,9100],[30000,11800],[60000,6400],[300000,5200],[600000,1400],[1800000,820],[3600000,240],[0,96]].map(([leMs,count])=>({leMs,count})),
+    failures:[['timeout',182],['refused',64],['dns',41],['blocked',230],['reset',27],['unreachable',9],['other',13]].map(([kind,count])=>({kind,count})),
+    history:{intervalMs:interval,endUnixMs:end,opened,failed,closed,active,connectNs,download,upload}};
+}
+function connectionTelemetryFixture(from,to){
+  const scale=Math.max(1,(new Date(to)-new Date(from))/3600000);
+  const item=(value,mb,failures=0)=>({value,download:String(Math.round(mb*scale*1e6)),upload:String(Math.round(mb*scale*9e4)),failures:String(Math.round(failures*scale))});
+  return {groups:[
+    {dimension:'protocol',items:[item('tcp',2100,30),item('udp',640,4)]},
+    {dimension:'inbound',items:[item('Local proxy',1900,22),item('TUN',840,12)]},
+    {dimension:'source',items:[item('192.168.1.20',1200,8),item('192.168.1.31',760,10),item('127.0.0.1',420,3)]},
+    {dimension:'addr',items:[item('video.example.invalid:443',920,1),item('api.example.invalid:443',310,9),item('cdn.example.invalid:443',260)]},
+    {dimension:'outbound',items:[item('Tokyo exit',1500,12),item('Singapore relay',720,9),item('Direct',430,2),item('Frankfurt',95,11)]},
+    {dimension:'process',items:[item('firefox',1300,6),item('steam',780,1),item('curl',90,14),item('telegram',60,2)]},
+    {dimension:'rule',items:[item('Streaming',1400,4),item('Work traffic',610,18),item('Games',420,2),item('Default',260,7),item('Blocklist',0,64)]},
+    {dimension:'selector',items:[item('Work destination',900,12),item('Media exit',1400,5)]},
+    {dimension:'destination',items:[item('video.example.invalid',920,1),item('updates.example.invalid',480),item('api.example.invalid',310,9),item('cdn.example.invalid',260),item('telemetry.example.invalid',8,41)]},
+    {dimension:'geo',items:[item('US',1100,9),item('JP',620,4),item('DE',210,12),item('SG',160,1),item('HK',140,2),item('GB',120,1),item('NL',90,3),item('KR',80),item('FR',60,1),item('CA',45),item('TW',40),item('AU',30),item('IN',25,6),item('BR',20,1),item('SE',15),item('',70,5)]},
+    {dimension:'outboundGeo',items:[item('JP',1500,12),item('SG',720,9),item('US',260,2),item('DE',95,11),item('',430,2)]},
+  ]};
+}
 function gatewayStatisticsFixture(){
   const n=360, interval=10000, end=Math.ceil(Date.now()/interval)*interval;
   const col=f=>Array.from({length:n},(_,i)=>Math.max(0,Math.round(f(i))));
@@ -381,9 +417,11 @@ const worker=setupWorker(
     else if(op==='dns.history.settings.get') result=dnsHistorySettings;
     else if(op==='dns.history.settings.put') result=dnsHistorySettings=structuredClone(p);
     else if(op==='dns.history.clear') { result={deleted:dnsHistory.length}; dnsHistory.length=0; }
-    else if(op==='connections.failed_history') result={items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',error:'Synthetic timeout',process:'audit',time:x.time,failedCount:String(i+1)}))};
+    else if(op==='connections.failed_history') result={items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',error:['dial tcp 203.0.113.7:443: i/o timeout','dial tcp 198.51.100.4:443: connect: connection refused','lookup missing.example.invalid: no such host','blocked by rule Blocklist'][i%4],process:'audit',time:x.time,failedCount:String((i%7)+1)}))};
     else if(op==='connections.total'){total+=1024;result={download:String(total),upload:String(total/2),counters:Object.fromEntries(connections.map((c,i)=>[c.id,{download:String(scenario.startsWith('connections')?(i+1)*1234567890123+total:total),upload:String(scenario.startsWith('connections')?(connections.length-i)*987654321123+total:total/2)}]))};}
-    else if(op==='connections.telemetry') result={groups:[{dimension:'protocol',items:[{value:'tcp',download:'2048',upload:'1024',failures:'0'}]}]};
+    else if(op==='connections.telemetry') result=connectionTelemetryFixture(p.from,p.to);
+    else if(op==='connections.statistics') result=connectionStatisticsFixture();
+    else if(op==='connections.statistics.reset') result={};
     else if(op==='connections.traffic') result={interval:p.interval,items:[]};
     else if(op==='settings.get') result=settings;
     else if(op==='settings.put') result=(settings=p);

@@ -1,5 +1,5 @@
 import { requestJSON } from "@/api/client";
-import type { AllHistoryList, Connections, FailedHistoryList, TelemetrySummary, TotalFlow, TrafficSeries } from "@/contract/connection";
+import type { AllHistoryList, ConnectionStatistics, Connections, FailedHistoryList, TelemetrySummary, TotalFlow, TrafficSeries } from "@/contract/connection";
 import { normalizeAllHistory, normalizeConnection, normalizeFailedHistory } from "@/contract/connection";
 import type { Go } from "@/api/generated-contracts";
 
@@ -21,6 +21,14 @@ export async function getTelemetry(from: Date, to: Date, limit = 6): Promise<Tel
     to: to.toISOString(),
     limit,
   }) as unknown as Promise<TelemetrySummary>;
+}
+
+export async function getConnectionStatistics(): Promise<ConnectionStatistics> {
+  return requestJSON<Go.connection.Statistics>("GET", "/api/v2/connections/statistics");
+}
+
+export async function resetConnectionStatistics(): Promise<void> {
+  await requestJSON<void>("POST", "/api/v2/connections/statistics/reset", {});
 }
 
 export async function getConnections(): Promise<Connections> {
