@@ -114,13 +114,15 @@ export function Legend({ items }: { items: { label: string; color: string }[] })
 export function ChartFrame({ title, legend, children, empty, height = 220, summary }: {
   title: string; legend?: ReactNode; children: ReactNode; empty?: string; height?: number; summary?: ReactNode;
 }) {
-  return <section className="min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4">
+  // The chart fills whatever height its grid row gives the card (at least
+  // `height`), so a taller neighbour never leaves an empty band under it.
+  return <section className="flex min-w-0 flex-col rounded-ui-sm border border-ui-border bg-ui-surface p-4">
     <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
       <h3 className="text-sm font-medium text-ui-heading">{title}</h3>
       {summary && <div className="text-xs text-ui-secondary">{summary}</div>}
     </div>
     {legend && <div className="mb-2">{legend}</div>}
-    <div className="relative" style={{ height }}>
+    <div className="relative min-h-0 flex-1" style={{ minHeight: height }}>
       {empty
         ? <p className="flex h-full items-center justify-center text-sm text-ui-muted">{empty}</p>
         : children}
