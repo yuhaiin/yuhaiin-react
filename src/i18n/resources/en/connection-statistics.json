@@ -101,5 +101,8 @@
   "unavailable": "Unavailable: {{error}}",
   "filterGeo": "Destination country: {{country}}",
   "filterOutboundGeo": "Outbound country: {{country}}",
-  "clearFilter": "Clear filter"
+  "clearFilter": "Clear filter",
+  "homeGeoDescription": "Destination and outbound countries · {{range}}",
+  "homeGeoHint": "Top 20 countries from saved telemetry.",
+  "openStatistics": "Open statistics"
 }
