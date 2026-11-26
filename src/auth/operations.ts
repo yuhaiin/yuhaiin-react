@@ -46,6 +46,8 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "connections.total": "connections:read",
     "connections.traffic": "connections:read",
     "connections.telemetry": "connections:read",
+    "connections.statistics": "connections:read",
+    "connections.statistics.reset": "connections:write",
     "connections.events": "connections:read",
     "connections": "connections:read",
     "connections.trace": "connections:read",

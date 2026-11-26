@@ -6,9 +6,10 @@ import { PageHeader } from "@/component/v2/page-header";
 import { errorMessage, type Config } from "@/contract/gateway";
 import { formatBytes } from "@/docs/home/format";
 import { ArrowLeft } from "lucide-react";
-import { Fragment, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
+import { StatTile } from "@/component/v2/stats/charts";
 import { BarList, LatencyChart, LatencyHistogram, RequestsChart, TrafficChart } from "./charts";
 import {
   aggregateHistory, formatCount, formatMs, formatPercent, latencyPercentile, ratio, type GatewayStatistics,
@@ -16,14 +17,6 @@ import {
 import type { Go } from "@/api/generated-contracts";
 
 type Status = Go.gateway.GatewayStatus;
-
-function Tile({ label, value, detail, tone }: { label: string; value: ReactNode; detail?: ReactNode; tone?: "danger" }) {
-  return <div className="min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface p-4">
-    <dt className="text-xs text-ui-secondary">{label}</dt>
-    <dd className={`mt-1 truncate text-2xl font-semibold tabular-nums ${tone === "danger" ? "text-ui-danger" : "text-ui-heading"}`}>{value}</dd>
-    {detail && <dd className="mt-0.5 truncate text-xs text-ui-secondary">{detail}</dd>}
-  </div>;
-}
 
 const statusClassLabels = ["statsStatusOther", "1xx", "2xx", "3xx", "4xx", "5xx"] as const;
 
@@ -62,17 +55,17 @@ function GatewayStatisticsView({ config, status, detail }: { config: Config; sta
 
   return <div className="space-y-4">
     <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-      <Tile label={t("requests")} value={count(status.requests)}
+      <StatTile label={t("requests")} value={count(status.requests)}
         detail={t("statsLastHour", { value: count(lastHour.requests) })} />
-      <Tile label={t("statsBlockRate")} value={formatPercent(ratio(status.blocked, status.requests), lang)}
+      <StatTile label={t("statsBlockRate")} value={formatPercent(ratio(status.blocked, status.requests), lang)}
         detail={`${t("blocked")} ${count(status.blocked)}`} />
-      <Tile label={t("forwarded")} value={count(status.forwarded)}
+      <StatTile label={t("forwarded")} value={count(status.forwarded)}
         detail={formatPercent(ratio(status.forwarded, status.requests), lang)} />
-      <Tile label={t("errors")} value={count(status.errors)} tone={status.errors ? "danger" : undefined}
+      <StatTile label={t("errors")} value={count(status.errors)} tone={status.errors ? "danger" : undefined}
         detail={formatPercent(ratio(status.errors, status.requests), lang)} />
-      <Tile label={t("statsLatencyP50")} value={formatMs(p50)}
+      <StatTile label={t("statsLatencyP50")} value={formatMs(p50)}
         detail={`p95 ${formatMs(p95)} · p99 ${formatMs(p99)}`} />
-      <Tile label={t("activeRequests")} value={count(detail?.activeRequests ?? 0)}
+      <StatTile label={t("activeRequests")} value={count(detail?.activeRequests ?? 0)}
         detail={t("statsAverage", { value: formatMs(status.requests ? status.durationNs / status.requests / 1e6 : null) })} />
     </dl>
 

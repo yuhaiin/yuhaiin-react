@@ -8,8 +8,9 @@ export type TrafficSeries = Omit<Go.connection.TrafficSeries, "interval"> & {
 };
 export type TelemetryItem = Go.connection.TelemetryItem;
 export type TelemetryGroup = Omit<Go.connection.TelemetryGroup, "dimension"> & {
-  dimension: "protocol" | "inbound" | "source" | "addr" | "outbound" | "process" | "rule" | "selector" | "destination";
+  dimension: "protocol" | "inbound" | "source" | "addr" | "outbound" | "process" | "rule" | "selector" | "destination" | "geo" | "outboundGeo";
 };
+export type ConnectionStatistics = Go.connection.Statistics;
 export type TelemetrySummary = Omit<Go.connection.TelemetrySummary, "groups"> & { groups: TelemetryGroup[] };
 export type Connection = Go.connection.Connection;
 export type MatchHistoryEntry = Go.connection.MatchHistoryEntry;

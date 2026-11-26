@@ -15,6 +15,7 @@ export const navigationSections: NavigationSection[] = [
         { path: '/', label: nav('home'), icon: House },
         { label: nav('connections'), icon: Activity, items: [
             { path: '/docs/connections/v2', label: ui('activeConnections'), icon: ArrowLeftRight },
+            { path: '/docs/connections/statistics', label: nav('connectionStatistics'), icon: ChartColumn },
             { path: '/docs/connections/topology', label: nav('networkTopology'), icon: Workflow },
             { path: '/docs/connections/history', label: ui('history'), icon: History },
             { path: '/docs/connections/failed', label: ui('failedHistory'), icon: FileClock },

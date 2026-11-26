@@ -39,5 +39,6 @@
   "systemNetwork": "システムネットワーク",
   "gatewayStatistics": "Gateway 統計",
   "dnsHistory": "DNS 履歴",
-  "networkTopology": "ネットワークトポロジー"
+  "networkTopology": "ネットワークトポロジー",
+  "connectionStatistics": "Connections 統計"
 }

@@ -39,5 +39,6 @@
   "systemNetwork": "시스템 네트워크",
   "gatewayStatistics": "Gateway 통계",
   "dnsHistory": "DNS 기록",
-  "networkTopology": "네트워크 토폴로지"
+  "networkTopology": "네트워크 토폴로지",
+  "connectionStatistics": "Connections 통계"
 }

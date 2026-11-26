@@ -39,5 +39,6 @@
   "systemNetwork": "System Network",
   "gatewayStatistics": "Gateway statistics",
   "dnsHistory": "DNS history",
-  "networkTopology": "Network topology"
+  "networkTopology": "Network topology",
+  "connectionStatistics": "Connections statistics"
 }
