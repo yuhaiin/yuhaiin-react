@@ -119,7 +119,7 @@ function RankingSection({ telemetry, error, initial, summary }: {
     // of squeezing the dimension select.
     actions={<div className="flex flex-wrap items-center gap-2">
       <div className="min-w-36 flex-[1_1_9rem]">
-        <Select value={dimension} ariaLabel={t("rankingDimension")} triggerClassName="w-full"
+        <Select value={dimension} ariaLabel={t("rankingDimension")} triggerClassName="w-full whitespace-nowrap"
           onValueChange={(value) => setDimension(value as RankedDimension)}
           items={rankedDimensions.map((value) => ({ value, label: t(`dimension.${value}`) }))} />
       </div>
