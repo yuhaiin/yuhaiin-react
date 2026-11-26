@@ -12,6 +12,7 @@ import type { Connection, Counter } from "@/contract/connection";
 import { useConnectionStream } from "./use-connection-stream";
 import { Power, RefreshCw, X } from "lucide-react";
 import { useCountryNames } from "@/common/country-names";
+import { CountryFlag } from "@/component/country-flag";
 import { navigation, useNavigationSnapshot } from "@/hooks/navigation";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -114,6 +115,7 @@ function Connections() {
             {countryFilter && (
                 <div className="mb-3 flex shrink-0 flex-wrap items-center gap-2 text-sm">
                     <span className="inline-flex max-w-full items-center gap-1.5 rounded-ui-md bg-ui-primary-soft px-2 py-1 text-ui-primary">
+                        <CountryFlag code={countryFilter.value} />
                         <span className="min-w-0 truncate">{statsT(countryFilter.key === 'geo' ? 'filterGeo' : 'filterOutboundGeo', { country: `${countryNames(countryFilter.value)} (${countryFilter.value})` })}</span>
                         <button type="button" aria-label={statsT('clearFilter')} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
                             onClick={() => navigation.replace('/docs/connections/v2')}><X size={12} aria-hidden="true" /></button>

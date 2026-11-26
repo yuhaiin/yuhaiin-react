@@ -1,4 +1,5 @@
 import { useCountryNames } from "@/common/country-names";
+import { CountryFlag } from "@/component/country-flag";
 import { BarList } from "@/component/v2/stats/charts";
 import { formatCount } from "@/component/v2/stats/format";
 import { WorldMap } from "@/component/v2/stats/world-map";
@@ -40,7 +41,10 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
     .slice(0, TOP + 1);
   const items = ranked.map(({ row, value }) => ({
     key: row.code || "#unknown",
-    label: row.code ? `${countryName(row.code)} (${row.code})` : t("geoUnknown"),
+    label: row.code
+      ? <><CountryFlag code={row.code} className="mr-2" />{`${countryName(row.code)} (${row.code})`}</>
+      : t("geoUnknown"),
+    title: row.code ? `${countryName(row.code)} (${row.code})` : t("geoUnknown"),
     value,
     tone: row.code ? (metric === "failures" ? "error" as const : "forwarded" as const) : "neutral" as const,
     detail: metric !== "traffic" && row.download + row.upload > 0 ? formatBytes(row.download + row.upload, 1, " ") : undefined,
@@ -57,12 +61,12 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
       <h3 id="connection-geo-title" className="text-sm font-medium text-ui-heading">{t("geoTitle")}</h3>
       {/* Phones: two full-width rows with equal segments; wider: inline. */}
       <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
-        <ToggleGroup type="single" value={side} aria-label={t("geoTitle")} className="flex w-full sm:w-auto" onValueChange={(value) => value && onSide(value as GeoDimension)}>
-          <ToggleItem value="geo" className="flex-1">{t("geoDestination")}</ToggleItem>
-          <ToggleItem value="outboundGeo" className="flex-1">{t("geoOutbound")}</ToggleItem>
+        <ToggleGroup type="single" value={side} aria-label={t("geoTitle")} className="flex w-full sm:w-auto sm:shrink-0" onValueChange={(value) => value && onSide(value as GeoDimension)}>
+          <ToggleItem value="geo" className="flex-1 whitespace-nowrap min-w-fit">{t("geoDestination")}</ToggleItem>
+          <ToggleItem value="outboundGeo" className="flex-1 whitespace-nowrap min-w-fit">{t("geoOutbound")}</ToggleItem>
         </ToggleGroup>
-        <ToggleGroup type="single" value={metric} aria-label={t("sortBy")} className="flex w-full sm:w-auto" onValueChange={(value) => value && setChosen(value as CountryMetric)}>
-          {metrics.map((value) => <ToggleItem key={value} value={value} className="flex-1">
+        <ToggleGroup type="single" value={metric} aria-label={t("sortBy")} className="flex w-full sm:w-auto sm:shrink-0" onValueChange={(value) => value && setChosen(value as CountryMetric)}>
+          {metrics.map((value) => <ToggleItem key={value} value={value} className="flex-1 whitespace-nowrap min-w-fit">
             {{ connections: t("metricConnections"), traffic: t("metricTraffic"), failures: t("metricFailures") }[value]}
           </ToggleItem>)}
         </ToggleGroup>
@@ -83,7 +87,7 @@ export function GeoSection({ rows, live, side, onSide, geoipLoaded }: {
             tooltip={(code, name) => {
               const row = byCode.get(code);
               return <div className="space-y-1">
-                <p className="font-medium text-ui-heading">{countryName(code) || name} <span className="text-ui-secondary">({code})</span></p>
+                <p className="font-medium text-ui-heading"><CountryFlag code={code} className="mr-1.5" />{countryName(code) || name} <span className="text-ui-secondary">({code})</span></p>
                 {row ? <dl className="grid grid-cols-[auto_1fr] gap-x-3 tabular-nums">
                   {live && <><dt className="text-ui-secondary">{t("metricConnections")}</dt><dd className="text-right">{formatCount(row.connections, lang)}</dd></>}
                   <dt className="text-ui-secondary">↓</dt><dd className="text-right">{formatBytes(row.download, 1, " ")}</dd>
